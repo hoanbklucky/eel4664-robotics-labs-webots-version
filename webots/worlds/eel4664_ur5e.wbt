@@ -1,0 +1,24 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "webots://projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "webots://projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "webots://projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "webots://projects/robots/universal_robots/protos/UR5e.proto"
+
+WorldInfo { basicTimeStep 16 }
+Viewpoint {
+  orientation -0.383 0.901 0.202 1.193
+  position 1.65 1.45 1.15
+}
+TexturedBackground {}
+TexturedBackgroundLight {}
+RectangleArena { floorSize 3 3 }
+UR5e {
+  name "UR5e"
+  controller "eel4664_ur5e"
+  selfCollision FALSE
+  toolSlot [
+    GPS { name "tool_position" }
+    InertialUnit { name "tool_orientation" }
+  ]
+}
