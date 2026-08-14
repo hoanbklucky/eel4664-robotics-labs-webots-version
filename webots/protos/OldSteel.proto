@@ -1,0 +1,15 @@
+#VRML_SIM R2025a utf8
+# Offline-compatible simplified appearance for the vendored UR5e model.
+PROTO OldSteel [
+  field SFColor colorOverride 1 1 1
+  field SFNode textureTransform NULL
+  field SFFloat IBLStrength 1
+] {
+  PBRAppearance {
+    baseColor IS colorOverride
+    roughness 0.65
+    metalness 0.8
+    IBLStrength IS IBLStrength
+    textureTransform IS textureTransform
+  }
+}
