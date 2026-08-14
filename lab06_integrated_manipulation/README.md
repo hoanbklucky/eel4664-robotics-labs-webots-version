@@ -1,127 +1,114 @@
 # Lab 6 - Integrated Manipulation / Final Project
 
-**Do not save over the original starter world after running the simulation. Immediately save a working copy; reset/revert before preserving world changes.**
+**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 
-## Learning objectives
+## Mission
+
+Complete an autonomous pick-and-place challenge.
+
+## Success Criteria
+
+You succeed when the robot autonomously completes home -> pregrasp -> grasp (or approved equivalent) -> obstacle-avoiding transport -> place -> home, satisfies stated joint/collision/pose tolerances, and repeats the task from Reset with quantitative evidence and a documented failure boundary.
+
+## Learning Objectives
 
 By the end of this project, you should be able to:
 
-1. integrate coordinate transforms, FK/IK, trajectories, feedback, and quantitative evaluation;
-2. use Jacobian or differential motion where it improves the task;
-3. represent obstacles and implement collision checking/planning explicitly;
-4. execute a repeatable manipulation-style task from a safe home configuration;
-5. diagnose integration failures across model, planner, controller, and simulator boundaries; and
-6. communicate system architecture, assumptions, evidence, and limitations.
+1. integrate transforms, FK/IK, Jacobians, trajectories, feedback, and estimation;
+2. implement explicit collision checking and motion planning;
+3. organize a manipulation task as auditable states with safe failure handling;
+4. evaluate repeatability, clearance, task error, and completion time; and
+5. communicate architecture, assumptions, evidence, limitations, and transfer risks.
 
 ## Prerequisites
 
-Complete Labs 1-5. Reuse your tested mathematical modules rather than copying formulas into one monolithic controller. The project introduces system integration, not a new set of hidden simulator algorithms.
+Complete Labs 1-5 and the [setup prerequisites](../setup/README.md). Reuse tested mathematical modules rather than hiding them inside a monolithic controller. A physical robot extension is optional; successful Webots completion satisfies the required project.
 
 ## Background
 
-The baseline challenge is to move from home to a target object or pose, avoid an obstacle/forbidden region, complete a pick-and-place or equivalent manipulation sequence, and return safely. A full gripper is optional unless supplied by the instructor; reaching, approach/retreat, transport, and placement poses can demonstrate equivalent integration.
+The task combines the course pipeline: frame reasoning locates targets, FK/IK generates configurations, collision checks reject unsafe states/edges, trajectories time-parameterize the path, and feedback executes it. Webots supplies simulated devices, physics, and visualization; it must not replace submitted transformations, kinematics, Jacobian calculations, trajectory generation, collision predicates, planning, control, or evaluation.
 
-Simulator APIs may expose sensing and ground truth, but they must not replace submitted transformations, kinematics, Jacobian calculations, trajectory generation, collision predicates, planning, control, or evaluation.
+The instructor will provide or approve the object, obstacle, target region, and a gripper or equivalent grasp interface. If no gripper is provided, an approved attachment/contact proxy may mark grasp and release while the student implementation still controls approach, transport, and placement.
 
-## Provided files
+## Provided Files
 
-- `worlds/lab06_starter.wbt`
+- `worlds/lab06_starter.wbt` - clean, known-good starter; never overwrite it
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
-- `src/collision_planner.py` - explicit collision-checking/planning starter
-- `src/COLLISION_PLANNER_NOTES.md` - separation and reproducibility guidance
+- `src/collision_planner.py` - explicit collision/planning starter
+- `src/COLLISION_PLANNER_NOTES.md` - modeling and reproducibility guidance
+- `src/mission_sequence.py` - manipulation state-machine scaffold
 - `config/`, `results/`, `report/`, and `starter_code/` placeholders
 - `answers.md`
 
-Collision-planning material was merged from the former standalone collision-planning lab.
+## Part 1 - Setup / Validation
 
-## Required Webots workflow and recovery
-
-1. **World:** open `worlds/lab06_starter.wbt` paused and use **File -> Save World As...** to create `worlds/lab06_work.wbt`; verify `void` before adding an obstacle.
+1. **World:** open `worlds/lab06_starter.wbt` paused, verify it, and immediately use **File -> Save World As...** to create `worlds/lab06_work.wbt`.
 2. **Minimal controller:** run `diagnostic_minimal`.
-3. **Devices:** run `diagnostic_devices` and confirm the integration controller's required devices.
-4. **One joint:** verify a conservative one-joint command through the final controller stack.
-5. **Full algorithm:** add targets/obstacles and execute the integrated task only after stages 1-4 pass.
+3. **Devices:** run `diagnostic_devices` and confirm all devices required by the final controller.
+4. **One joint:** command one conservative joint through the final software stack.
+5. **Full algorithm:** add only instructor-approved objects and run the complete mission after stages 1-4 pass.
 
-Keep a clean starter and a separate working world. After a crash, use [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md), reopen a clean world, and reapply one known-good change at a time.
+Record frames, home configuration, object/goal poses, obstacle geometry, limits, tolerances, and random seeds before integration.
 
-## Step-by-step instructions
+## Part 2 - Core Implementation
 
-1. Define the task, frames, home configuration, targets, obstacle model, limits, and metrics.
-2. Draw the software/data-flow architecture before integrating code.
-3. Validate each reused module with its earlier unit tests.
-4. Create `lab06_work.wbt` and add only instructor-approved target/obstacle objects.
-5. Demonstrate FK/IK reachability for approach, task, retreat, and home poses.
-6. Show that a direct path collides or violates a forbidden region for at least one assigned case.
-7. Plan a collision-free waypoint or sampled path with your own collision predicate.
-8. Time-parameterize the path and execute it with feedback.
-9. Log enough data to reproduce and quantify the complete run.
-10. Repeat from Reset and analyze one controlled variation or failure.
+1. Complete configuration and edge collision checks using link geometry derived from your FK.
+2. Inflate obstacles or explicitly include a safety margin; check interpolated edges, not endpoints alone.
+3. Complete a waypoint or sampling-based planner and validate every smoothing shortcut.
+4. Complete `mission_sequence.py` with explicit states, completion guards, timeouts, and a safe failure state.
+5. Connect your own FK/IK, Jacobian logic where useful, trajectory generator, controller, and logger.
+6. Check reachability, joint/rate limits, collision clearance, and IK continuity before each segment.
 
-## Implementation tasks
+Do not use Webots, MoveIt, or another package to provide the submitted kinematics, trajectory, collision, or planning solution.
 
-1. Complete `configuration_in_collision`, `edge_in_collision`, and `plan` in `collision_planner.py`.
-2. Compute link geometry from your FK; do not use visual appearance as the collision predicate.
-3. Inflate obstacles or otherwise state the safety margin.
-4. Check every interpolated edge, not only path endpoints.
-5. Smooth a path only if every replacement edge remains collision-free.
-6. Integrate:
-   - explicit transforms and FK/IK;
-   - Jacobian/differential motion where used;
-   - trajectory generation;
-   - joint-limit and collision checks;
-   - feedback/state estimates; and
-   - deterministic logging and metrics.
-7. Record random seeds, initial conditions, parameters, and controller gains.
+## Part 3 - Robot Experiment
 
-## Required experiments
+Execute the autonomous sequence:
 
-### Experiment A - module and path validation
+1. start at home;
+2. move to a collision-free pregrasp pose;
+3. approach and establish the approved grasp/equivalent;
+4. retreat and transport around the obstacle;
+5. place/release within the target tolerance; and
+6. return safely home.
 
-Show target reachability, one colliding direct path, and one collision-free planned path. Report computation time, path length, minimum modeled clearance, and waypoint count.
+First demonstrate that the assigned direct transport path collides or enters the forbidden region, then execute your planned alternative. Reset and repeat the full mission. Run one controlled variation—target pose, obstacle pose, payload/model condition, or planner seed—and preserve one informative failure.
 
-### Experiment B - integrated task
+## Part 4 - Quantitative Analysis
 
-Execute home -> approach -> task/transport -> retreat -> safe final/home. Report success criteria, pose/tracking error, completion time, and clearance.
+Report:
 
-### Experiment C - repeatability and failure analysis
+- task success rate across repeated runs;
+- end-effector/object placement error;
+- total and per-state completion time;
+- joint tracking error;
+- planned path length and waypoint count;
+- minimum modeled obstacle clearance; and
+- planning computation time.
 
-Repeat the task from the same reset state and test one controlled variation, such as obstacle placement, target pose, payload/model condition, or planner seed. Include one failure, its boundary, and a mitigation.
+Compare the direct and planned paths and explain the controlled variation/failure using logs. State which simulator ground-truth values were reserved for validation.
 
-## Questions and reflection
+## Engineering Questions
 
-1. Which coordinate-frame interface caused the greatest integration risk?
-2. How did collision-check resolution affect safety and computation time?
-3. Which earlier lab module required the most modification, and why?
-4. What evidence shows the task is repeatable rather than a single successful animation?
-5. Which simulator ground-truth values were used only for validation?
+1. Which coordinate-frame interface created the greatest integration risk?
+2. How did edge resolution affect clearance and computation time?
+3. What conditions trigger each state transition and safe abort?
+4. What evidence demonstrates repeatability rather than one successful animation?
+5. Which earlier module required the most revision, and why?
 6. What would have to change for transfer to a physical arm?
 
-## What to submit
+## What to Submit
 
-Submit:
-
-- proposal and architecture diagram;
-- source code with run instructions;
-- configuration/parameter files and seeds;
+- proposal and architecture/state diagram;
+- source code and reproducible run instructions;
+- configuration, parameters, limits, tolerances, gains, and seeds;
 - collision representation and planning pseudocode;
-- successful demonstration video or instructor-approved live demo;
-- CSV logs and at least two quantitative metrics;
+- successful video or approved live demonstration;
+- raw logs, plots, and required metrics;
 - repeatability and failure analysis;
 - final technical report; and
-- `answers.md`.
-
-## Milestones
-
-1. **Proposal:** task, frames, metrics, risks, and module ownership.
-2. **Model checkpoint:** validated geometry and reachable targets.
-3. **Planning/control checkpoint:** safe offline and one-joint tests.
-4. **Integrated demonstration:** repeatable Webots execution.
-5. **Report:** prediction, evidence, discrepancy, failure, and mitigation.
-
-## Optional physical-arm extension
-
-With instructor approval, transfer selected modules to the course 3D-printed arm. Document interface, calibration, limits, and model differences. Hardware is optional and is not required to complete the simulation project successfully.
+- completed `answers.md`.
 
 ## Troubleshooting
 
-Integrate one boundary at a time: world -> controller -> devices -> one joint -> one pose -> one segment -> full path. Preserve failing logs and worlds. If an endpoint is safe but motion collides, inspect edge interpolation and model clearance. If the planner succeeds but execution fails, separate planning, timing, and control errors.
+If Webots repeatedly crashes, close it, use the [safe-mode recovery procedure](../docs/TROUBLESHOOTING_WEBOTS.md), and reopen the untouched starter with controller `void`. Revert a damaged starter with Git. Isolate world -> minimal controller -> devices -> one joint -> one pose -> one segment -> full mission. If planning succeeds but execution fails, separate geometry, timing, feedback, and state-transition evidence. Never debug by repeatedly overwriting the starter world.

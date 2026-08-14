@@ -1,17 +1,17 @@
 # Lab 4 Answers
 
-## Trajectory implementation
+## Mission outcome
 
-State boundary conditions, polynomial choice, duration, sample period, and constraint checks.
+State the start/end poses, boundary conditions, timing choice, limits, and whether both motions met the success criteria.
 
-## Tracking experiments
+## Quantitative comparison
 
-Summarize desired/measured plots, RMSE, maximum error, peak velocity/acceleration, and duration comparison.
+Compare MoveJ-style and practical MoveL-style duration, tracking error, maximum joint velocity, path length, straightness error, and smoothness.
 
-## Smoothness or path comparison
+## Path evidence
 
-Report the cubic/quintic or MoveJ/Cartesian comparison assigned by the instructor.
+Include joint and Cartesian path plots and explain the observed tradeoff.
 
-## Reflection
+## Engineering reflection
 
-Answer every question in the Lab 4 README.
+Answer every Engineering Question in the Lab 4 README.

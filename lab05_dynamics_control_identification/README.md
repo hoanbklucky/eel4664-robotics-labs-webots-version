@@ -1,124 +1,108 @@
-# Lab 5 - Dynamics, Joint Control, and Parameter Identification
+# Lab 5 - Dynamics, Control, and Parameter Identification
 
-**Do not save over the original starter world after running the simulation. Immediately save a working copy; reset/revert before preserving world changes.**
+**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 
-## Learning objectives
+## Mission
+
+Track the same trajectory under different payloads, tune the controller, and identify an unknown model parameter.
+
+## Success Criteria
+
+You succeed when the same reference is executed under two approved dynamic conditions, your tuned controller meets stated tracking/transient targets, raw and filtered velocity estimates are compared, and a parameter fitted on one dataset predicts a held-out dataset with reported error.
+
+## Learning Objectives
 
 By the end of this lab, you should be able to:
 
-1. connect inertia, gravity, damping/friction, and payload/model changes to measured motion;
-2. implement and tune a P/PD/PID-type joint controller;
-3. estimate joint velocity from sampled/noisy position and filter the estimate;
-4. quantify rise time, overshoot, settling time, steady-state error, and trajectory RMSE;
-5. identify at least one simple dynamic parameter by least squares; and
-6. validate the identified parameter on data not used for fitting.
+1. relate inertia, gravity, damping/friction, and payload to measured motion;
+2. implement and tune a P, PD, or PID joint controller;
+3. estimate velocity from sampled position and quantify filtering tradeoffs;
+4. measure rise time, overshoot, settling time, steady-state error, and RMSE; and
+5. identify and validate a simple dynamic parameter with NumPy least squares.
 
 ## Prerequisites
 
-Complete Lab 4 and bring a tested joint trajectory generator and logger. Review manipulator dynamics, feedback control, sampled differentiation/filtering, and least-squares identification from lecture/homework.
-
-The instructor will designate a safe matched pair of experimental conditions, such as baseline versus a course-provided payload/model, or two approved configurations with different gravity/dynamic demand. Do not edit the installed Cyberbotics UR5e PROTO.
+Complete Lab 4 and the [setup prerequisites](../setup/README.md). Bring a tested trajectory generator and logger. The instructor must approve the two payload/model conditions and any effort-control limits. Do not edit the installed Cyberbotics UR5e PROTO.
 
 ## Background
 
-A focused one-joint approximation is:
+For a focused one-joint experiment,
 
 ```text
 tau = I_eff qddot + b_eff qdot + g_eff(q)
 tau_cmd = Kp (q_des - q) + Kd (qdot_des - qdot_est) + Ki integral(e)
 ```
 
-The simplified model does not replace full manipulator dynamics; it creates a testable relationship for interpreting controlled Webots data. Finite differences amplify measurement noise, so velocity estimation and filtering are part of the experiment.
+This approximation supports a controlled comparison; it does not replace full manipulator dynamics. Numerical differentiation amplifies noise, filtering introduces delay, and parameter estimates are credible only when units, excitation, conditioning, and held-out validation are reported.
 
-Fit a stated linear-in-parameters model with your own NumPy least-squares implementation. Separate training and validation trials.
+## Provided Files
 
-## Provided files
-
-- `worlds/lab05_starter.wbt`
+- `worlds/lab05_starter.wbt` - clean, known-good starter; never overwrite it
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
 - `src/simple_dynamics.py` - simplified torque-model starter
 - `src/pd_control_sim.py` - independent NumPy plant/controller starter
 - `src/estimate_velocity.py` - differentiation/filtering starter
-- `src/least_squares_id.py` - linear parameter-identification starter
+- `src/least_squares_id.py` - parameter-identification starter
+- `src/run_payload_experiment.py` - matched-trial mission scaffold
 - `answers.md`
 
-These starters were merged from the former dynamics, control, and state-estimation/identification labs.
+## Part 1 - Setup / Validation
 
-## Required Webots workflow and recovery
-
-1. **World:** open `worlds/lab05_starter.wbt` paused and use **File -> Save World As...** to create `worlds/lab05_work.wbt`; verify `void`.
+1. **World:** open `worlds/lab05_starter.wbt` paused, verify it, and immediately use **File -> Save World As...** to create `worlds/lab05_work.wbt`.
 2. **Minimal controller:** run `diagnostic_minimal`.
-3. **Devices:** run `diagnostic_devices` and verify the selected joint sensor/motor.
-4. **One joint:** run a conservative position-controlled motion before enabling any assigned torque-control extension.
-5. **Full algorithm:** run feedback/payload/model experiments only after stages 1-4 pass and instructor safety limits are applied.
+3. **Devices:** run `diagnostic_devices` and verify the selected motor and sensor.
+4. **One joint:** execute a conservative position command before any instructor-approved effort-mode extension.
+5. **Full algorithm:** enable the feedback/payload experiment only after safety limits and stages 1-4 pass.
 
-Recover from `lab05_starter.wbt` and use [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md) after any failed stage. Reset between matched trials.
+Complete the offline dynamics/controller sanity checks first. Reset to identical initial conditions for every matched trial.
 
-## Step-by-step instructions
+## Part 2 - Core Implementation
 
-1. Complete the simplified dynamics and offline PD simulation.
-2. Predict responses for low, moderate, and excessive gains.
-3. Create `lab05_work.wbt` and validate one-joint sensing/motion.
-4. Implement velocity estimation from measured position and compare raw versus filtered estimates.
-5. Implement the assigned P/PD/PID controller with saturation, anti-windup when applicable, and safe joint/rate limits.
-6. Track the same reference under two approved dynamic conditions.
-7. Repeat trials from identical reset states and save raw data.
-8. Compute transient and trajectory metrics.
-9. Define a linear regressor for one unknown parameter, fit it on one trial, and validate it on another.
+1. Complete the simplified dynamics model and independent P/PD/PID simulation.
+2. Implement raw finite differences and a stated causal filter for velocity.
+3. Implement feedback, saturation, and anti-windup when integral action is used.
+4. Complete a NumPy linear least-squares estimator; state the regressor and parameter units.
+5. Complete `run_payload_experiment.py` so condition, gains, commands, measurements, and timestamps are logged deterministically.
+6. Keep plant model, estimator, controller, identification, metrics, and Webots I/O separable and testable.
 
-## Implementation tasks
+Do not use a simulator or identification API to compute the model/controller quantities students are required to implement.
 
-1. Complete `one_joint_torque` in `simple_dynamics.py` and test units/limiting cases.
-2. Complete `simulate_pd` using your own numerical integration.
-3. Complete backward/centered finite differences and filtering in `estimate_velocity.py`.
-4. Implement `fit_linear_parameter` in `least_squares_id.py` without an identification library.
-5. Create a Webots experiment controller under `controllers/` that logs:
-   - simulation time;
-   - desired/measured joint position;
-   - raw/filtered velocity estimate;
-   - error and integral error;
-   - commanded effort or motor command;
-   - experimental condition; and
-   - controller gains.
-6. Keep controller, estimator, metric, and identification functions testable outside Webots.
+## Part 3 - Robot Experiment
 
-## Required experiments
+Track the identical assigned reference under:
 
-### Experiment A - controller and estimator sanity check
+- Condition A: the instructor-approved baseline; and
+- Condition B: an instructor-provided payload/model change.
 
-Compare offline plant responses for at least three gain sets. On representative sampled data, compare raw finite-difference and filtered velocity against a known trajectory derivative or reserved simulator reference.
+If a safe payload-changing world is unavailable, use the instructor-provided paired dataset for the identification portion while still completing the baseline Webots tracking run. Log `q_des`, measured `q`, error, raw/filtered velocity estimate, command/effort, gains, condition, and simulation time. Use at least three gain sets during tuning, then apply one justified final set to both matched conditions.
 
-### Experiment B - matched Webots tracking
+## Part 4 - Quantitative Analysis
 
-Track the same joint trajectory under two instructor-approved payload/model/gravity conditions. Report rise time, overshoot, settling time, steady-state error, RMSE, and maximum error. Explain which dynamic effects changed.
+1. Compare raw and filtered velocity against an analytic trajectory derivative or reserved simulator measurement.
+2. For both conditions report rise time, percent overshoot, settling time, steady-state error, RMSE, maximum error, and control magnitude.
+3. Fit one effective inertia, damping/friction, gravity, or payload-related parameter on a training trial.
+4. Predict a held-out trial at a different speed or condition and report residual plots and validation error.
+5. Discuss whether changes reflect physics, controller saturation, estimator delay, or model mismatch.
 
-### Experiment C - parameter identification
-
-Estimate one effective payload, friction, damping, gravity, or inertia-related parameter. Fit on one trial and validate on a different speed or condition. Report parameter units, residuals, and validation error.
-
-## Questions and reflection
+## Engineering Questions
 
 1. Which model term dominates static holding, slow motion, and rapid acceleration?
-2. How did filtering trade noise reduction against delay?
-3. Which gain change most affected rise time, overshoot, and steady-state error?
-4. Why must the same reference and initial state be used across conditions?
-5. Does the identified parameter retain the same meaning outside the fitted operating range?
-6. Which residual pattern indicates missing model structure?
+2. How did filtering trade noise suppression against phase delay?
+3. Which gain most affected rise time, overshoot, and steady-state error?
+4. Why must initial state and reference be matched across payload conditions?
+5. What residual pattern indicates missing model structure?
+6. Does the identified parameter retain its physical meaning outside the fitted range?
 
-## What to submit
+## What to Submit
 
-Submit:
-
-- completed dynamics, control, estimator, and identification source;
-- Webots experiment controller;
-- controller gains and safety limits;
-- raw and filtered logs;
-- transient/tracking metric table and plots;
-- regressor derivation and parameter units;
-- held-out validation results;
-- model-limit discussion; and
-- `answers.md`.
+- completed dynamics, controller, estimator, identification, and experiment code;
+- stated gains, limits, parameter units, and condition definitions;
+- raw CSV logs for tuning and matched trials;
+- velocity, tracking, transient, command, and residual plots;
+- metric comparison table;
+- training/validation identification results; and
+- completed `answers.md`.
 
 ## Troubleshooting
 
-Begin with position mode and one joint. Use conservative effort limits for any instructor-approved torque-mode extension. If differentiation is noisy, verify timestamps before tuning the filter. If identification is unstable, inspect units, excitation, regressor conditioning, and train/validation separation.
+If Webots repeatedly crashes, close it, use the [safe-mode recovery procedure](../docs/TROUBLESHOOTING_WEBOTS.md), and reopen the untouched starter with controller `void`. Revert a damaged starter with Git. If `diagnostic_minimal` fails, fix Python/controller configuration; if device listing fails, fix names; if only feedback motion fails, inspect sign, units, timestep, gains, and saturation. Return to conservative position mode and one joint before retrying the full experiment.

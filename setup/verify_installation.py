@@ -19,16 +19,18 @@ SIMULATION_PROJECTS = (
     "lab06_integrated_manipulation",
 )
 REQUIRED_README_SECTIONS = (
-    "## Learning objectives",
+    "## Mission",
+    "## Success Criteria",
+    "## Learning Objectives",
     "## Prerequisites",
     "## Background",
-    "## Provided files",
-    "## Required Webots workflow and recovery",
-    "## Step-by-step instructions",
-    "## Implementation tasks",
-    "## Required experiments",
-    "## Questions and reflection",
-    "## What to submit",
+    "## Provided Files",
+    "## Part 1 - Setup / Validation",
+    "## Part 2 - Core Implementation",
+    "## Part 3 - Robot Experiment",
+    "## Part 4 - Quantitative Analysis",
+    "## Engineering Questions",
+    "## What to Submit",
     "## Troubleshooting",
 )
 

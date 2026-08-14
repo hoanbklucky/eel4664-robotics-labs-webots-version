@@ -22,11 +22,11 @@ The schedule may overlap lab work with the corresponding analytical homework and
 2. Confirm all six `*_starter.wbt` files open from a clean clone and that the shared diagnostics run.
 3. Publish the exact UR5e frame convention, joint order, kinematic parameter table, and ground-truth measurement method for Lab 2.
 4. Select safe Cartesian requests, conditioning thresholds, joint-rate limits, and near-singular configurations for Lab 3.
-5. Validate Lab 4 trajectory limits and logging/plotting expectations.
+5. Validate Lab 4 MoveJ/MoveL targets, IK waypoint feasibility, straightness tolerance, trajectory limits, and logging/plotting expectations.
 6. For Lab 5, verify the R2025a motor-feedback/torque interface and provide:
    - one approved baseline/changed payload or model condition; or
    - a recorded dataset fallback if safe live parameter variation is unavailable.
-7. Define Lab 6 target/obstacle geometry, minimum clearance, success metrics, and whether a gripper is supplied.
+7. Define Lab 6 target/obstacle geometry, minimum clearance, success metrics, and the supplied gripper or approved equivalent grasp/release interface.
 8. Decide whether the optional physical-arm extension is offered; simulation must remain sufficient for full credit.
 9. Run the link, Python syntax, starter-world, and README-structure audits before publishing.
 

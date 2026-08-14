@@ -2,11 +2,11 @@
 
 ## Task and architecture
 
-Define frames, home/target poses, obstacle representation, limits, software modules, and metrics.
+Define frames, home/pregrasp/grasp/place poses, grasp interface, obstacle representation, state transitions, limits, software modules, and metrics.
 
 ## Planning and execution
 
-Report the colliding direct path, collision-free plan, clearance, path length, computation time, execution error, and completion time.
+Report the colliding direct transport path, collision-free pick-and-place plan, clearance, path length, computation time, placement error, and completion time.
 
 ## Repeatability and failure
 

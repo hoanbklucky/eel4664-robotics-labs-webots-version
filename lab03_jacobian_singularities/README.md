@@ -1,114 +1,118 @@
 # Lab 3 - Jacobian, Differential Kinematics, and Singularities
 
-**Do not save over the original starter world after running the simulation. Immediately save a working copy; reset/revert before preserving world changes.**
+## Mission
 
-## Learning objectives
+**Move the end effector along a Cartesian direction and experimentally demonstrate what happens near a singularity.**
 
-By the end of this lab, you should be able to:
+**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 
-1. derive and implement the UR5e geometric Jacobian from your FK chain;
-2. verify Jacobian columns numerically;
-3. validate the differential relationship between joint and tool velocity;
-4. command a small Cartesian displacement using inverse/pseudoinverse methods;
-5. measure rank, singular values, condition number, and manipulability; and
-6. explain the physical loss of mobility near a singular configuration.
+Open `worlds/lab03_starter.wbt` paused and immediately use **File -> Save World As...** to create `worlds/lab03_work.wbt`.
+
+## Success Criteria
+
+You have completed the mission when:
+
+- your geometric Jacobian agrees with finite differences;
+- the UR5e executes a commanded Cartesian-direction motion away from singularity;
+- singularity metrics are plotted or tabulated along an approach;
+- normal and near-singular behavior are compared quantitatively; and
+- you identify the physical Cartesian motion direction that is lost or degraded.
+
+## Learning Objectives
+
+- Derive and implement the UR5e geometric Jacobian.
+- Verify `twist = J(q) qdot` using finite differences and Webots motion.
+- Implement pseudoinverse and damped least-squares Cartesian motion.
+- Measure minimum singular value, rank, condition number, and manipulability.
+- Relate numerical conditioning to joint-rate amplification and physical mobility.
+- Enforce safe joint, rate, and conditioning limits.
 
 ## Prerequisites
 
-Complete Lab 2 and bring your tested FK, transform utilities, frame convention, and Webots adapter. Review Jacobian and singularity derivations from lecture/homework.
+Complete Lab 2 and the [setup prerequisites](../setup/README.md). Bring tested FK, transform utilities, frame convention, and Webots adapter. Review Jacobians and singularities from lecture/homework.
 
 ## Background
 
-For small motion,
+For small motion:
 
 ```text
 twist = J(q) qdot
 delta_x approximately J(q) delta_q
 ```
 
-A pseudoinverse maps a requested Cartesian velocity to joint velocity. Near a singularity, one or more singular values approach zero, some Cartesian directions become difficult or impossible, and the requested joint velocity may become very large. Damped least squares trades exact tracking for bounded commands.
+A pseudoinverse maps Cartesian velocity to joint velocity. Near a singularity, at least one singular value approaches zero, some Cartesian motion direction becomes difficult or impossible, and requested joint rates may grow sharply. Damped least squares bounds commands by accepting task-space error.
 
-Use NumPy linear algebra to implement and inspect these relationships. Webots visualizes and measures the result; it must not compute the assigned Jacobian or Cartesian command.
+Webots measures the resulting motion; it must not compute the assigned Jacobian or inverse differential solution.
 
-## Provided files
+## Provided Files
 
 - `worlds/lab03_starter.wbt`
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
-- `src/jacobian_starter.py` - numerical checker and analytical starter
-- `src/singularity_scan.py` - singular-value/condition-number starter
+- `src/jacobian_starter.py`
+- `src/singularity_scan.py`
+- `src/cartesian_direction_motion.py` - mission integration scaffold
 - `answers.md`
 
-The singularity starter was moved from the former standalone singularities lab.
+## Part 1 - Setup / Validation
 
-## Required Webots workflow and recovery
-
-1. **World:** open `worlds/lab03_starter.wbt` paused and use **File -> Save World As...** to create `worlds/lab03_work.wbt`; verify `void`.
+1. **World:** create `lab03_work.wbt` and verify controller `void`.
 2. **Minimal controller:** run `diagnostic_minimal`.
 3. **Devices:** run `diagnostic_devices` and confirm ordered joint sensing.
-4. **One joint:** command one small joint displacement and verify the sign of measured tool motion.
-5. **Full algorithm:** enable Cartesian motion and singularity experiments only after stages 1-4 pass.
+4. **One joint:** move one joint slightly and verify predicted tool-motion direction.
+5. **Full algorithm:** enable Cartesian and near-singular experiments only after stages 1-4 pass.
 
-Restore from `lab03_starter.wbt` after a bad edit. Use [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md) to separate world, Python, device, and motion failures.
+Import your Lab 2 FK rather than duplicating it. Establish conservative joint-rate, joint-limit, and condition-number stop thresholds before motion.
 
-## Step-by-step instructions
+## Part 2 - Core Implementation
 
-1. Import your Lab 2 FK without duplicating it.
-2. Implement the geometric Jacobian in the frame specified by the instructor.
-3. Verify every column with centered finite differences over several step sizes.
-4. Select a well-conditioned configuration and compare predicted versus measured tool velocity.
-5. Implement pseudoinverse and damped least-squares Cartesian motion.
-6. Command a small Cartesian displacement with joint-rate and joint-limit checks.
-7. Scan or approach a prescribed near-singular configuration safely.
-8. Compare metrics and required joint velocities at well-conditioned and near-singular poses.
+1. Implement the geometric Jacobian in the assigned frame.
+2. Add centered finite-difference verification for translational and rotational columns.
+3. Implement an SVD pseudoinverse and damped least squares explicitly with NumPy.
+4. Complete `singularity_scan.py` to record `sigma_min`, rank, condition number, manipulability, and `q`.
+5. Complete `cartesian_direction_motion.py` with step size, damping, saturation, and stop conditions.
+6. Keep Webots sensing/actuation separate from Jacobian mathematics.
 
-## Implementation tasks
+## Part 3 - Robot Experiment
 
-1. Replace the analytical-Jacobian TODO in `jacobian_starter.py`.
-2. Add centered finite-difference verification for both translational and rotational components.
-3. Implement SVD-based pseudoinverse and damped least squares explicitly with NumPy.
-4. Complete `singularity_scan.py` to record:
-   - singular values;
-   - numerical rank;
-   - condition number;
-   - manipulability measure; and
-   - the joint configuration.
-5. Enforce joint-position and joint-velocity limits before sending commands.
-6. Log simulation time, `q`, `qdot`, requested twist, predicted twist, measured motion, and singularity metrics.
+1. Select a well-conditioned starting pose.
+2. Command a small tool displacement or velocity along the assigned Cartesian direction.
+3. Log requested, predicted, and measured motion.
+4. Approach an instructor-approved near-singular configuration in conservative increments.
+5. Repeat a comparable Cartesian request.
+6. Stop before rate/conditioning thresholds are violated.
+7. Repeat near-singular motion with damping and compare behavior.
 
-## Required experiments
+The final robotic outcome is a visible Cartesian-direction motion whose degradation near singularity is predicted by your metrics.
 
-### Experiment A - Jacobian verification
+## Part 4 - Quantitative Analysis
 
-At several nonsymmetric configurations, plot finite-difference error versus perturbation size and explain truncation/roundoff behavior.
+- Plot finite-difference Jacobian error versus perturbation size.
+- Plot `sigma_min` and condition number versus time or approach parameter.
+- Compare normal and near-singular joint-rate norm.
+- Compare predicted and measured Cartesian velocity/displacement.
+- Compare damped and undamped tracking error and command magnitude.
+- Identify the singular-vector direction associated with degraded mobility.
 
-### Experiment B - differential Cartesian motion
-
-At a well-conditioned pose, request a small displacement or velocity. Compare `J qdot` with measured tool motion and report translational/orientation error.
-
-### Experiment C - near-singular behavior
-
-Repeat a comparable Cartesian request near a singularity. Compare singular values, rank/condition number, joint-rate norm, tracking error, and damped versus undamped behavior.
-
-## Questions and reflection
+## Engineering Questions
 
 1. What physical tool direction corresponds to the smallest singular value?
-2. Why can a modest Cartesian request produce extreme joint rates?
-3. Why is the determinant alone an incomplete metric for a non-square or scaled Jacobian?
-4. How does damping change tracking error and command magnitude?
-5. Which safeguards prevented the singularity experiment from becoming unsafe?
+2. Why can a modest Cartesian request demand extreme joint rates?
+3. Why is determinant alone inadequate for many Jacobians?
+4. How does damping trade Cartesian accuracy for numerical safety?
+5. How do you distinguish a frame/sign error from a real singularity?
+6. Which safeguards prevented unsafe motion?
 
-## What to submit
+## What to Submit
 
-Submit:
-
-- Jacobian derivation and source;
-- finite-difference validation plot;
-- Cartesian-motion log and error metrics;
-- singularity scan/approach data;
-- well-conditioned versus near-singular comparison;
+- Jacobian derivation and implementation;
+- finite-difference validation;
+- Cartesian-direction controller and logs;
+- singularity metric plot/table;
+- normal versus near-singular comparison;
+- damped versus undamped result;
 - physical interpretation; and
 - `answers.md`.
 
 ## Troubleshooting
 
-Validate FK first, then one Jacobian column, then all columns, then pseudoinverse motion. A sudden sign/frame error is not a singularity. Stop motion if joint-rate limits, joint limits, or conditioning thresholds are exceeded.
+Validate FK first, then one Jacobian column, then all columns, then a tiny Cartesian command. A sudden sign/frame discrepancy is not evidence of singularity. Stop if joint-rate, joint-limit, or conditioning thresholds are exceeded. Recover from `lab03_starter.wbt` after world/controller failures.

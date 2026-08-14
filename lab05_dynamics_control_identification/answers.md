@@ -2,7 +2,7 @@
 
 ## Experimental model and controller
 
-State the simplified dynamics, approved condition pair, controller law, gains, limits, and initial state.
+State the simplified dynamics, approved payload/model condition pair, common reference, controller law, gains, limits, and initial state.
 
 ## Estimation and performance
 

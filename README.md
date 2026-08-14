@@ -41,14 +41,14 @@ The setup guide covers Python PATH configuration, Webots **Python command**, the
 
 ## Required lab roadmap
 
-| Status | Lab | Topic | Simulation emphasis |
+| Status | Lab | Topic | Robotic mission/outcome |
 |---|---|---|---|
-| Required | 1 | [Webots, UR5e, and Coordinate Frames](lab01_webots_ur5e_frames/README.md) | setup verification, controller/device boundary, joint sensing and motion, frame inspection |
-| Required | 2 | [Forward and Inverse Kinematics](lab02_forward_inverse_kinematics/README.md) | student FK/IK implementations, Webots ground-truth comparison, pose-error measurement |
-| Required | 3 | [Jacobian, Differential Kinematics, and Singularities](lab03_jacobian_singularities/README.md) | Jacobian verification, Cartesian motion, pseudoinverse behavior near singularities |
-| Required | 4 | [Trajectory Generation and Tracking](lab04_trajectory_tracking/README.md) | cubic/quintic implementation, execution, tracking plots and metrics |
-| Required | 5 | [Dynamics, Joint Control, and Parameter Identification](lab05_dynamics_control_identification/README.md) | matched-condition experiments, feedback tuning, state estimation, model fitting |
-| Required | 6 | [Integrated Manipulation / Final Project](lab06_integrated_manipulation/README.md) | transforms, kinematics, planning, trajectories, control, collision avoidance, evaluation |
+| Required | 1 | [Webots, UR5e, and Coordinate Frames](lab01_webots_ur5e_frames/README.md) | bring the UR5e online, interpret its frames, and command verified motion |
+| Required | 2 | [Forward and Inverse Kinematics](lab02_forward_inverse_kinematics/README.md) | reach a specified end-effector pose using student FK/IK |
+| Required | 3 | [Jacobian, Differential Kinematics, and Singularities](lab03_jacobian_singularities/README.md) | command Cartesian motion and demonstrate degradation near singularity |
+| Required | 4 | [Trajectory Generation and Tracking](lab04_trajectory_tracking/README.md) | execute and compare point-to-point and straight-line motion |
+| Required | 5 | [Dynamics, Joint Control, and Parameter Identification](lab05_dynamics_control_identification/README.md) | track under changed payload/model conditions and identify a parameter |
+| Required | 6 | [Integrated Manipulation / Final Project](lab06_integrated_manipulation/README.md) | complete a repeatable autonomous pick-and-place challenge |
 
 The numbering is intentionally Lab 1 through Lab 6. There are no separate required simulation labs for homogeneous transformations, singularities, dynamics, control, state estimation, parameter identification, or collision planning; those topics are integrated where simulation adds the most value.
 
