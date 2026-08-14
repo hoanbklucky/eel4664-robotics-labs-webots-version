@@ -1,6 +1,10 @@
-﻿# EEL 4664 - Kinematics and Control of Robotic Systems
+# EEL 4664 - Kinematics and Control of Robotic Systems
 
-## UR5e + Webots laboratory repository
+## [eel4664-robotics-labs](https://github.com/hoanbklucky/eel4664-robotics-labs-webots-version/tree/main)
+
+This course repository is referred to as **eel4664-robotics-labs**. Store the local working copy in `C:\eel4664-robotics-labs` so course commands and troubleshooting paths are consistent.
+
+### UR5e + Webots laboratory repository
 
 Webots is the simulation and visualization layer. Python and NumPy are the primary implementation tools. Students implement the robotics mathematics explicitly; simulator measurements are used for visualization, experimentation, and validation.
 
@@ -21,7 +25,7 @@ Complete [Lab 00 - Setup](lab00_setup/README.md) before Lab 1. The supported env
 
 - Windows 10 or Windows 11;
 - stable **Webots R2025a**; nightly and development builds are unsupported;
-- 64-bit CPython 3.11 or 3.12 installed from [python.org](https://www.python.org/downloads/windows/);
+- 64-bit CPython 3.11 or newer installed from [python.org](https://www.python.org/downloads/windows/);
 - Visual Studio Code;
 - Git; and
 - NumPy and Matplotlib.
@@ -31,7 +35,7 @@ Lab 00 covers software installation, Webots Python configuration, and required W
 ## Lab 00 completion checklist
 
 - [ ] Webots R2025a launches normally
-- [ ] Python 3.11 or 3.12 is installed
+- [ ] Python 3.11 or newer is installed
 - [ ] `python --version` works
 - [ ] Webots **Python command** points to the full `python.exe` path
 - [ ] Webots Tutorial 1 is complete

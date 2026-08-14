@@ -103,7 +103,7 @@ Both commands must run successfully. If FK is incomplete or fails structural che
 
 1. Start Webots R2025a and keep it paused.
 2. Select **File -> Open World...**.
-3. Open `C:\eel4664-ur5e-labs\lab02_inverse_kinematics\worlds\lab02_starter.wbt`.
+3. Open `C:\eel4664-robotics-labs\lab02_inverse_kinematics\worlds\lab02_starter.wbt`.
 4. Confirm the robot and floor render and the UR5e controller is `void`.
 5. Immediately select **File -> Save World As...**.
 6. Save beside the starter as `lab02_work.wbt`.

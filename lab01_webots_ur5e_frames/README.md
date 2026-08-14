@@ -122,7 +122,7 @@ Complete these checkpoints in order. Stop at the first failure.
 Open PowerShell:
 
 ```powershell
-Set-Location C:\eel4664-ur5e-labs
+cd C:\eel4664-robotics-labs
 git status --short
 ```
 
@@ -143,7 +143,7 @@ The preparation command should end with `[READY] Official Universal Robots sampl
 
 1. Start Webots R2025a and keep it paused.
 2. Select **File -> Open World...**.
-3. Open `C:\eel4664-ur5e-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt`.
+3. Open `C:\eel4664-robotics-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt`.
 4. Confirm the Scene Tree contains `WorldInfo`, `Viewpoint`, a floor `Solid`, and `UR5e "UR5E"`.
 5. Confirm the robot and floor render in the 3-D view.
 6. Select `UR5e "UR5E"` and verify its `controller` field is `void`.

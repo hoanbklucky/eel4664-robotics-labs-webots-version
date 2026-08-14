@@ -41,7 +41,7 @@ def report(ok, message):
 
 
 python_on_path = shutil.which("python") or shutil.which("python.exe")
-course_version = sys.version_info[:2] in ((3, 11), (3, 12))
+course_version = sys.version_info >= (3, 11)
 is_64_bit = sys.maxsize > 2**32
 
 print(f"[INFO] Running interpreter: {sys.executable}")
@@ -51,7 +51,7 @@ checks = [
         python_on_path is not None,
         "python.exe is on PATH; install from python.org and select Add python.exe to PATH if this fails",
     ),
-    report(course_version, f"Python {sys.version.split()[0]} (course requires 3.11 or 3.12)"),
+    report(course_version, f"Python {sys.version.split()[0]} (course requires Python 3.11 or newer)"),
     report(is_64_bit, "64-bit Python interpreter"),
     report(find_spec("numpy") is not None, "NumPy import is available"),
     report(find_spec("matplotlib") is not None, "Matplotlib import is available"),

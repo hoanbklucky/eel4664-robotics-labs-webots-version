@@ -17,14 +17,14 @@ Install the following before opening a course lab:
 
 - Windows 10 or Windows 11
 - stable **Webots R2025a** (do not use a nightly or development build)
-- **Python 3.11 or 3.12**, 64-bit, installed from [python.org](https://www.python.org/downloads/windows/)
+- **Python 3.11 or newer**, 64-bit, installed from [python.org](https://www.python.org/downloads/windows/)
 - [Git for Windows](https://git-scm.com/download/win)
 - [Visual Studio Code](https://code.visualstudio.com/download)
 - NumPy and Matplotlib
 
 Git is required to obtain course updates, track controller code, and restore a damaged starter file. VS Code is the course-supported code editor and is used in the instructions. Webots does not technically depend on VS Code, but students should use it unless the instructor approves another editor.
 
-Keep the repository in a short local path such as `C:\eel4664-ur5e-labs`. Avoid OneDrive, SharePoint, network drives, and deeply nested paths.
+Keep the repository in a short local path such as `C:\eel4664-robotics-labs`. Avoid OneDrive, SharePoint, network drives, and deeply nested paths.
 
 ## Part 1 - Install and Configure Git
 
@@ -54,6 +54,17 @@ Keep the repository in a short local path such as `C:\eel4664-ur5e-labs`. Avoid 
    git config --list --show-origin
    ```
 
+6. Clone [**eel4664-robotics-labs**](https://github.com/hoanbklucky/eel4664-robotics-labs-webots-version/tree/main) into the required local folder:
+
+   ```powershell
+   cd C:\
+   git clone https://github.com/hoanbklucky/eel4664-robotics-labs-webots-version.git eel4664-robotics-labs
+   cd C:\eel4664-robotics-labs
+   git status --short
+   ```
+
+   Run `git clone` only once. If the repository already exists at this location, do not clone over it.
+
 The `--global` setting normally needs to be completed only once on each computer. Every commit records this identity, as explained in the official [First-Time Git Setup](https://git-scm.com/book/ms/v2/Getting-Started-First-Time-Git-Setup).
 
 ## Part 2 - Install Visual Studio Code
@@ -70,7 +81,7 @@ The `--global` setting normally needs to be completed only once on each computer
 5. From PowerShell, open the course repository as one VS Code workspace:
 
    ```powershell
-   Set-Location C:\eel4664-ur5e-labs
+   cd C:\eel4664-robotics-labs
    code .
    ```
 
@@ -94,7 +105,7 @@ git config --global core.editor "code --wait"
    where.exe python
    ```
 
-5. Confirm that the version is Python 3.11 or 3.12 and that `where.exe python` identifies the python.org installation.
+5. Confirm that the version is Python 3.11 or newer and that `where.exe python` identifies the python.org installation.
 6. Install the required packages:
 
    ```powershell
@@ -110,7 +121,7 @@ If more than one Python installation exists, use `py -0p` to list their full pat
 1. Install stable **Webots R2025a**.
 2. Open Webots and confirm **Help -> About** reports R2025a.
 3. Open **Tools -> Preferences -> General**.
-4. Set **Python command** to the full path of the Python 3.11 or 3.12 `python.exe`, for example:
+4. Set **Python command** to the full path of the Python 3.11 or newer `python.exe`, for example:
 
    ```text
    C:\Users\<username>\AppData\Local\Programs\Python\Python312\python.exe
@@ -142,7 +153,7 @@ Tutorials 2 and 3 are optional. Do it if you want to learn how to create simple 
 - [ ] Git is installed and `git --version` works
 - [ ] Git `user.name` and `user.email` are configured
 - [ ] VS Code is installed and `code --version` works
-- [ ] Python 3.11 or 3.12, 64-bit, is installed
+- [ ] Python 3.11 or newer, 64-bit, is installed
 - [ ] `python --version` works
 - [ ] NumPy imports successfully
 - [ ] Webots **Python command** points to the correct `python.exe`

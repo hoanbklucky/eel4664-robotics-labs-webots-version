@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 $python = Get-Command python.exe -ErrorAction SilentlyContinue
 if (-not $python) {
     Write-Host '[FAIL] Python is not available on PATH.' -ForegroundColor Red
-    Write-Host 'Install 64-bit Python 3.11 or 3.12 from python.org, check "Add python.exe to PATH", open a new PowerShell window, and retry.'
+    Write-Host 'Install 64-bit Python 3.11 or newer from python.org, check "Add python.exe to PATH", open a new PowerShell window, and retry.'
     exit 1
 }
 

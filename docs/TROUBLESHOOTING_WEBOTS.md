@@ -6,7 +6,7 @@ This course is pinned to the stable **Webots R2025a** release. Do not use a nigh
 
 This is a Python setup failure when `python --version` reports that Python was not found, a C controller works but a Python controller fails, or **Tools -> Preferences -> General -> Python command** is blank.
 
-1. Install 64-bit Python 3.11 or 3.12 from [python.org](https://www.python.org/downloads/windows/) and select **Add python.exe to PATH**. Do not rely on the Microsoft Store/App Execution Alias.
+1. Install 64-bit Python 3.11 or newer from [python.org](https://www.python.org/downloads/windows/) and select **Add python.exe to PATH**. Do not rely on the Microsoft Store/App Execution Alias.
 2. Open a new PowerShell window and run:
 
    ```powershell
@@ -70,7 +70,7 @@ Webots safe mode is the preferred first recovery step. It forces Webots to start
 4. Do not reopen the bad world or select it from **Open Recent World**. Start a known-good starter explicitly in paused mode:
 
    ```powershell
-   & 'C:\Program Files\Webots\msys64\mingw64\bin\webots.exe' --mode=pause 'C:\eel4664-ur5e-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt'
+   & 'C:\Program Files\Webots\msys64\mingw64\bin\webots.exe' --mode=pause 'C:\eel4664-robotics-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt'
    ```
 
 5. If the GUI layout itself is corrupted, close Webots and rename the hidden `.work_world_name.wbproj` beside the work world to `.work_world_name.wbproj.bad`. Webots recreates the GUI project file with a default perspective; the `.wbt` is untouched.
