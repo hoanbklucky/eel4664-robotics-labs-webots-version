@@ -14,7 +14,7 @@ You have completed the mission when:
 
 - the clean world, minimal controller, and device diagnostic pass in order;
 - a one-joint motion behaves as predicted and repeats after Reset;
-- your homogeneous-transform functions pass offline tests;
+- the provided homogeneous-transform functions are understood and pass offline tests;
 - your UR5e FK returns a valid transform for every tested joint vector;
 - FK predicts the measured Webots tool pose at five or more configurations;
 - position and orientation errors are reported quantitatively; and
@@ -23,7 +23,7 @@ You have completed the mission when:
 ## Learning Objectives
 
 - Identify the UR5e joint order, link sequence, base frame, and tool frame.
-- Implement and test rotation matrices and homogeneous transforms.
+- Read, explain, and verify NumPy implementations of rotation matrices and homogeneous transforms.
 - Implement a six-link UR5e FK chain from an explicit DH convention.
 - Read ordered Webots joint sensors without using simulator kinematics.
 - Validate predicted tool position and orientation against read-only sensors.
@@ -253,12 +253,29 @@ Do not continue until the first four rows pass.
 
 ## Part 2 - Core Implementation
 
-### Step 11 - Complete homogeneous-transform utilities
+### Step 11 - Read and verify the provided transform code
 
-1. Finish the introductory `transform_point` and `transform_direction` functions in `src/transform_point.py`.
-2. Finish `rotx`, `roty`, `rotz`, `homogeneous`, and `invert_transform` in `src/transforms.py`.
-3. Keep both files free of Webots API calls.
-4. Run the provided tests:
+The functions in `src/transforms.py` and `src/transform_point.py` are complete. Do not rewrite them. Your task is to read the code, connect each NumPy operation to the mathematics, predict its output, and verify the predictions.
+
+1. Open both files side by side with this README.
+2. In `rotx`, `roty`, and `rotz`, identify:
+   - which coordinate is unchanged;
+   - where `cos(theta)` appears;
+   - where `sin(theta)` appears; and
+   - how the sine signs implement the right-hand rule.
+3. In `homogeneous`, locate the rotation block, translation column, and fixed bottom row.
+4. In `invert_transform`, explain why the inverse uses `R.T` and `-R.T @ p` rather than `R` and `-p`.
+5. In `transform_point` and `transform_direction`, locate the only value that changes between the two homogeneous vectors. Explain why that value determines whether translation is applied.
+6. Before running any code, record these predictions in `answers.md`:
+
+   | Expression | Predicted result | Reason |
+   |---|---|---|
+   | `rotx(0) @ [0, 1, 0]` | | |
+   | `rotz(pi/2) @ [1, 0, 0]` | | |
+   | point `[0.1, 0.2, 0.3]` under translation `[1, 2, 3]` | | |
+   | direction `[1, 0, 0]` under the same translation | | |
+
+7. Run the provided rotation and inverse tests:
 
 ```powershell
 python .\lab01_webots_ur5e_frames\src\test_transforms.py
@@ -270,14 +287,13 @@ Expected final line:
 All transformation tests passed.
 ```
 
-Also run this point/direction check:
+8. Run the point/direction check:
 
 ```powershell
 python -c "import numpy as np; from lab01_webots_ur5e_frames.src.transform_point import transform_point,transform_direction; T=np.eye(4); T[:3,3]=[1,2,3]; print(transform_point(T,np.array([.1,.2,.3]))); print(transform_direction(T,np.array([1,0,0])))"
 ```
 
-Expected output is `[1.1 2.2 3.3]` followed by `[1. 0. 0.]`.
-
+Expected output is `[1.1 2.2 3.3]` followed by `[1. 0. 0.]`. Compare the results with your predictions and correct your explanation—not the provided functions—if they differ.
 ### Step 12 - Document the FK convention before coding
 
 In `answers.md`:
@@ -467,7 +483,7 @@ Do not use Configuration 1 when claiming held-out FK accuracy. Explain systemati
 
 ## What to Submit
 
-- completed transform and FK source files;
+- transformation predictions and test output, plus the completed FK source file;
 - completed `lab01_controller` and Webots reader/controller copies;
 - completed `answers.md` and checkpoint table;
 - DH convention, frame sketch, `T_world_0`, and `T_6_tool`;

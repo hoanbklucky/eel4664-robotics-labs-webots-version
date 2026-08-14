@@ -8,9 +8,13 @@ Copy and complete the Step 10 table. Record the last passing stage before diagno
 
 Document the six-joint order, motor/sensor names, basic time step, frame sketch, standard-DH convention, T_world_0, and fixed T_6_tool.
 
+## Transform-Code Reading
+
+Complete the Step 11 prediction table. Explain the right-hand-rule sine signs, why a point uses homogeneous coordinate 1 while a direction uses 0, and why inverse translation is `-R.T @ p`. Compare each prediction with the program output.
+
 ## Offline Transform and FK Tests
 
-Include transformation-test output, the zero and nonsymmetric FK structural tests, rotation orthogonality error, and determinant.
+Include the provided transformation-test output, the zero and nonsymmetric FK structural tests, rotation orthogonality error, and determinant.
 
 ## FK Alignment and Held-Out Validation
 
