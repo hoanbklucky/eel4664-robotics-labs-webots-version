@@ -26,24 +26,26 @@ Complete [Lab 00 - Setup](lab00_setup/README.md) before Lab 1. The supported env
 - Git; and
 - NumPy and Matplotlib.
 
-Lab 00 covers Python PATH configuration, Webots **Python command**, the minimal controller test, official UR5e sample preparation, and recovery from controller/world crashes.
+Lab 00 covers software installation, Webots Python configuration, and required Webots Tutorials 1 and 4. UR5e-specific work begins in Lab 1.
 
-## Setup verification checklist
+## Lab 00 completion checklist
 
 - [ ] Webots R2025a launches normally
 - [ ] Python 3.11 or 3.12 is installed
 - [ ] `python --version` works
 - [ ] Webots **Python command** points to the full `python.exe` path
-- [ ] The minimal Python controller runs
+- [ ] Webots Tutorial 1 is complete
+- [ ] The Python-controller portion of Webots Tutorial 4 is complete
+- [ ] A Python controller runs without crashing
 - [ ] NumPy imports successfully
 - [ ] Git and VS Code are available
-- [ ] The official UR5e sample opens
+
 
 ## Required lab roadmap
 
 | Status | Lab | Topic | Robotic mission/outcome |
 |---|---|---|---|
-| Required | 00 | [Setup: Webots R2025a and Python](lab00_setup/README.md) | install and validate the supported course environment |
+| Required | 00 | [Software Setup and Webots Basics](lab00_setup/README.md) | install the supported software and complete Webots Tutorials 1 and 4 |
 | Required | 1 | [Webots, UR5e, and Coordinate Frames](lab01_webots_ur5e_frames/README.md) | bring the UR5e online, interpret its frames, and command verified motion |
 | Required | 2 | [Forward and Inverse Kinematics](lab02_forward_inverse_kinematics/README.md) | reach a specified end-effector pose using student FK/IK |
 | Required | 3 | [Jacobian, Differential Kinematics, and Singularities](lab03_jacobian_singularities/README.md) | command Cartesian motion and demonstrate degradation near singularity |
@@ -80,7 +82,7 @@ Avoid heavy Scene Tree modifications unless environment or collision modeling is
 ## Repository layout
 
 ```text
-lab00_setup/                                required Lab 00 environment and UR5e verification
+lab00_setup/                                required Lab 00 software setup and Webots basics
 lab01_webots_ur5e_frames/                   required Lab 1
 lab02_forward_inverse_kinematics/           required Lab 2
 lab03_jacobian_singularities/               required Lab 3
@@ -95,26 +97,10 @@ optional_advanced/ros2_gazebo/              optional ROS 2/Gazebo track
 
 ## Start here
 
-1. Complete [Lab 00 - Setup](lab00_setup/README.md).
-2. Run:
+1. Complete [Lab 00 - Setup](lab00_setup/README.md), including Webots Tutorials 1 and 4.
+2. Complete Labs 1-6 in order. Each lab reuses student code and evidence from earlier labs.
 
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .\lab00_setup\verify_installation.ps1
-   ```
-
-3. Complete Labs 1-6 in order. Each lab reuses student code and evidence from earlier labs.
-
-If the official sample assets are unavailable, run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
-```
-
-Then open:
-
-```text
-C:\webots-eel4664-sample\projects\robots\universal_robots\worlds\ure.wbt
-```
+The official UR5e sample is prepared at the beginning of Lab 1, not during Lab 00.
 
 ## Rules for student implementations
 

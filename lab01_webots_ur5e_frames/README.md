@@ -12,7 +12,7 @@ Open `worlds/lab01_starter.wbt` paused and immediately use **File -> Save World 
 
 You have completed the mission when:
 
-- the setup verifier and minimal Python controller pass;
+- the Lab 00 checklist and minimal Python controller pass;
 - you can identify the six UR5e joints, motors, sensors, and key frames;
 - your controller reads a complete ordered joint vector;
 - the robot executes a repeatable, conservative joint motion; and
@@ -29,9 +29,9 @@ You have completed the mission when:
 
 ## Prerequisites
 
-Complete the [course setup guide](../lab00_setup/README.md) and pass `lab00_setup\verify_installation.ps1`. Review coordinate-frame notation, rotation matrices, and homogeneous coordinates.
+Complete [Lab 00 - Software Setup and Webots Basics](../lab00_setup/README.md), including Webots Tutorials 1 and 4. Review coordinate-frame notation, rotation matrices, and homogeneous coordinates.
 
-Complete Cyberbotics [Tutorial 1](https://cyberbotics.com/doc/guide/tutorial-1-your-first-simulation-in-webots?version=R2025a) and the Python controller portion of [Tutorial 4](https://cyberbotics.com/doc/guide/tutorial-4-more-about-controllers?version=R2025a). Tutorials 2 and 3 remain optional in [Optional Webots Basics](../README.md#optional-webots-basics).
+Tutorials 2 and 3 remain optional in [Optional Webots Basics](../README.md#optional-webots-basics).
 
 ## Background
 
@@ -59,7 +59,13 @@ A free direction uses rotation only. Supervisor pose measurements are reserved f
 
 ## Part 1 - Setup / Validation
 
-Validate in this order and stop at the first failure:
+Prepare the local official UR5e sample once from the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
+```
+
+This UR5e-specific step belongs to Lab 1. Then validate in this order and stop at the first failure:
 
 1. **World:** create `lab01_work.wbt` and open it paused with controller `void`.
 2. **Minimal controller:** assign `diagnostic_minimal`, Reset, and confirm its pass message.
