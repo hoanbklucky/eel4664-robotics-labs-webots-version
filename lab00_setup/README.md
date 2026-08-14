@@ -17,14 +17,72 @@ Install the following before opening a course lab:
 
 - Windows 10 or Windows 11
 - stable **Webots R2025a** (do not use a nightly or development build)
-- **Python 3.11, 3.12, or later, installed from [python.org](https://www.python.org/downloads/windows/)
-- Visual Studio Code
-- Git
+- **Python 3.11 or 3.12**, 64-bit, installed from [python.org](https://www.python.org/downloads/windows/)
+- [Git for Windows](https://git-scm.com/download/win)
+- [Visual Studio Code](https://code.visualstudio.com/download)
 - NumPy and Matplotlib
 
-Keep the repository in a short local path such as `C:\eel4664-robotic-labs`. Avoid OneDrive, SharePoint, network drives, and deeply nested paths.
+Git is required to obtain course updates, track controller code, and restore a damaged starter file. VS Code is the course-supported code editor and is used in the instructions. Webots does not technically depend on VS Code, but students should use it unless the instructor approves another editor.
 
-## Part 1 - Install Python and Packages
+Keep the repository in a short local path such as `C:\eel4664-ur5e-labs`. Avoid OneDrive, SharePoint, network drives, and deeply nested paths.
+
+## Part 1 - Install and Configure Git
+
+1. Download **Git for Windows** from [git-scm.com](https://git-scm.com/download/win).
+2. Run the installer. The default options are appropriate for this course. Keep the option that allows Git to run from PowerShell and other third-party software.
+3. Close any existing PowerShell windows, open a new one, and verify the installation:
+
+   ```powershell
+   git --version
+   where.exe git
+   ```
+
+4. Set the name and email that Git will record in your commits. Replace the examples with your real information:
+
+   ```powershell
+   git config --global user.name "Your Full Name"
+   git config --global user.email "your.email@example.com"
+   ```
+
+   If you use GitHub, use an email connected to your GitHub account, or use your GitHub-provided private `noreply` address if you do not want to expose a personal email in commits.
+
+5. Verify the saved values:
+
+   ```powershell
+   git config --global --get user.name
+   git config --global --get user.email
+   git config --list --show-origin
+   ```
+
+The `--global` setting normally needs to be completed only once on each computer. Every commit records this identity, as explained in the official [First-Time Git Setup](https://git-scm.com/book/ms/v2/Getting-Started-First-Time-Git-Setup).
+
+## Part 2 - Install Visual Studio Code
+
+1. Download the Windows **User Installer** from [code.visualstudio.com](https://code.visualstudio.com/download). The User Installer is recommended for most students and normally does not require administrator access.
+2. Run the installer and keep **Add to PATH** enabled if that option is shown.
+3. Close PowerShell, open a new PowerShell window, and verify the installation:
+
+   ```powershell
+   code --version
+   ```
+
+4. Open VS Code, select **Extensions** on the left, search for `Python`, and install the **Python** extension published by Microsoft.
+5. From PowerShell, open the course repository as one VS Code workspace:
+
+   ```powershell
+   Set-Location C:\eel4664-ur5e-labs
+   code .
+   ```
+
+6. In VS Code, select **File -> Open Folder...** if needed and confirm that the Explorer shows `lab00_setup`, `lab01_webots_ur5e_frames`, and the other lab folders.
+
+Optional but recommended: make VS Code the editor Git opens for commit messages:
+
+```powershell
+git config --global core.editor "code --wait"
+```
+
+## Part 3 - Install Python and Packages
 
 1. Download the 64-bit Windows installer from [python.org](https://www.python.org/downloads/windows/).
 2. On the first installer screen, check **Add python.exe to PATH**.
@@ -36,7 +94,7 @@ Keep the repository in a short local path such as `C:\eel4664-robotic-labs`. Avo
    where.exe python
    ```
 
-5. Confirm that the version is Python 3.11 or 3.12 or later and that `where.exe python` identifies the python.org installation.
+5. Confirm that the version is Python 3.11 or 3.12 and that `where.exe python` identifies the python.org installation.
 6. Install the required packages:
 
    ```powershell
@@ -47,12 +105,12 @@ Keep the repository in a short local path such as `C:\eel4664-robotic-labs`. Avo
 
 If more than one Python installation exists, use `py -0p` to list their full paths.
 
-## Part 2 - Install and Configure Webots
+## Part 4 - Install and Configure Webots
 
 1. Install stable **Webots R2025a**.
 2. Open Webots and confirm **Help -> About** reports R2025a.
 3. Open **Tools -> Preferences -> General**.
-4. Set **Python command** to the full path of the Python 3.11 or 3.12 or later `python.exe`, for example:
+4. Set **Python command** to the full path of the Python 3.11 or 3.12 `python.exe`, for example:
 
    ```text
    C:\Users\<username>\AppData\Local\Programs\Python\Python312\python.exe
@@ -62,7 +120,7 @@ If more than one Python installation exists, use `py -0p` to list their full pat
 
 Do not leave **Python command** blank.
 
-## Part 3 - Complete the Required Webots Tutorials
+## Part 5 - Complete the Required Webots Tutorials
 
 Complete these two official Cyberbotics tutorials using Webots R2025a:
 
@@ -81,10 +139,12 @@ Tutorials 2 and 3 are optional. Do it if you want to learn how to create simple 
 ## Lab 00 Completion Checklist
 
 - [ ] Webots R2025a launches normally
-- [ ] Python 3.11 or 3.12 or later, 64-bit, is installed
+- [ ] Git is installed and `git --version` works
+- [ ] Git `user.name` and `user.email` are configured
+- [ ] VS Code is installed and `code --version` works
+- [ ] Python 3.11 or 3.12, 64-bit, is installed
 - [ ] `python --version` works
 - [ ] NumPy imports successfully
-- [ ] Git and VS Code are available
 - [ ] Webots **Python command** points to the correct `python.exe`
 - [ ] Webots Tutorial 1 is complete
 - [ ] The Python portion of Webots Tutorial 4 is complete
@@ -97,6 +157,7 @@ When every item passes, continue to [Lab 1](../lab01_webots_ur5e_frames/README.m
 Submit the instructor-requested evidence, normally:
 
 - a screenshot of **Help -> About** showing Webots R2025a;
+- PowerShell output from `git --version` and `code --version`;
 - PowerShell output from `python --version` and the NumPy import command;
 - a screenshot of the completed Tutorial 1 world; and
 - Tutorial 4 Python-controller console output.
@@ -106,6 +167,8 @@ Do not submit installed software or the Webots installation directory.
 ## Troubleshooting
 
 If `python --version` fails, reinstall Python from python.org with **Add python.exe to PATH** selected, then open a new PowerShell window.
+
+If `git` or `code` is not recognized, close PowerShell, open a new window, and retry. If it still fails, rerun the corresponding installer and enable its PATH option.
 
 If a C controller runs but a Python controller fails, locate Python with `where.exe python` or `py -0p`, enter the full interpreter path in Webots Preferences, restart Webots, and retry Tutorial 4.
 
