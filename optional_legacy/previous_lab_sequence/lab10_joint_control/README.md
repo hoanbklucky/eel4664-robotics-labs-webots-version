@@ -12,7 +12,7 @@ Feedback converts model mismatch and disturbances into measurable corrections, b
 
 Implement P and PD control; quantify rise time, overshoot, settling time, steady-state error, and effort; and transfer the same law from a NumPy plant to one Webots UR5e joint.
 
-**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../../../setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../../../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
 
 ## Required Webots workflow and recovery
 

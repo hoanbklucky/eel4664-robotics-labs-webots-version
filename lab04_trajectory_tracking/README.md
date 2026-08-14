@@ -22,7 +22,7 @@ By the end of this lab, you should be able to:
 
 ## Prerequisites
 
-Complete Labs 1-3 and the [setup prerequisites](../setup/README.md). Bring tested joint ordering, FK, IK, safe-motion checks, and logging. Webots Tutorials 2 and 3 remain optional enrichment; they are not prerequisites.
+Complete Labs 1-3 and the [setup prerequisites](../lab00_setup/README.md). Bring tested joint ordering, FK, IK, safe-motion checks, and logging. Webots Tutorials 2 and 3 remain optional enrichment; they are not prerequisites.
 
 ## Background
 

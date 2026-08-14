@@ -12,7 +12,7 @@ Tool goals are Cartesian, but actuators accept joint commands; IK connects those
 
 Derive analytical planar 2R IK; implement iterative UR5e IK from your Lab 04 FK/Jacobian; recognize unreachable and ill-conditioned targets; and validate solutions in Webots.
 
-**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../../../setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../../../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
 
 ## Required Webots workflow and recovery
 

@@ -29,7 +29,7 @@ You have completed the mission when:
 
 ## Prerequisites
 
-Complete Lab 2 and the [setup prerequisites](../setup/README.md). Bring tested FK, transform utilities, frame convention, and Webots adapter. Review Jacobians and singularities from lecture/homework.
+Complete Lab 2 and the [setup prerequisites](../lab00_setup/README.md). Bring tested FK, transform utilities, frame convention, and Webots adapter. Review Jacobians and singularities from lecture/homework.
 
 ## Background
 

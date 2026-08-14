@@ -29,7 +29,7 @@ You have completed the mission when:
 
 ## Prerequisites
 
-Complete Lab 1 and the [setup prerequisites](../setup/README.md). Bring your ordered joint list, frame convention, transform functions, and working Webots adapter. Review FK/IK derivations completed in lecture, homework, or class.
+Complete Lab 1 and the [setup prerequisites](../lab00_setup/README.md). Bring your ordered joint list, frame convention, transform functions, and working Webots adapter. Review FK/IK derivations completed in lecture, homework, or class.
 
 ## Background
 

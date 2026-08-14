@@ -97,7 +97,7 @@ An error in one row should be fixed before moving to the next stage.
 For the managed R2025a Windows installation used in this course, close Webots and run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\setup\prepare_webots_sample.ps1
+powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
 ```
 
 Then reopen the local official sample described in the course setup guide. A populated Scene Tree with a black viewport usually indicates rendering/background assets or rendering mode, not an empty world. Restore **View → Plain Rendering** before modifying the world.

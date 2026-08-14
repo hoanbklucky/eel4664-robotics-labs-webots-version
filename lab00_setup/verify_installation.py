@@ -56,8 +56,8 @@ checks = [
     report(find_spec("numpy") is not None, "NumPy import is available"),
     report(find_spec("matplotlib") is not None, "Matplotlib import is available"),
     report((ROOT / "docs/TROUBLESHOOTING_WEBOTS.md").is_file(), "Webots recovery guide exists"),
-    report((ROOT / "setup/prepare_webots_sample.ps1").is_file(), "R2025a sample preparation exists"),
-    report((ROOT / "setup/worlds/setup_smoke_test_starter.wbt").is_file(), "setup smoke-test world exists"),
+    report((ROOT / "lab00_setup/prepare_webots_sample.ps1").is_file(), "R2025a sample preparation exists"),
+    report((ROOT / "lab00_setup/worlds/setup_smoke_test_starter.wbt").is_file(), "setup smoke-test world exists"),
     report(
         (ROOT / "webots/controllers/diagnostic_minimal/diagnostic_minimal.py").is_file(),
         "canonical minimal diagnostic exists",

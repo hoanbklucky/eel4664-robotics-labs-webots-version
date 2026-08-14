@@ -12,7 +12,7 @@ Some reachable poses are poor operating points: a modest Cartesian request can d
 
 Compute Jacobian rank, singular values, condition number, and manipulability; locate poor configurations; and connect numerical conditioning with observed UR5e motion.
 
-**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../../../setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../../../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
 
 ## Required Webots workflow and recovery
 

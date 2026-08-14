@@ -17,7 +17,7 @@ ROS 2 and Gazebo remain optional advanced topics.
 
 ## Required semester environment
 
-Complete the [course setup guide](setup/README.md) before Lab 1. The supported environment is:
+Complete [Lab 00 - Setup](lab00_setup/README.md) before Lab 1. The supported environment is:
 
 - Windows 10 or Windows 11;
 - stable **Webots R2025a**; nightly and development builds are unsupported;
@@ -26,7 +26,7 @@ Complete the [course setup guide](setup/README.md) before Lab 1. The supported e
 - Git; and
 - NumPy and Matplotlib.
 
-The setup guide covers Python PATH configuration, Webots **Python command**, the minimal controller test, official UR5e sample preparation, and recovery from controller/world crashes.
+Lab 00 covers Python PATH configuration, Webots **Python command**, the minimal controller test, official UR5e sample preparation, and recovery from controller/world crashes.
 
 ## Setup verification checklist
 
@@ -43,6 +43,7 @@ The setup guide covers Python PATH configuration, Webots **Python command**, the
 
 | Status | Lab | Topic | Robotic mission/outcome |
 |---|---|---|---|
+| Required | 00 | [Setup: Webots R2025a and Python](lab00_setup/README.md) | install and validate the supported course environment |
 | Required | 1 | [Webots, UR5e, and Coordinate Frames](lab01_webots_ur5e_frames/README.md) | bring the UR5e online, interpret its frames, and command verified motion |
 | Required | 2 | [Forward and Inverse Kinematics](lab02_forward_inverse_kinematics/README.md) | reach a specified end-effector pose using student FK/IK |
 | Required | 3 | [Jacobian, Differential Kinematics, and Singularities](lab03_jacobian_singularities/README.md) | command Cartesian motion and demonstrate degradation near singularity |
@@ -50,7 +51,7 @@ The setup guide covers Python PATH configuration, Webots **Python command**, the
 | Required | 5 | [Dynamics, Joint Control, and Parameter Identification](lab05_dynamics_control_identification/README.md) | track under changed payload/model conditions and identify a parameter |
 | Required | 6 | [Integrated Manipulation / Final Project](lab06_integrated_manipulation/README.md) | complete a repeatable autonomous pick-and-place challenge |
 
-The numbering is intentionally Lab 1 through Lab 6. There are no separate required simulation labs for homogeneous transformations, singularities, dynamics, control, state estimation, parameter identification, or collision planning; those topics are integrated where simulation adds the most value.
+The required sequence is Lab 00 followed by Labs 1 through 6. There are no separate required simulation labs for homogeneous transformations, singularities, dynamics, control, state estimation, parameter identification, or collision planning; those topics are integrated where simulation adds the most value.
 
 ## Optional Webots Basics
 
@@ -79,7 +80,7 @@ Avoid heavy Scene Tree modifications unless environment or collision modeling is
 ## Repository layout
 
 ```text
-setup/                                      Windows, Python, Webots, and UR5e verification
+lab00_setup/                                required Lab 00 environment and UR5e verification
 lab01_webots_ur5e_frames/                   required Lab 1
 lab02_forward_inverse_kinematics/           required Lab 2
 lab03_jacobian_singularities/               required Lab 3
@@ -94,11 +95,11 @@ optional_advanced/ros2_gazebo/              optional ROS 2/Gazebo track
 
 ## Start here
 
-1. Complete the [course setup guide](setup/README.md).
+1. Complete [Lab 00 - Setup](lab00_setup/README.md).
 2. Run:
 
    ```powershell
-   powershell -ExecutionPolicy Bypass -File .\setup\verify_installation.ps1
+   powershell -ExecutionPolicy Bypass -File .\lab00_setup\verify_installation.ps1
    ```
 
 3. Complete Labs 1-6 in order. Each lab reuses student code and evidence from earlier labs.
@@ -106,7 +107,7 @@ optional_advanced/ros2_gazebo/              optional ROS 2/Gazebo track
 If the official sample assets are unavailable, run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\setup\prepare_webots_sample.ps1
+powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
 ```
 
 Then open:

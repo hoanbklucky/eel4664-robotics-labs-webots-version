@@ -22,7 +22,7 @@ By the end of this project, you should be able to:
 
 ## Prerequisites
 
-Complete Labs 1-5 and the [setup prerequisites](../setup/README.md). Reuse tested mathematical modules rather than hiding them inside a monolithic controller. A physical robot extension is optional; successful Webots completion satisfies the required project.
+Complete Labs 1-5 and the [setup prerequisites](../lab00_setup/README.md). Reuse tested mathematical modules rather than hiding them inside a monolithic controller. A physical robot extension is optional; successful Webots completion satisfies the required project.
 
 ## Background
 

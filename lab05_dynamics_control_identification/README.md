@@ -22,7 +22,7 @@ By the end of this lab, you should be able to:
 
 ## Prerequisites
 
-Complete Lab 4 and the [setup prerequisites](../setup/README.md). Bring a tested trajectory generator and logger. The instructor must approve the two payload/model conditions and any effort-control limits. Do not edit the installed Cyberbotics UR5e PROTO.
+Complete Lab 4 and the [setup prerequisites](../lab00_setup/README.md). Bring a tested trajectory generator and logger. The instructor must approve the two payload/model conditions and any effort-control limits. Do not edit the installed Cyberbotics UR5e PROTO.
 
 ## Background
 

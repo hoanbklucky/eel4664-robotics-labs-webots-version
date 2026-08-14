@@ -29,7 +29,7 @@ You have completed the mission when:
 
 ## Prerequisites
 
-Complete the [course setup guide](../setup/README.md) and pass `setup\verify_installation.ps1`. Review coordinate-frame notation, rotation matrices, and homogeneous coordinates.
+Complete the [course setup guide](../lab00_setup/README.md) and pass `lab00_setup\verify_installation.ps1`. Review coordinate-frame notation, rotation matrices, and homogeneous coordinates.
 
 Complete Cyberbotics [Tutorial 1](https://cyberbotics.com/doc/guide/tutorial-1-your-first-simulation-in-webots?version=R2025a) and the Python controller portion of [Tutorial 4](https://cyberbotics.com/doc/guide/tutorial-4-more-about-controllers?version=R2025a). Tutorials 2 and 3 remain optional in [Optional Webots Basics](../README.md#optional-webots-basics).
 

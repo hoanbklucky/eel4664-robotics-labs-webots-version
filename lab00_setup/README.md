@@ -1,6 +1,6 @@
-# Course Setup - Webots R2025a and Python
+# Lab 00 - Setup: Webots R2025a and Python
 
-This is a required environment setup guide, not a numbered simulation lab. Complete it before starting [Lab 1](../lab01_webots_ur5e_frames/README.md).
+This required prerequisite lab prepares the course environment. Complete it before starting [Lab 1](../lab01_webots_ur5e_frames/README.md).
 
 ## Required environment
 
@@ -81,7 +81,7 @@ Confirm that the Console prints `Python controller started successfully` and Web
 Close Webots and run from the repository root:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\setup\prepare_webots_sample.ps1
+powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
 ```
 
 The script prepares the pinned Cyberbotics R2025a Universal Robots project at:
@@ -97,7 +97,7 @@ It does not modify `C:\Program Files\Webots`. Use this command if Webots reports
 From the repository root:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\setup\verify_installation.ps1
+powershell -ExecutionPolicy Bypass -File .\lab00_setup\verify_installation.ps1
 ```
 
 The PowerShell preflight detects missing Python and Microsoft Store aliases before invoking `verify_installation.py`. The Python verifier checks the interpreter, packages, R2025a sample, six required starter projects, diagnostics, and README safety workflow.
@@ -123,4 +123,4 @@ If a world repeatedly crashes Webots, do not reopen it from **Open Recent**. Fol
 
 ## Optional Webots resources
 
-[Webots Tutorial 2](https://cyberbotics.com/doc/guide/tutorial-2-modification-of-the-environment?version=R2025a) and [Tutorial 3](https://cyberbotics.com/doc/guide/tutorial-3-appearance?version=R2025a) remain optional enrichment. They are not graded, prerequisites, or part of the six-lab numbering.
+[Webots Tutorial 2](https://cyberbotics.com/doc/guide/tutorial-2-modification-of-the-environment?version=R2025a) and [Tutorial 3](https://cyberbotics.com/doc/guide/tutorial-3-appearance?version=R2025a) remain optional enrichment. They are not graded activities or prerequisites. Lab 00 is followed by the six robotics simulation labs.

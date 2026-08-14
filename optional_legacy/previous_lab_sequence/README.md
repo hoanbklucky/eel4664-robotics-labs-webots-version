@@ -6,7 +6,7 @@ Useful mathematical starter code was moved with Git history into the active labs
 
 | Former material | Active destination |
 |---|---|
-| Lab 00 setup | [Course setup](../../setup/README.md) and [Lab 1](../../lab01_webots_ur5e_frames/README.md) |
+| Lab 00 setup | [Course setup](../../lab00_setup/README.md) and [Lab 1](../../lab01_webots_ur5e_frames/README.md) |
 | Lab 02 coordinate frames | [Lab 1](../../lab01_webots_ur5e_frames/README.md) |
 | Labs 03-05 transforms/FK/IK | [Lab 2](../../lab02_forward_inverse_kinematics/README.md) |
 | Labs 06-07 Jacobian/singularities | [Lab 3](../../lab03_jacobian_singularities/README.md) |
