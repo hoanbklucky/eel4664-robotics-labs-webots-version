@@ -16,3 +16,8 @@ Thumbs.db
 **/results/*.yaml
 **/frames.pdf
 **/frames.gv
+*.wbproj
+*.wbproj.*
+*_work.wbt
+*.wbt.bad
+*.wbproj.bad

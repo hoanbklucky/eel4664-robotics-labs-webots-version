@@ -1,0 +1,44 @@
+#VRML_SIM R2025a utf8
+# COURSE STARTER: DO NOT OVERWRITE. Copy to *_work.wbt before opening in Webots.
+
+EXTERNPROTO "../../../webots-eel4664-sample/projects/robots/universal_robots/protos/UR5e.proto"
+
+WorldInfo {
+  title "EEL 4664 lab06_jacobian clean UR5e starter"
+  basicTimeStep 8
+}
+Viewpoint {
+  orientation -0.35 0.86 0.37 1.7
+  position 2.1 -2.4 1.8
+}
+Background {
+  skyColor [
+    0.65 0.72 0.82
+  ]
+}
+DirectionalLight {
+  direction -0.4 -0.5 -1
+  intensity 2
+  ambientIntensity 0.5
+}
+Solid {
+  translation 0 0 -0.025
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.38 0.42
+        roughness 0.8
+      }
+      geometry Box {
+        size 3 3 0.05
+      }
+    }
+  ]
+  name "floor"
+  boundingObject Box {
+    size 3 3 0.05
+  }
+}
+DEF UR5E UR5e {
+  controller "void"
+}

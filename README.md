@@ -1,93 +1,84 @@
-# EEL 4664 - Kinematics and Control of Robotic Systems
+# EEL 4664 — Kinematics and Control of Robotic Systems
 
 ## UR5e + Webots Laboratory Repository
 
-This repository contains the hands-on laboratory sequence for **EEL 4664 - Kinematics and Control of Robotic Systems**. Webots is the primary simulator; Python and NumPy are the primary implementation tools. ROS 2 and Gazebo are optional advanced topics, not prerequisites.
+Webots is the primary simulator; Python and NumPy are the primary implementation tools. ROS 2 and Gazebo are optional advanced topics.
 
-The course uses one consistent stack:
+The course uses:
 
-- **Webots R2025a or a course-pinned later release**
-- the built-in **Universal Robots UR5e** model
-- **Python 3 + NumPy** for student algorithms
-- Webots motors, position sensors, physics, and Supervisor measurements for experiments
-- Matplotlib and CSV files for analysis and evidence
+- the stable Webots R2025a release (nightly and development builds are unsupported);
+- Cyberbotics' official **Universal Robots** sample world and UR5e model;
+- Python 3, NumPy, Matplotlib, and CSV experiment logs.
 
-The sequence follows a Correll-style pattern: begin with an observable robotics problem, form a prediction, implement the mathematics, test it in simulation, quantify the discrepancy, and explain what the result means.
+The sequence follows a Correll-style pattern:
 
-> **derive ? predict ? implement ? simulate ? measure ? explain**
+> **observe → predict → modify → experiment → measure → explain**
 
-Webots is an experimental apparatus, not a replacement for the mathematics. Students must implement FK, IK, Jacobians, singularity metrics, trajectories, dynamics, controllers, estimators, and identification methods explicitly.
+Webots is an experimental apparatus, not a replacement for mathematics. Students explicitly implement FK, IK, Jacobians, singularity metrics, trajectories, dynamics, controllers, estimators, identification, collision checking, and planning.
 
 ## Lab sequence
 
 | Lab | Topic | Main concepts |
 |---|---|---|
-| 00 | Set Up | Webots, Python, NumPy, UR5e project, first controller |
-| 01 | Webots and the UR5e | worlds, controllers, devices, simulation loop |
-| 02 | Coordinate Frames | frame trees, transformations, simulator measurements |
+| 00 | Webots Fundamentals and Set Up | Tutorials 1, 2, and 4; rendering basics; official UR sample |
+| 01 | Webots and the UR5e | worlds, controllers, devices, sensing and actuation |
+| 02 | Coordinate Frames | frame trees, transformations, Supervisor measurements (Tutorial 8) |
 | 03 | Homogeneous Transformations | rotations, translations, transform composition |
-| 04 | Forward Kinematics | DH-style chains, FK verification in Webots |
+| 04 | Forward Kinematics | robot/joint modeling (Tutorials 5–6), DH chains, FK verification |
 | 05 | Inverse Kinematics | analytical planar IK, numerical UR5e IK |
 | 06 | Jacobian and Differential Kinematics | Jacobian, Cartesian velocity, pseudoinverse |
 | 07 | Singularities and Manipulability | rank, singular values, condition number |
 | 08 | Trajectory Generation | cubic/quintic trajectories, sampled motor commands |
-| 09 | Manipulator Dynamics | inertia, gravity, payload effects |
+| 09 | Manipulator Dynamics | parameterized PROTOs (Tutorial 7), inertia, gravity, payload effects |
 | 10 | Joint-Space Control | P/PD/PID concepts, torque control, transient response |
 | 11 | State Estimation and Parameter Identification | differentiation, filtering, least-squares fitting |
 | 12 | Collision-Aware Planning | collision tests, waypoint planning, smoothing |
 | Final | Integrated Manipulation Project | integration and optional sim-to-real transfer |
 
+## Simulator version and safe workflow
+
+The course is pinned to the stable **Webots R2025a** release. Do not use nightly/development builds or upgrade during a graded lab. Every Lab 00–12 and the final project provides a protected `*_starter.wbt` and two non-motion diagnostics. Immediately save a separate `*_work.wbt`, keep controllers under Git, and validate **world → minimal controller → device access → one joint → full algorithm**. See [Troubleshooting Webots](docs/TROUBLESHOOTING_WEBOTS.md) before recovering a crashing project.
 ## Start here
 
-1. Complete [Lab 00 ? Set Up](lab00_setup/README.md).
-2. Open [`webots/worlds/eel4664_ur5e.wbt`](webots/worlds/eel4664_ur5e.wbt) and run the first-motion controller.
-3. Complete labs in numerical order. Each lab reuses code that you wrote earlier.
+1. Complete [Lab 00 — Webots Fundamentals and UR5e Orientation](lab00_setup/README.md), including required Cyberbotics Tutorials 1, 2, and 4.
+2. Complete the selected rendering exercise from Tutorial 3 and restore plain rendering.
+3. Open the official Universal Robots `ure.wbt` sample and map the tutorial concepts to the UR5e.
+4. Complete labs in numerical order; each lab reuses earlier student code.
 
-## Shared Webots project
+If the managed Windows installation cannot download sample assets, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
+```
+
+Then open:
 
 ```text
-webots/
-??? controllers/eel4664_ur5e/
-?   ??? eel4664_ur5e.py
-?   ??? ur5e_devices.py
-??? libraries/
-??? worlds/eel4664_ur5e.wbt
+C:\webots-eel4664-sample\projects\robots\universal_robots\worlds\ure.wbt
 ```
 
-Open the world from the Webots GUI or run:
-
-```bash
-webots webots/worlds/eel4664_ur5e.wbt
-```
-
-Use Reset before each measured trial. Use simulation time from `robot.getTime()` rather than wall-clock time.
+The repository's `webots/controllers/` directory contains Python controller starters to copy into the official sample project when instructed. The sample world and robot assets remain Cyberbotics files rather than duplicated course models.
 
 ## Rules for student code
 
-- Use Python 3 and NumPy unless a lab states otherwise.
 - Keep mathematical functions separate from Webots I/O so they can be unit tested.
-- Do not use simulator or third-party functions to replace assigned robotics algorithms.
+- Do not use simulator or third-party functions to replace assigned algorithms.
 - Simulator joint sensors and ground-truth poses are measurements for verification only.
-- Keep units in SI and state the coordinate-frame convention and joint order.
-- Record commands, measurements, simulation timestamps, and experiment parameters.
+- Use SI units and state every coordinate-frame convention and joint order.
+- Use `robot.getTime()` and reset to the same initial state before comparisons.
+- Record commands, measurements, simulation timestamps, parameters, and random seeds.
 
 ## Submission convention
 
-For each lab, submit modified starter code, plots or CSV evidence, and `answers.md`. Do not submit a Webots installation, caches, or unrelated assets.
-
-## Troubleshooting
-
-Before asking for help, record the Webots version, complete console error, pause state, world and controller names, Python version, NumPy version, and whether the unmodified world runs after Reset.
+Submit modified starter code, plots or CSV evidence, and `answers.md`. Do not submit a Webots installation, downloaded sample assets, caches, or unrelated files.
 
 ## Optional advanced ROS 2/Gazebo material
 
-The previous ROS 2 Jazzy, Gazebo, TF2, `ros2_control`, and MoveIt exercises are preserved in [`optional_advanced/ros2_gazebo/`](optional_advanced/ros2_gazebo/README.md). They are not needed for the Webots sequence.
+The previous ROS 2, Gazebo, TF2, `ros2_control`, and MoveIt exercises are preserved in [`optional_advanced/ros2_gazebo/`](optional_advanced/ros2_gazebo/README.md).
 
 ## References
 
+- [Correll manipulation Lab 0](https://introduction-to-autonomous-robots.github.io/lab-manipulation-introduction.html)
 - Webots User Guide and Reference Manual
-- Webots Universal Robots UR5e model documentation
-- NumPy documentation
-- *Introduction to Autonomous Robots* and associated Correll robotics materials
-
-Repository instructions take precedence because they define the tested course workflow.
+- Cyberbotics Universal Robots sample and UR5e model
+- *Introduction to Autonomous Robots*
