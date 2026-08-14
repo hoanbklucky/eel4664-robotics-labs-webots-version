@@ -130,6 +130,8 @@ A nonempty status is not automatically an error. Do not delete work you recogniz
 
 ### Step 2 - Prepare the pinned UR5e assets
 
+**Why this is required:** the course starter world references `UR5e.proto`; it does not contain the robot's geometry, meshes, and dependent Webots objects itself. Those sample assets may be missing or located differently across Webots installations, which can produce *Skipped PROTO*, fallback-URL, blank-world, or startup errors. The preparation step creates one known-good R2025a asset copy at a repository-relative location used by every course world.
+
 Close Webots, then run:
 
 ```powershell
@@ -137,7 +139,9 @@ powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
 Test-Path .\webots\vendor\webots_r2025a\projects\robots\universal_robots\protos\UR5e.proto
 ```
 
-The preparation command should end with `[READY] Official Universal Robots sample:` and `Test-Path` must return `True`. Stop here if it returns `False`.
+The first command downloads the required files from the official Webots R2025a repository into `webots\vendor\webots_r2025a`, converts their Webots URLs to local relative paths, and installs the course diagnostic and UR5e controllers. Keeping this pinned copy inside the repository makes every starter world use the same model version regardless of where a student installed Webots. The downloaded vendor files are ignored by Git.
+
+The second command only checks that the required `UR5e.proto` model file now exists. The preparation command should end with `[READY] Official Universal Robots sample:` and `Test-Path` must return `True`. Stop here if it returns `False`.
 
 ### Step 3 - Open the protected starter
 
