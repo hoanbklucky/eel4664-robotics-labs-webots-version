@@ -1,68 +1,135 @@
-# Lab 01 — Webots and the UR5e
+# Lab 1 - Webots, UR5e, and Coordinate Frames
 
-**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
-
-## Motivation
-
-Before deriving robot models, learn how commands and measurements cross the boundary between a Python controller and the official simulated UR5e.
+**Do not save over the original starter world after running the simulation. Immediately save a working copy; reset/revert before preserving world changes.**
 
 ## Learning objectives
 
-Identify Webots worlds, PROTO models, controllers, devices, and time steps; read six joint sensors; command a repeatable pose; and explain the sense–compute–act loop.
+By the end of this lab, you should be able to:
 
-## Preparation
+1. launch the course UR5e environment and run a Python controller;
+2. distinguish a Webots world, robot model/PROTO, controller, joint motor, and sensor;
+3. identify the six UR5e joints in the required order;
+4. inspect base, joint, tool, and world coordinate frames;
+5. command safe joint motion and read measured joint positions; and
+6. transform a point or direction between two stated frames and validate it with simulator measurements.
 
-Complete Lab 00, run its R2025a sample-preparation script, and inspect the official `ure.wbt` demonstration. Then use this lab's protected starter/work-world workflow. Predict how each named UR5e joint changes the robot.
+## Prerequisites
 
-**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+Complete the [course setup guide](../setup/README.md) and pass `setup\verify_installation.ps1`. Review coordinate-frame notation, rotation matrices, and homogeneous coordinates.
 
-## Minimum Webots world skills
+Complete Cyberbotics [Tutorial 1](https://cyberbotics.com/doc/guide/tutorial-1-your-first-simulation-in-webots?version=R2025a) and the Python controller portion of [Tutorial 4](https://cyberbotics.com/doc/guide/tutorial-4-more-about-controllers?version=R2025a). These are orientation activities; the graded evidence comes from the UR5e experiments below.
 
-Use only these environment-editing skills unless a later robotics objective explicitly requires more:
+Tutorials 2 and 3 are optional resources in the root [Optional Webots Basics](../README.md#optional-webots-basics) section.
 
-1. Open `worlds/lab01_starter.wbt` paused and immediately use **File -> Save World As...** to create `worlds/lab01_work.wbt`.
-2. In the Scene Tree, select the UR5e and inspect its `controller` field and named devices.
-3. Assign `diagnostic_minimal`, `diagnostic_devices`, or the lab controller through the robot's `controller` field, then Reset before running.
-4. Inspect or add one simple object only when the lab calls for it; avoid unrelated Scene Tree changes.
-5. Use **Reset** to restore simulation state, **Reload/Revert World** to discard saved-world edits, or copy the clean starter again if recovery is needed.
+## Background
 
-Tutorials 2 and 3 are optional enrichment in the root [Optional Webots Basics](../README.md#optional-webots-basics) section; neither is required for this lab.
+A `.wbt` world instantiates robot and environment models. The UR5e PROTO defines its rigid-body/joint hierarchy and named devices. A Python controller reads sensors and sends motor commands once per `robot.step()`. The simulator advances physics; it does not replace your frame reasoning.
+
+For a point `p_b` expressed in frame `{b}`,
+
+```text
+p_a = T_ab p_b
+```
+
+where `T_ab` is constructed by your code. A direction uses rotation only; translation must not affect a free vector. Supervisor measurements are validation data, not transformation solvers.
+
+## Provided files
+
+- `worlds/lab01_starter.wbt` - protected known-good R2025a world
+- `controllers/diagnostic_minimal/` - no-device Python startup test
+- `controllers/diagnostic_devices/` - read-only device inventory
+- `controllers/eel4664_ur5e/` - shared UR5e device adapter and conservative motion example
+- `src/inspect_joint_states.py` - joint-sensor logging starter
+- `src/send_joint_goal.py` - smooth joint-command starter
+- `src/transform_point.py` - point/direction transformation starter
+- `src/query_transform.py` - Supervisor ground-truth adapter
+- `answers.md` - response template
+
+## Minimum Webots skills
+
+Keep Webots-specific work concise:
+
+1. Open `worlds/lab01_starter.wbt` paused.
+2. Immediately use **File -> Save World As...** and create `worlds/lab01_work.wbt`.
+3. Use the Scene Tree to select the UR5e, inspect its `controller` field, and locate joints/devices.
+4. Assign a controller through the robot's `controller` field.
+5. Inspect or add one simple object only if the experiment requires it.
+6. Use **Reset** to restore simulation state and **Reload/Revert World** to discard unwanted world edits.
+
+Do not perform unrelated Scene Tree customization.
 
 ## Required Webots workflow and recovery
 
-Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.
+Validate in order and stop at the first failure:
 
-The known-good world is `worlds/lab01_starter.wbt`. Never overwrite it. Before making any change, pause and reset the simulation, then use **File → Save World As…** to create `worlds/lab01_work.wbt`. If you have not opened Webots yet, copying the file to that name is equivalent. Confirm that the title bar shows the work copy before pressing Play.
+1. **World:** open `lab01_work.wbt` paused with controller `void`.
+2. **Minimal controller:** assign `diagnostic_minimal`, Reset, and confirm its pass message.
+3. **Devices:** assign `diagnostic_devices`, Reset, and save the inventory.
+4. **One joint:** assign `eel4664_ur5e` or your lab controller and command one small conservative displacement while the other joints hold.
+5. **Full algorithm:** run sensing, motion, and frame-validation code only after stages 1-4 pass.
 
-Keep every controller under `controllers/<controller_name>/<controller_name>.py` and commit it to Git. Validate in this order, stopping at the first failure:
+If the work world fails, close Webots, recover from `lab01_starter.wbt`, and consult [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md). A `void` failure indicates a world/asset/rendering problem; a minimal-controller failure indicates Python/controller startup; a device failure indicates assignment or device naming.
 
-1. **World:** open the work copy paused with controller `void`.
-2. **Minimal controller:** select `diagnostic_minimal`, Reset, and confirm its pass messages.
-3. **Devices:** select `diagnostic_devices`, Reset, and save the device inventory.
-4. **One joint:** use the lab controller to enable sensors and move one joint a small, conservative amount while all other joints hold.
-5. **Full algorithm:** run the complete lab only after the first four stages pass.
+## Step-by-step instructions
 
-Do not modify the Scene Tree except where this lab explicitly makes world/model modification a learning objective. Prefer controller and NumPy changes.
+1. Run the setup verifier and record the passing summary.
+2. Create `lab01_work.wbt` and complete the staged workflow.
+3. Record `WorldInfo.basicTimeStep` and the six joint motor/sensor names in order:
+   - `shoulder_pan_joint`
+   - `shoulder_lift_joint`
+   - `elbow_joint`
+   - `wrist_1_joint`
+   - `wrist_2_joint`
+   - `wrist_3_joint`
+4. Sketch the path from world to UR5e base, joints, and tool. Label every frame used.
+5. Run the device adapter, read `q0`, and predict the effect of one joint command before executing it.
+6. Execute a small motion, Reset, and repeat it to confirm reproducibility.
+7. Complete the transformation and Supervisor validation tasks.
 
-**Recovery:** close Webots instead of repeatedly reopening a crashing work world. Start Webots without using **Open Recent**, open the clean starter in paused mode, and immediately save a new work copy. Use **Reset** to restore simulated state; use **Reload/Revert World** to discard world edits and return to the last saved definition. If `void` fails, diagnose the world/assets/rendering. If `void` passes but `diagnostic_minimal` fails, diagnose Python/controller startup. If minimal passes but device listing fails, diagnose the robot/controller assignment or device hierarchy. See [Webots troubleshooting](../docs/TROUBLESHOOTING_WEBOTS.md).
-## Investigation
+## Implementation tasks
 
-1. In `lab01_work.wbt`, select the `UR5e` robot and inspect its motors and sensors.
-2. Preserve the device inventory produced by `diagnostic_devices` as the baseline.
-3. Set only the UR5e `controller` field to `eel4664_ur5e`, then Reset.
-4. Match each `RotationalMotor` with its `<joint>_sensor`.
-5. Implement ordered sampling and CSV logging from `src/inspect_joint_states.py`.
-6. Generate a smooth command from measured `q0` to a safe `qf` using `src/send_joint_goal.py`.
-7. Reset and run two durations. Plot command and measurement versus simulation time.
+1. Complete CSV logging in `src/inspect_joint_states.py` using `robot.getTime()`.
+2. Complete the zero-endpoint-velocity interpolation in `src/send_joint_goal.py`.
+3. Complete `transform_point` and `transform_direction` with NumPy.
+4. Configure `src/query_transform.py` with instructor-provided DEF names. Read position/orientation only after computing your own prediction.
+5. Keep frame math separate from Webots I/O and state the meaning of every transform subscript.
 
-Keep every persistent edit in `lab01_work.wbt`; restore from `lab01_starter.wbt` if a change makes the world unstable.
+## Required experiments
 
-## Explain
+### Experiment A - devices and one-joint motion
 
-Draw `world → robot/PROTO → controller → motor → physics → sensor → controller`. Explain why one `robot.step()` per loop synchronizes sensing, actuation, and physics.
+Record the initial and final six-joint vectors, command, duration, and maximum joint-position difference. Explain which physical link moved.
 
-## Submission
+### Experiment B - repeatable multi-joint pose
 
-Submit both scripts, CSV/plot evidence, architecture sketch, maximum tracking error, and `answers.md`. Do not submit the downloaded Cyberbotics assets.
+Command a conservative six-joint goal twice from the same reset state. Plot commanded and measured positions versus simulation time and report maximum absolute joint error.
 
-The former ROS action/controller exercise is optional at `optional_advanced/ros2_gazebo/lab01_ros2_gazebo_ur5e/`.
+### Experiment C - frame validation
+
+Transform an instructor-provided point from tool to world coordinates using your matrix. Compare with Supervisor ground truth and report Euclidean position error.
+
+## Questions and reflection
+
+1. What information belongs in the world, robot PROTO, controller, motor, and sensor?
+2. Why must device names and joint order be explicit?
+3. Why does translation affect a point but not a free vector?
+4. What does Reset change, and what does Reload/Revert World change?
+5. Which discrepancy in Experiment C is most likely caused by a frame-convention error?
+
+## What to submit
+
+Submit:
+
+- completed source/controller code;
+- `answers.md`;
+- device and frame table;
+- joint command/measurement CSV and plot;
+- frame sketch and transform calculation;
+- Experiment C error calculation; and
+- the setup-verifier summary.
+
+Do not submit `lab01_work.wbt` unless requested.
+
+## Troubleshooting
+
+Use [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md). Retry the last known passing stage before changing code. If motion fails after device listing passes, check joint order, motor type, target units, limits, and sampling period.

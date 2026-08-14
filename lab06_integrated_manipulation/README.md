@@ -1,59 +1,127 @@
-# Final Project — Integrated Robotic Manipulation
+# Lab 6 - Integrated Manipulation / Final Project
 
-**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
+**Do not save over the original starter world after running the simulation. Immediately save a working copy; reset/revert before preserving world changes.**
 
-## Goal
+## Learning objectives
 
-Integrate the semester's explicit algorithms into one reproducible Webots UR5e task.
+By the end of this project, you should be able to:
 
-At minimum use coordinate transformations, FK or IK, trajectory generation or collision-aware planning, feedback/state information, and quantitative evaluation.
+1. integrate coordinate transforms, FK/IK, trajectories, feedback, and quantitative evaluation;
+2. use Jacobian or differential motion where it improves the task;
+3. represent obstacles and implement collision checking/planning explicitly;
+4. execute a repeatable manipulation-style task from a safe home configuration;
+5. diagnose integration failures across model, planner, controller, and simulator boundaries; and
+6. communicate system architecture, assumptions, evidence, and limitations.
 
-**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+## Prerequisites
+
+Complete Labs 1-5. Reuse your tested mathematical modules rather than copying formulas into one monolithic controller. The project introduces system integration, not a new set of hidden simulator algorithms.
+
+## Background
+
+The baseline challenge is to move from home to a target object or pose, avoid an obstacle/forbidden region, complete a pick-and-place or equivalent manipulation sequence, and return safely. A full gripper is optional unless supplied by the instructor; reaching, approach/retreat, transport, and placement poses can demonstrate equivalent integration.
+
+Simulator APIs may expose sensing and ground truth, but they must not replace submitted transformations, kinematics, Jacobian calculations, trajectory generation, collision predicates, planning, control, or evaluation.
+
+## Provided files
+
+- `worlds/lab06_starter.wbt`
+- `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
+- `src/collision_planner.py` - explicit collision-checking/planning starter
+- `src/COLLISION_PLANNER_NOTES.md` - separation and reproducibility guidance
+- `config/`, `results/`, `report/`, and `starter_code/` placeholders
+- `answers.md`
+
+Collision-planning material was merged from the former standalone collision-planning lab.
 
 ## Required Webots workflow and recovery
 
-Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.
+1. **World:** open `worlds/lab06_starter.wbt` paused and use **File -> Save World As...** to create `worlds/lab06_work.wbt`; verify `void` before adding an obstacle.
+2. **Minimal controller:** run `diagnostic_minimal`.
+3. **Devices:** run `diagnostic_devices` and confirm the integration controller's required devices.
+4. **One joint:** verify a conservative one-joint command through the final controller stack.
+5. **Full algorithm:** add targets/obstacles and execute the integrated task only after stages 1-4 pass.
 
-The known-good world is `worlds/final_project_starter.wbt`. Never overwrite it. Before making any change, pause and reset the simulation, then use **File → Save World As…** to create `worlds/final_project_work.wbt`. If you have not opened Webots yet, copying the file to that name is equivalent. Confirm that the title bar shows the work copy before pressing Play.
+Keep a clean starter and a separate working world. After a crash, use [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md), reopen a clean world, and reapply one known-good change at a time.
 
-Keep every controller under `controllers/<controller_name>/<controller_name>.py` and commit it to Git. Validate in this order, stopping at the first failure:
+## Step-by-step instructions
 
-1. **World:** open the work copy paused with controller `void`.
-2. **Minimal controller:** select `diagnostic_minimal`, Reset, and confirm its pass messages.
-3. **Devices:** select `diagnostic_devices`, Reset, and save the device inventory.
-4. **One joint:** use the lab controller to enable sensors and move one joint a small, conservative amount while all other joints hold.
-5. **Full algorithm:** run the complete lab only after the first four stages pass.
+1. Define the task, frames, home configuration, targets, obstacle model, limits, and metrics.
+2. Draw the software/data-flow architecture before integrating code.
+3. Validate each reused module with its earlier unit tests.
+4. Create `lab06_work.wbt` and add only instructor-approved target/obstacle objects.
+5. Demonstrate FK/IK reachability for approach, task, retreat, and home poses.
+6. Show that a direct path collides or violates a forbidden region for at least one assigned case.
+7. Plan a collision-free waypoint or sampled path with your own collision predicate.
+8. Time-parameterize the path and execute it with feedback.
+9. Log enough data to reproduce and quantify the complete run.
+10. Repeat from Reset and analyze one controlled variation or failure.
 
-Do not modify the Scene Tree except where this lab explicitly makes world/model modification a learning objective. Prefer controller and NumPy changes.
+## Implementation tasks
 
-**Recovery:** close Webots instead of repeatedly reopening a crashing work world. Start Webots without using **Open Recent**, open the clean starter in paused mode, and immediately save a new work copy. Use **Reset** to restore simulated state; use **Reload/Revert World** to discard world edits and return to the last saved definition. If `void` fails, diagnose the world/assets/rendering. If `void` passes but `diagnostic_minimal` fails, diagnose Python/controller startup. If minimal passes but device listing fails, diagnose the robot/controller assignment or device hierarchy. See [Webots troubleshooting](../docs/TROUBLESHOOTING_WEBOTS.md).
-## Baseline challenge
+1. Complete `configuration_in_collision`, `edge_in_collision`, and `plan` in `collision_planner.py`.
+2. Compute link geometry from your FK; do not use visual appearance as the collision predicate.
+3. Inflate obstacles or otherwise state the safety margin.
+4. Check every interpolated edge, not only path endpoints.
+5. Smooth a path only if every replacement edge remains collision-free.
+6. Integrate:
+   - explicit transforms and FK/IK;
+   - Jacobian/differential motion where used;
+   - trajectory generation;
+   - joint-limit and collision checks;
+   - feedback/state estimates; and
+   - deterministic logging and metrics.
+7. Record random seeds, initial conditions, parameters, and controller gains.
 
-Using the supplied Webots project:
+## Required experiments
 
-1. begin from a documented home configuration;
-2. compute and reach a specified approach pose;
-3. reach one or more targets while respecting joint limits;
-4. avoid at least one obstacle or forbidden region;
-5. return to a safe final configuration;
-6. log enough data to evaluate execution quantitatively.
+### Experiment A - module and path validation
 
-A gripper extension may be assigned. Simulator APIs may provide sensing and actuation, but must not replace submitted kinematics, planning, trajectory, control, estimation, or identification algorithms.
+Show target reachability, one colliding direct path, and one collision-free planned path. Report computation time, path length, minimum modeled clearance, and waypoint count.
+
+### Experiment B - integrated task
+
+Execute home -> approach -> task/transport -> retreat -> safe final/home. Report success criteria, pose/tracking error, completion time, and clearance.
+
+### Experiment C - repeatability and failure analysis
+
+Repeat the task from the same reset state and test one controlled variation, such as obstacle placement, target pose, payload/model condition, or planner seed. Include one failure, its boundary, and a mitigation.
+
+## Questions and reflection
+
+1. Which coordinate-frame interface caused the greatest integration risk?
+2. How did collision-check resolution affect safety and computation time?
+3. Which earlier lab module required the most modification, and why?
+4. What evidence shows the task is repeatable rather than a single successful animation?
+5. Which simulator ground-truth values were used only for validation?
+6. What would have to change for transfer to a physical arm?
+
+## What to submit
+
+Submit:
+
+- proposal and architecture diagram;
+- source code with run instructions;
+- configuration/parameter files and seeds;
+- collision representation and planning pseudocode;
+- successful demonstration video or instructor-approved live demo;
+- CSV logs and at least two quantitative metrics;
+- repeatability and failure analysis;
+- final technical report; and
+- `answers.md`.
 
 ## Milestones
 
-1. **Proposal:** task, frames, metric, risks.
+1. **Proposal:** task, frames, metrics, risks, and module ownership.
 2. **Model checkpoint:** validated geometry and reachable targets.
-3. **Planning/control checkpoint:** collision-free offline tests.
-4. **Integrated demonstration:** repeatable Webots execution and logs.
-5. **Report:** prediction, evidence, discrepancy, failure, mitigation.
+3. **Planning/control checkpoint:** safe offline and one-joint tests.
+4. **Integrated demonstration:** repeatable Webots execution.
+5. **Report:** prediction, evidence, discrepancy, failure, and mitigation.
 
-## Required evidence
+## Optional physical-arm extension
 
-Submit an architecture diagram, mathematical formulation, source and run instructions, at least two quantitative metrics, successful demonstration, and one failure analysis. Report seeds and initial conditions.
+With instructor approval, transfer selected modules to the course 3D-printed arm. Document interface, calibration, limits, and model differences. Hardware is optional and is not required to complete the simulation project successfully.
 
-## Optional extensions
+## Troubleshooting
 
-- add a Webots gripper or perception sensor;
-- compare with the optional ROS 2/Gazebo track;
-- transfer selected algorithms to the course arm and identify interface/model changes.
+Integrate one boundary at a time: world -> controller -> devices -> one joint -> one pose -> one segment -> full path. Preserve failing logs and worlds. If an endpoint is safe but motion collides, inspect edge interpolation and model clearance. If the planner succeeds but execution fails, separate planning, timing, and control errors.

@@ -1,7 +1,7 @@
 #VRML_SIM R2025a utf8
 # COURSE STARTER: DO NOT OVERWRITE. Copy to *_work.wbt before opening in Webots.
 
-EXTERNPROTO "../../../webots-eel4664-sample/projects/robots/universal_robots/protos/UR5e.proto"
+EXTERNPROTO "../../../../../webots-eel4664-sample/projects/robots/universal_robots/protos/UR5e.proto"
 
 WorldInfo {
   title "EEL 4664 lab07_singularities clean UR5e starter"

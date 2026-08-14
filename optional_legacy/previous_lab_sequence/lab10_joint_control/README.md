@@ -1,3 +1,5 @@
+> **Archived:** This README belongs to the former 13-lab sequence and is not assigned. Its useful source moved to the [active consolidated lab](../../../lab05_dynamics_control_identification/README.md). Paths and numbering below are retained for historical context.
+
 # Lab 10 — Joint-Space Control
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
@@ -10,7 +12,7 @@ Feedback converts model mismatch and disturbances into measurable corrections, b
 
 Implement P and PD control; quantify rise time, overshoot, settling time, steady-state error, and effort; and transfer the same law from a NumPy plant to one Webots UR5e joint.
 
-**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../../../setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
 
 ## Required Webots workflow and recovery
 
@@ -28,7 +30,7 @@ Keep every controller under `controllers/<controller_name>/<controller_name>.py`
 
 Do not modify the Scene Tree except where this lab explicitly makes world/model modification a learning objective. Prefer controller and NumPy changes.
 
-**Recovery:** close Webots instead of repeatedly reopening a crashing work world. Start Webots without using **Open Recent**, open the clean starter in paused mode, and immediately save a new work copy. Use **Reset** to restore simulated state; use **Reload/Revert World** to discard world edits and return to the last saved definition. If `void` fails, diagnose the world/assets/rendering. If `void` passes but `diagnostic_minimal` fails, diagnose Python/controller startup. If minimal passes but device listing fails, diagnose the robot/controller assignment or device hierarchy. See [Webots troubleshooting](../docs/TROUBLESHOOTING_WEBOTS.md).
+**Recovery:** close Webots instead of repeatedly reopening a crashing work world. Start Webots without using **Open Recent**, open the clean starter in paused mode, and immediately save a new work copy. Use **Reset** to restore simulated state; use **Reload/Revert World** to discard world edits and return to the last saved definition. If `void` fails, diagnose the world/assets/rendering. If `void` passes but `diagnostic_minimal` fails, diagnose Python/controller startup. If minimal passes but device listing fails, diagnose the robot/controller assignment or device hierarchy. See [Webots troubleshooting](../../../docs/TROUBLESHOOTING_WEBOTS.md).
 ## Investigation
 
 1. Complete `src/pd_control_sim.py` using your own numerical integration.

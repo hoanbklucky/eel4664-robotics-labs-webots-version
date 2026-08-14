@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Webots execution outline; import your own Lab 08 polynomial evaluator."""
+"""Webots execution outline; import your own Lab 4 polynomial evaluator."""
 # from controller import Robot
 # robot = Robot(); enable six sensors; acquire six motors; step once for q0
 # while robot.step(time_step) != -1:

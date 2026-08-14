@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lab 00/01 demonstration controller for the shared UR5e world."""
+"""Lab 1 demonstration controller for the shared UR5e world."""
 from controller import Robot
 import numpy as np
 from ur5e_devices import JOINT_NAMES, UR5eDevices

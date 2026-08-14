@@ -1,55 +1,120 @@
-# Lab 04 — Forward Kinematics of the UR5e
+# Lab 2 - Forward and Inverse Kinematics
 
-**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
-
-## Motivation
-
-Given six encoder readings, predict where the tool is before asking the simulator where it appears.
+**Do not save over the original starter world after running the simulation. Immediately save a working copy; reset/revert before preserving world changes.**
 
 ## Learning objectives
 
-Derive a planar warm-up, implement a DH-style transform, construct a six-link UR5e chain, read Webots joint sensors, and quantify FK position/orientation error.
+By the end of this lab, you should be able to:
 
-## Webots bridge: Tutorials 5 and 6
+1. implement and test homogeneous-transform utilities;
+2. compute a UR5e end-effector pose from a measured joint vector using your own FK;
+3. validate FK position and orientation against Webots ground truth;
+4. solve planar analytical IK and iterative UR5e IK;
+5. command a converged IK solution safely; and
+6. quantify desired-versus-achieved pose error and explain failure cases.
 
-Before deriving the UR5e chain, complete these tutorials in order:
+## Prerequisites
 
-1. [Tutorial 5: Compound Solid and Physics Attributes](https://cyberbotics.com/doc/guide/tutorial-5-compound-solid-and-physics-attributes?version=R2025a). Identify visual geometry, compound `boundingObject` geometry, mass, center of mass, contact properties, and `basicTimeStep`. Save the project because Tutorial 6 builds on it.
-2. [Tutorial 6: 4-Wheels Robot](https://cyberbotics.com/doc/guide/tutorial-6-4-wheels-robot?version=R2025a). Complete the robot structure, `HingeJoint`, motor, sensor, and controller portions using Python.
+Complete Lab 1. Bring your frame convention, ordered joint list, transformation functions, and working Webots device adapter. Review the FK/IK derivations completed in lecture, homework, or class.
 
-The four-wheel robot is not a manipulator model; it is a compact exercise in building a robot as a tree of rigid bodies connected by joints. Draw one path from its root `Robot` node to a wheel, then draw the analogous path from the UR5e base to its tool. Label joint axes, parent/child solids, motors, and sensors. This structural comparison prepares the ordered transform product used in FK; it does not replace that derivation.
-## Important rule
+## Background
 
-Do not call a simulator or library FK solver. Webots GPS/InertialUnit data is a reference only after your FK is computed. State any fixed base/tool-frame offset explicitly.
+For a six-joint serial chain,
 
-**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+```text
+T_0_6(q) = T_0_1(q1) T_1_2(q2) ... T_5_6(q6)
+```
+
+Your FK must construct this ordered product using the instructor-approved UR5e parameters and explicitly stated base/tool offsets.
+
+IK finds `q` such that the predicted pose matches a target. The analytical planar warm-up exposes branches and reachability. The UR5e solver uses your FK and a finite-difference task Jacobian constructed from that FK, with an explicit pose-error vector, convergence tolerance, iteration limit, and joint-limit handling. Lab 3 later derives and analyzes the geometric Jacobian.
+
+Webots may supply measured tool pose only after your prediction is computed. Do not call a simulator, SciPy, MoveIt, or third-party FK/IK solver.
+
+## Provided files
+
+- `worlds/lab02_starter.wbt` - protected known-good world
+- `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
+- `src/transforms.py` and `src/test_transforms.py`
+- `src/planar_fk.py` and `src/planar_ik.py`
+- `src/ur5e_fk_starter.py`
+- `src/read_configuration.py`
+- `src/numerical_ik.py`
+- `answers.md`
+
+These files were consolidated from the former homogeneous-transform, FK, and IK labs.
 
 ## Required Webots workflow and recovery
 
-Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.
+1. **World:** open `worlds/lab02_starter.wbt` paused and use **File -> Save World As...** to create `worlds/lab02_work.wbt`; confirm `void` runs.
+2. **Minimal controller:** assign `diagnostic_minimal`, Reset, and confirm startup.
+3. **Devices:** assign `diagnostic_devices`, Reset, and confirm the six joints and validation sensors.
+4. **One joint:** use the Lab 1 adapter to move one joint slightly and confirm ordered sensing.
+5. **Full algorithm:** run FK/IK validation only after stages 1-4 pass.
 
-The known-good world is `worlds/lab04_starter.wbt`. Never overwrite it. Before making any change, pause and reset the simulation, then use **File → Save World As…** to create `worlds/lab04_work.wbt`. If you have not opened Webots yet, copying the file to that name is equivalent. Confirm that the title bar shows the work copy before pressing Play.
+Recover from `lab02_starter.wbt` and use [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md) if any earlier stage fails.
 
-Keep every controller under `controllers/<controller_name>/<controller_name>.py` and commit it to Git. Validate in this order, stopping at the first failure:
+## Step-by-step instructions
 
-1. **World:** open the work copy paused with controller `void`.
-2. **Minimal controller:** select `diagnostic_minimal`, Reset, and confirm its pass messages.
-3. **Devices:** select `diagnostic_devices`, Reset, and save the device inventory.
-4. **One joint:** use the lab controller to enable sensors and move one joint a small, conservative amount while all other joints hold.
-5. **Full algorithm:** run the complete lab only after the first four stages pass.
+1. Create `lab02_work.wbt` and complete the staged checks.
+2. Complete and test the transformation utilities.
+3. Complete planar FK/IK warm-ups and verify selected cases independently.
+4. Enter the approved six-row UR5e parameter table and fixed frame offsets.
+5. Record at least five Webots joint configurations, including home and a nonsymmetric pose.
+6. Compute FK for every measured `q` before reading ground truth.
+7. Define reachable target poses and solve IK from multiple initial guesses.
+8. Command converged solutions with a smooth joint transition.
+9. Measure final position and orientation error.
 
-Do not modify the Scene Tree except where this lab explicitly makes world/model modification a learning objective. Prefer controller and NumPy changes.
+## Implementation tasks
 
-**Recovery:** close Webots instead of repeatedly reopening a crashing work world. Start Webots without using **Open Recent**, open the clean starter in paused mode, and immediately save a new work copy. Use **Reset** to restore simulated state; use **Reload/Revert World** to discard world edits and return to the last saved definition. If `void` fails, diagnose the world/assets/rendering. If `void` passes but `diagnostic_minimal` fails, diagnose Python/controller startup. If minimal passes but device listing fails, diagnose the robot/controller assignment or device hierarchy. See [Webots troubleshooting](../docs/TROUBLESHOOTING_WEBOTS.md).
-## Investigation
+1. Implement `rotx`, `roty`, `rotz`, `homogeneous`, and `invert_transform` in `transforms.py`.
+2. Implement `planar_3r_fk` and both branches of `planar_2r_ik`, including reachability checks.
+3. Implement `dh_transform` and `forward_kinematics` in `ur5e_fk_starter.py`.
+4. Complete `numerical_ik.py` using a finite-difference Jacobian from your own FK (not Webots) and include:
+   - position and orientation error;
+   - pseudoinverse or damped least-squares update;
+   - step-size control;
+   - joint limits;
+   - convergence and iteration limits; and
+   - a recorded residual history.
+5. Keep Webots sensing/actuation outside the mathematical functions.
 
-1. Complete `src/planar_fk.py` and validate hand-selected cases.
-2. Complete `dh_transform` and the chain in `src/ur5e_fk_starter.py` using instructor-approved parameters.
-3. Copy `src/read_configuration.py` into a Webots controller and record ordered joint positions.
-4. Evaluate at least five configurations, including home and a nonsymmetric pose.
-5. Compare predicted tool position and orientation with shared-world sensors.
-6. Plot error and diagnose convention, parameter, discretization, or model-frame causes.
+## Required experiments
 
-## Submission
+### Experiment A - FK validation
 
-Submit Tutorial 5–6 completion evidence, the wheel-to-UR5e structural comparison, FK derivation and code, parameter table with source, configuration data, error table/plot, and `answers.md`.
+Evaluate at least five configurations. For each, report measured `q`, predicted tool transform, simulator reference, position error, and orientation error.
+
+### Experiment B - IK convergence
+
+Use at least three reachable targets and multiple initial guesses. Report convergence, iterations, final residual, and selected solution branch.
+
+### Experiment C - execution accuracy and failure
+
+Command at least two converged solutions and measure desired-versus-achieved pose error. Include one near-boundary or unreachable target and explain how the solver detects failure.
+
+## Questions and reflection
+
+1. Why does transform multiplication order matter?
+2. Which fixed base/tool offset is required by your convention?
+3. Why can multiple joint vectors represent the same tool pose?
+4. How do initial guess, damping, and step size affect numerical IK?
+5. Is a small IK residual sufficient to guarantee safe executable motion? Why?
+
+## What to submit
+
+Submit:
+
+- completed transformation, FK, and IK source;
+- parameter/convention table;
+- unit-test output;
+- FK comparison table/plots;
+- IK convergence histories;
+- commanded-versus-achieved pose errors;
+- one failure analysis; and
+- `answers.md`.
+
+## Troubleshooting
+
+If FK error is large at every configuration, check joint order, angle offsets, units, transform direction, and base/tool frames before changing parameters. If IK diverges, test the error vector and Jacobian independently. If Webots fails, return to the last staged validation boundary and consult the shared troubleshooting guide.

@@ -2,30 +2,36 @@
 
 ## Recommended module mapping
 
-| Module | Lab |
+| Module | Required simulation work |
 |---|---|
-| 1 | Lab 01 |
-| 2 | Lab 02 |
-| 3 | Lab 03 |
-| 4 | Lab 04 |
-| 5 | Lab 05 |
-| 6 | Lab 06 |
-| 7 | Lab 07 |
-| 8 | Midterm / no major lab |
-| 9 | Lab 08 |
-| 10 | Lab 09 |
-| 11–12 | Lab 10 |
-| 13 | Lab 11 |
-| 14 | Lab 12 |
-| 15 | Final Project |
+| 1 | Setup verification and Lab 1 launch |
+| 2-3 | Lab 1 - UR5e devices and coordinate frames |
+| 4-6 | Lab 2 - FK/IK implementation and validation |
+| 7-8 | Lab 3 - Jacobian, differential motion, and singularities |
+| 9-10 | Lab 4 - trajectory generation and tracking |
+| 11-12 | Lab 5 - dynamics, control, estimation, and identification |
+| 13 | Lab 6 proposal/model checkpoint |
+| 14 | Lab 6 planning/control checkpoint |
+| 15 | Lab 6 demonstration and report |
+
+The schedule may overlap lab work with the corresponding analytical homework and in-class derivations.
 
 ## Before release to students
 
-1. Test every command on the exact Fall 2026 environment.
-2. Pin the Webots release and UR5e PROTO version used for grading.
-3. Provide the exact UR5e frame convention and kinematic parameter table for Lab 04.
-4. Verify what motor torque feedback the Webots model exposes for Lab 09; provide a recorded dataset if needed.
-5. Decide whether Lab 10 remains a Python plant-control lab or gains a torque-controlled Webots extension.
-6. Decide whether the final project includes a gripper model.
+1. Test every command on the exact Fall 2026 Windows, Python, and Webots R2025a environment.
+2. Confirm all six `*_starter.wbt` files open from a clean clone and that the shared diagnostics run.
+3. Publish the exact UR5e frame convention, joint order, kinematic parameter table, and ground-truth measurement method for Lab 2.
+4. Select safe Cartesian requests, conditioning thresholds, joint-rate limits, and near-singular configurations for Lab 3.
+5. Validate Lab 4 trajectory limits and logging/plotting expectations.
+6. For Lab 5, verify the R2025a motor-feedback/torque interface and provide:
+   - one approved baseline/changed payload or model condition; or
+   - a recorded dataset fallback if safe live parameter variation is unavailable.
+7. Define Lab 6 target/obstacle geometry, minimum clearance, success metrics, and whether a gripper is supplied.
+8. Decide whether the optional physical-arm extension is offered; simulation must remain sufficient for full credit.
+9. Run the link, Python syntax, starter-world, and README-structure audits before publishing.
 
 Do not publish instructor solutions in the public student repository.
+
+## Preserved reference material
+
+The former Lab 00-12 shells are archived under `optional_legacy/previous_lab_sequence/`. Use them only for provenance or to recover an omitted explanation; their numbering and submissions are superseded.

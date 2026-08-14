@@ -70,7 +70,7 @@ Webots safe mode is the preferred first recovery step. It forces Webots to start
 4. Do not reopen the bad world or select it from **Open Recent World**. Start a known-good starter explicitly in paused mode:
 
    ```powershell
-   & 'C:\Program Files\Webots\msys64\mingw64\bin\webots.exe' --mode=pause 'C:\eel4664-ur5e-labs\lab01_webots_ur5e\worlds\lab01_starter.wbt'
+   & 'C:\Program Files\Webots\msys64\mingw64\bin\webots.exe' --mode=pause 'C:\eel4664-ur5e-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt'
    ```
 
 5. If the GUI layout itself is corrupted, close Webots and rename the hidden `.work_world_name.wbproj` beside the work world to `.work_world_name.wbproj.bad`. Webots recreates the GUI project file with a default perspective; the `.wbt` is untouched.
@@ -97,10 +97,10 @@ An error in one row should be fixed before moving to the next stage.
 For the managed R2025a Windows installation used in this course, close Webots and run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
+powershell -ExecutionPolicy Bypass -File .\setup\prepare_webots_sample.ps1
 ```
 
-Then reopen the local official sample described in Lab 00. A populated Scene Tree with a black viewport usually indicates rendering/background assets or rendering mode, not an empty world. Restore **View → Plain Rendering** before modifying the world.
+Then reopen the local official sample described in the course setup guide. A populated Scene Tree with a black viewport usually indicates rendering/background assets or rendering mode, not an empty world. Restore **View → Plain Rendering** before modifying the world.
 
 ## Controller placement
 

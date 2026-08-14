@@ -1,6 +1,6 @@
 # Optional Advanced Track ? ROS 2 and Gazebo
 
-This folder preserves the repository's previous ROS 2 Jazzy/Gazebo material for optional middleware, TF2, `ros2_control`, and MoveIt study. It is separate from the Webots-first Lab 00?12 sequence.
+This folder preserves the repository's previous ROS 2 Jazzy/Gazebo material for optional middleware, TF2, `ros2_control`, and MoveIt study. It is separate from the required six-lab Webots sequence.
 
 The archived folders retain their original commands and assumptions. They may require updates to match current upstream packages.
 

@@ -1,3 +1,17 @@
-# Lab 08 Answers
+# Lab 4 Answers
 
-Write derivations, results, and discussion here.
+## Trajectory implementation
+
+State boundary conditions, polynomial choice, duration, sample period, and constraint checks.
+
+## Tracking experiments
+
+Summarize desired/measured plots, RMSE, maximum error, peak velocity/acceleration, and duration comparison.
+
+## Smoothness or path comparison
+
+Report the cubic/quintic or MoveJ/Cartesian comparison assigned by the instructor.
+
+## Reflection
+
+Answer every question in the Lab 4 README.

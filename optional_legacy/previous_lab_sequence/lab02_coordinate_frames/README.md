@@ -1,3 +1,5 @@
+> **Archived:** This README belongs to the former 13-lab sequence and is not assigned. Its useful source moved to the [active consolidated lab](../../../lab01_webots_ur5e_frames/README.md). Paths and numbering below are retained for historical context.
+
 # Lab 02 — Coordinate Frames
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
@@ -19,7 +21,7 @@ Review rotation matrices and homogeneous coordinates. Before simulation, predict
 Before the investigation, complete [Webots Tutorial 8: The Supervisor](https://cyberbotics.com/doc/guide/tutorial-8-the-supervisor?version=R2025a) using Python. Focus on obtaining a node by `DEF`, reading its fields, and acquiring position/orientation measurements. Keep this tutorial in its own project.
 
 For this lab, a Supervisor is measurement equipment: it may observe the simulated ground truth, but it must not compute your coordinate transformation. Record one example showing the difference between reading a Webots field and deriving a transformed point with your own NumPy matrices.
-**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../../../setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
 
 ## Required Webots workflow and recovery
 
@@ -37,7 +39,7 @@ Keep every controller under `controllers/<controller_name>/<controller_name>.py`
 
 Do not modify the Scene Tree except where this lab explicitly makes world/model modification a learning objective. Prefer controller and NumPy changes.
 
-**Recovery:** close Webots instead of repeatedly reopening a crashing work world. Start Webots without using **Open Recent**, open the clean starter in paused mode, and immediately save a new work copy. Use **Reset** to restore simulated state; use **Reload/Revert World** to discard world edits and return to the last saved definition. If `void` fails, diagnose the world/assets/rendering. If `void` passes but `diagnostic_minimal` fails, diagnose Python/controller startup. If minimal passes but device listing fails, diagnose the robot/controller assignment or device hierarchy. See [Webots troubleshooting](../docs/TROUBLESHOOTING_WEBOTS.md).
+**Recovery:** close Webots instead of repeatedly reopening a crashing work world. Start Webots without using **Open Recent**, open the clean starter in paused mode, and immediately save a new work copy. Use **Reset** to restore simulated state; use **Reload/Revert World** to discard world edits and return to the last saved definition. If `void` fails, diagnose the world/assets/rendering. If `void` passes but `diagnostic_minimal` fails, diagnose Python/controller startup. If minimal passes but device listing fails, diagnose the robot/controller assignment or device hierarchy. See [Webots troubleshooting](../../../docs/TROUBLESHOOTING_WEBOTS.md).
 ## Investigation
 
 1. Inspect the UR5e hierarchy in the Webots Scene Tree and sketch base, joint, and tool frames.
@@ -54,4 +56,4 @@ Supervisor/GPS measurements are references, not transformation solvers. Your cod
 
 Submit the Tutorial 8 Supervisor measurement example, your code, frame tree, one hand calculation, numerical comparison, and `answers.md`.
 
-The former TF2 exercise is optional at `optional_advanced/ros2_gazebo/lab02_frames_tf/`.
+The former TF2 exercise is optional at `../../../optional_advanced/ros2_gazebo/lab02_frames_tf/`.
