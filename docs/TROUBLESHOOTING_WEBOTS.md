@@ -49,19 +49,36 @@ Use the corresponding lab number. Never use **Save World** while the title bar e
 
 ## If a bad world crashes Webots repeatedly
 
+Webots safe mode is the preferred first recovery step. It forces Webots to start with an empty world and reduced OpenGL options, preventing the last bad world or an advanced rendering option from crashing the application during startup.
+
 1. End all Webots and controller processes with Windows Task Manager.
-2. Do not launch Webots by double-clicking the bad `.wbt` or by selecting it from **Open Recent World**.
-3. Start Webots from the Start menu with no world argument. If Webots restores the failing world, start a known-good starter explicitly in paused mode from PowerShell:
+2. Open PowerShell and launch Webots once with the session-scoped `WEBOTS_SAFE_MODE` environment variable:
+
+   ```powershell
+   $env:WEBOTS_SAFE_MODE = 'true'
+   & 'C:\Program Files\Webots\msys64\mingw64\bin\webots.exe'
+   ```
+
+3. When Webots opens to the empty world, close Webots and clear the environment variable in the same PowerShell window:
+
+   ```powershell
+   Remove-Item Env:WEBOTS_SAFE_MODE
+   ```
+
+   If you instead created `WEBOTS_SAFE_MODE` in the Windows **Environment Variables** dialog, remove that user variable before continuing. Safe mode is a temporary recovery tool; leaving it enabled will keep starting Webots with an empty world and reduced rendering settings.
+
+4. Do not reopen the bad world or select it from **Open Recent World**. Start a known-good starter explicitly in paused mode:
 
    ```powershell
    & 'C:\Program Files\Webots\msys64\mingw64\bin\webots.exe' --mode=pause 'C:\eel4664-ur5e-labs\lab01_webots_ur5e\worlds\lab01_starter.wbt'
    ```
 
-4. If the GUI layout itself is corrupted, close Webots and rename the hidden `.work_world_name.wbproj` beside the work world to `.work_world_name.wbproj.bad`. Webots recreates the GUI project file with a default perspective; the `.wbt` is untouched.
-5. Open the clean starter with its `void` controller. Do not reopen the bad world until you inspect its last edit in a text editor or compare it with the starter using Git.
-6. If the starter also crashes, test the official Cyberbotics sample. Then run `webots --sysinfo`, update the graphics driver, and report the Webots version, GPU/driver, world path, and Console output.
+5. If the GUI layout itself is corrupted, close Webots and rename the hidden `.work_world_name.wbproj` beside the work world to `.work_world_name.wbproj.bad`. Webots recreates the GUI project file with a default perspective; the `.wbt` is untouched.
+6. Confirm that the clean starter works with its `void` controller. Do not reopen the bad world until you inspect its last edit in a text editor or compare it with the starter using Git.
+7. Safe mode stores reduced OpenGL preferences. Keep those conservative settings until the starter is stable; then re-enable features one at a time under **Tools -> Preferences -> OpenGL** if needed.
+8. If the starter also crashes after safe-mode recovery, test the official Cyberbotics sample. Then run `webots --sysinfo`, update the graphics driver, and report the Webots version, GPU/driver, world path, and Console output.
 
-Do not delete the entire Webots preferences or cache as a first response. Preserve the failing work world and console output so the cause can be reproduced.
+Do not delete the entire Webots preferences or cache as a first response. Preserve the failing work world and console output so the cause can be reproduced. See Cyberbotics' [Safe Mode documentation](https://cyberbotics.com/doc/guide/starting-webots?version=R2025a#safe-mode).
 
 ## Common failure boundaries
 
