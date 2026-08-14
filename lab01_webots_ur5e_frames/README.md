@@ -149,7 +149,7 @@ The second command only checks that the required `UR5e.proto` model file now exi
 2. Select **File -> Open World...**.
 3. Open `C:\eel4664-robotics-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt`.
 4. Confirm the Scene Tree contains `WorldInfo`, `Viewpoint`, a floor `Solid`, and `UR5e "UR5E"`.
-5. Confirm the robot and floor render in the 3-D view.
+5. Confirm the complete robot and surrounding floor are visible immediately in the 3-D view; no initial zoom or rotation should be necessary.
 6. Select `UR5e "UR5E"` and verify its `controller` field is `void`.
 
 If the Console reports a skipped UR5e, missing PROTO, or fallback URL error, stop and repeat Step 2.
@@ -169,7 +169,9 @@ If that name already contains work you need, choose `lab01_work_yourname.wbt`. N
 2. Press **Reset**.
 3. Run for about two seconds, then pause.
 
-Pass: Webots stays open, the robot remains visible, and no controller error appears. Failure here indicates a world, asset, or rendering problem.
+**No robot movement is expected in this step.** The `void` controller sends no motor commands.
+
+Pass: Webots stays open, the stationary robot remains visible, and no controller error appears. Failure here indicates a world, asset, or rendering problem.
 
 ### Step 6 - Run the minimal controller
 
@@ -177,6 +179,8 @@ Pass: Webots stays open, the robot remains visible, and no controller error appe
 2. Select the UR5e and double-click its `controller` field.
 3. Choose `diagnostic_minimal`.
 4. Reset and run.
+
+**No robot movement is expected in this step.** The minimal controller only starts Python and advances ten simulation steps; it does not command any joints.
 
 Expected Console text includes:
 
@@ -195,6 +199,8 @@ If the controller is unavailable, confirm the working world is in the Lab 1 `wor
 3. Reset and run.
 4. Copy the device inventory into your notes.
 
+**No robot movement is expected in this step.** The device diagnostic reads names and device types only; it does not command any joints.
+
 Confirm all six motors and six corresponding `_sensor` names. Also confirm `tool_position`, `tool_orientation`, and `tool_test_point_position`.
 
 Pass: the Console ends with `[DIAGNOSTIC PASS] all device handles enumerated`. If the tool devices are absent, preserve needed work, reopen the current starter, and create a new work copy.
@@ -212,7 +218,7 @@ If `lab01_controller` already exists, do not copy again. Open `lab01_controller.
 
 ### Step 9 - Run the one-joint checkpoint
 
-Immediately after `q0` is measured in `lab01_controller.py`, use:
+Immediately after `q0` is measured, confirm that the provided `lab01_controller.py` contains:
 
 ```python
 q_goal = q0.copy()
@@ -220,7 +226,7 @@ q_goal[0] += 0.10
 duration = 4.0
 ```
 
-This commands +0.10 rad at the shoulder-pan joint while holding the other five targets.
+This commands +0.10 rad at the shoulder-pan joint while holding the other five targets at their measured starting positions. Do not substitute a full six-joint target during this checkpoint; multi-joint targets are introduced later.
 
 1. Save the file and open `lab01_work.wbt`.
 2. Assign `lab01_controller`.

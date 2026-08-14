@@ -14,8 +14,9 @@ arm = UR5eDevices(robot)
 if robot.step(arm.time_step) == -1:
     raise SystemExit
 q0 = arm.positions()
-q_goal = np.array([0.0, -1.20, 1.20, -1.50, -1.57, 0.0])
-duration = 8.0
+q_goal = q0.copy()
+q_goal[0] += 0.10
+duration = 4.0
 t0 = robot.getTime()
 print("Joint order:", ", ".join(JOINT_NAMES))
 print("Initial q [rad]:", np.array2string(q0, precision=4))
