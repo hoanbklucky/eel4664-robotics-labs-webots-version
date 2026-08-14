@@ -7,7 +7,7 @@ import shutil
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-SAMPLE_ROOT = Path(r"C:\webots-eel4664-sample\projects")
+SAMPLE_ROOT = ROOT / "webots/vendor/webots_r2025a/projects"
 SAMPLE_WORLD = SAMPLE_ROOT / "robots/universal_robots/worlds/ure.wbt"
 UR5E_PROTO = SAMPLE_ROOT / "robots/universal_robots/protos/UR5e.proto"
 SIMULATION_PROJECTS = (

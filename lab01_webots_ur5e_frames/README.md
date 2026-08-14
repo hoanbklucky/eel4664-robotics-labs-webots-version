@@ -134,7 +134,7 @@ Close Webots, then run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
-Test-Path C:\webots-eel4664-sample\projects\robots\universal_robots\protos\UR5e.proto
+Test-Path .\webots\vendor\webots_r2025a\projects\robots\universal_robots\protos\UR5e.proto
 ```
 
 The preparation command should end with `[READY] Official Universal Robots sample:` and `Test-Path` must return `True`. Stop here if it returns `False`.

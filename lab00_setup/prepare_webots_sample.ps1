@@ -1,6 +1,6 @@
-param([string]$Destination = 'C:\webots-eel4664-sample')
-
 $ErrorActionPreference = 'Stop'
+$RepositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+$Destination = Join-Path $RepositoryRoot 'webots\vendor\webots_r2025a'
 $world = Join-Path $Destination 'projects\robots\universal_robots\worlds\ure.wbt'
 $controllerSource = Join-Path $PSScriptRoot '..\webots\controllers\eel4664_ur5e'
 $controllerTarget = Join-Path $Destination 'projects\robots\universal_robots\controllers\eel4664_ur5e'
@@ -42,7 +42,7 @@ if (Test-Path -LiteralPath $world) {
     exit 0
 }
 if (Test-Path -LiteralPath $Destination) {
-    throw "Destination exists but is incomplete: $Destination. Choose a new -Destination."
+    throw "Destination exists but is incomplete: $Destination. Delete the incomplete vendor folder and run this script again."
 }
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) { throw 'Git for Windows is required.' }
 
