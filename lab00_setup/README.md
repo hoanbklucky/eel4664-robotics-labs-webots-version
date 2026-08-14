@@ -42,7 +42,7 @@ On Windows, use `py -m pip ...` if needed. In Webots, set **Tools ? Preferences 
 
 ## 3. Open the course world
 
-Choose **File ? Open World** and select `webots/worlds/eel4664_ur5e.wbt`. The Scene Tree should contain `UR5e`; its controller should be `eel4664_ur5e`.
+Choose **File → Open World** and select `webots/worlds/eel4664_ur5e.wbt`. The Scene Tree should contain `UR5e`; its controller should be `eel4664_ur5e`.
 
 ## 4. Observe and predict
 
