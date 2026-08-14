@@ -2,7 +2,7 @@
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 
-Complete Lab 00 before Lab 01. Allow approximately 2–2.5 hours.
+Complete Lab 00 before Lab 01. Allow approximately 1.5–2 hours for the required work.
 
 ## Motivation
 
@@ -13,10 +13,10 @@ Learn the simulator with Cyberbotics' small e-puck exercises before adding the c
 After this lab you should be able to:
 
 1. create, open, save, reset, and run a Webots project;
-2. navigate the Scene Tree and distinguish visual geometry, collision geometry, and physics;
+2. navigate the Scene Tree and locate a robot, its controller field, motors, and sensors;
 3. connect a Python controller to a robot and implement a sense–compute–act loop;
 4. identify motors and sensors by their Webots device names;
-5. explain simulation time steps, rendering modes, and controller sampling;
+5. explain simulation time steps and controller sampling;
 6. map the introductory e-puck concepts to the UR5e.
 
 ## 1. Required student environment
@@ -160,9 +160,10 @@ Keep every controller under `controllers/<controller_name>/<controller_name>.py`
 Do not modify the Scene Tree except where this lab explicitly makes world/model modification a learning objective. Prefer controller and NumPy changes.
 
 **Recovery:** close Webots instead of repeatedly reopening a crashing work world. Start Webots without using **Open Recent**, open the clean starter in paused mode, and immediately save a new work copy. Use **Reset** to restore simulated state; use **Reload/Revert World** to discard world edits and return to the last saved definition. If `void` fails, diagnose the world/assets/rendering. If `void` passes but `diagnostic_minimal` fails, diagnose Python/controller startup. If minimal passes but device listing fails, diagnose the robot/controller assignment or device hierarchy. See [Webots troubleshooting](../docs/TROUBLESHOOTING_WEBOTS.md).
-## 2. Complete the Webots fundamentals
 
-Use the [Cyberbotics Webots tutorials](https://cyberbotics.com/doc/guide/tutorials?version=R2025a) in the order below. When a tutorial presents language tabs, select **Python**. Create the tutorial project outside the course repository so its generated files do not become part of your submission.
+## 2. Complete the required Webots fundamentals
+
+Complete Tutorials 1 and 4 below. When a tutorial presents language tabs, select **Python**. Create the tutorial project outside the course repository so its generated files do not become part of your submission.
 
 ### Required: Tutorial 1 — Your First Simulation
 
@@ -175,32 +176,6 @@ Before running the controller, predict what the e-puck will do. Confirm that you
 - the robot's `controller` field;
 - the wheel motors; and
 - Play, Pause, Reset, and simulation time.
-
-### Required: Tutorial 2 — Modification of the Environment
-
-Complete [Tutorial 2](https://cyberbotics.com/doc/guide/tutorial-2-modification-of-the-environment?version=R2025a).
-
-For the ball or another rigid object, sketch this relationship:
-
-```text
-Solid
-├── children / Shape       visual representation
-├── boundingObject         collision representation
-└── Physics                mass and dynamic behavior
-```
-
-Record one sentence explaining `DEF/USE` and one explaining why collision geometry is often simpler than visual geometry.
-
-### Selected exercise: Tutorial 3 — Appearance
-
-Read the introduction and complete only the **Rendering Options** exercise in [Tutorial 3](https://cyberbotics.com/doc/guide/tutorial-3-appearance?version=R2025a):
-
-1. enable wireframe rendering;
-2. identify how the display differs from missing lighting or missing assets;
-3. restore **View → Plain Rendering**; and
-4. locate the coordinate-system optional rendering control.
-
-The remaining appearance and texture exercises are optional.
 
 ### Required: Tutorial 4 — More About Controllers
 
@@ -216,6 +191,15 @@ while robot.step(time_step) != -1:
 ```
 
 Be prepared to explain why sensors must be enabled, why device names must match the Scene Tree, and why `time_step` must be compatible with `WorldInfo.basicTimeStep`.
+
+### Optional enrichment: Tutorials 2 and 3
+
+Tutorial 2 and Tutorial 3 are **not required for Lab 00, later-lab prerequisites, or graded submissions**.
+
+- [Tutorial 2 - Modification of the Environment](https://cyberbotics.com/doc/guide/tutorial-2-modification-of-the-environment?version=R2025a) offers extra practice editing worlds, using the Scene Tree, and adding or modifying environment objects and their physical properties.
+- [Tutorial 3 - Appearance](https://cyberbotics.com/doc/guide/tutorial-3-appearance?version=R2025a) offers extra practice changing visual properties and rendering options.
+
+The concise world-editing workflow required by the course is taught directly in Lab 01.
 
 Tutorials 5–8 are not prerequisites for Lab 01. Tutorial 8 is assigned in Lab 02, Tutorials 5–6 in Lab 04, and Tutorial 7 in Lab 09, where their Supervisor, robot-modeling, physics, and PROTO concepts are used.
 
@@ -286,23 +270,23 @@ powershell -ExecutionPolicy Bypass -File .\lab00_setup\verify_installation.ps1
 ## Reflection
 
 1. What information belongs in a world file, a PROTO, and a controller?
-2. Why is collision geometry commonly simpler than rendered geometry?
-3. How does the e-puck sense–compute–act loop transfer to a six-joint arm?
-4. Why can a larger basic time step run faster while producing worse physics or control?
-5. Why should a simulation be paused and reset before editing and saving its initial state?
+2. How does the e-puck sense-compute-act loop transfer to a six-joint arm?
+3. Why can a larger basic time step run faster while producing worse physics or control?
+4. Why should a simulation be paused and reset before editing and saving its initial state?
 
 ## Submission
 
 Submit one PDF containing:
 
-1. screenshots showing completion of Tutorials 1, 2, and 4;
-2. a screenshot of Tutorial 3 in wireframe mode and another after restoring plain rendering;
-3. the `Solid` structure sketch and the completed e-puck-to-UR5e mapping;
-4. a screenshot of the official Universal Robots factory sample;
-5. the simulation-time experiment table;
-6. the labeled UR5e feedback-loop sketch;
-7. answers to the reflection questions; and
-8. the output of `verify_installation.py`.
+1. screenshots showing completion of required Tutorials 1 and 4;
+2. the completed e-puck-to-UR5e mapping;
+3. a screenshot of the official Universal Robots factory sample;
+4. the simulation-time experiment table;
+5. the labeled UR5e feedback-loop sketch;
+6. answers to the reflection questions; and
+7. the output of `verify_installation.py`.
+
+Tutorial 2 and Tutorial 3 work is optional and should not be included as a required submission item.
 
 ## Optional advanced path
 

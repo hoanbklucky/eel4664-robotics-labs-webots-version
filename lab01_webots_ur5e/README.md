@@ -16,6 +16,18 @@ Complete Lab 00, run its R2025a sample-preparation script, and inspect the offic
 
 **Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
 
+## Minimum Webots world skills
+
+Use only these environment-editing skills unless a later robotics objective explicitly requires more:
+
+1. Open `worlds/lab01_starter.wbt` paused and immediately use **File -> Save World As...** to create `worlds/lab01_work.wbt`.
+2. In the Scene Tree, select the UR5e and inspect its `controller` field and named devices.
+3. Assign `diagnostic_minimal`, `diagnostic_devices`, or the lab controller through the robot's `controller` field, then Reset before running.
+4. Inspect or add one simple object only when the lab calls for it; avoid unrelated Scene Tree changes.
+5. Use **Reset** to restore simulation state, **Reload/Revert World** to discard saved-world edits, or copy the clean starter again if recovery is needed.
+
+Tutorials 2 and 3 are optional enrichment in the root [Optional Webots Basics](../README.md#optional-webots-basics) section; neither is required for this lab.
+
 ## Required Webots workflow and recovery
 
 Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.

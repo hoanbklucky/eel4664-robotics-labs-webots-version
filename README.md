@@ -55,34 +55,46 @@ Lab 00 contains the required minimal Python-controller test. Do not proceed to a
 - [ ] The minimal Python controller runs
 - [ ] NumPy imports successfully
 - [ ] Git and VS Code are available
-## Lab sequence
 
-| Lab | Topic | Main concepts |
+## Required lab sequence
+
+| Status | Lab | Topic | Main concepts |
+|---|---|---|---|
+| Required | 00 | Webots Fundamentals and Set Up | Tutorials 1 and 4; Python/Webots setup; official UR sample |
+| Required | 01 | Webots and the UR5e | worlds, controllers, devices, sensing and actuation |
+| Required | 02 | Coordinate Frames | frame trees, transformations, Supervisor measurements (Tutorial 8) |
+| Required | 03 | Homogeneous Transformations | rotations, translations, transform composition |
+| Required | 04 | Forward Kinematics | robot/joint modeling (Tutorials 5–6), DH chains, FK verification |
+| Required | 05 | Inverse Kinematics | analytical planar IK, numerical UR5e IK |
+| Required | 06 | Jacobian and Differential Kinematics | Jacobian, Cartesian velocity, pseudoinverse |
+| Required | 07 | Singularities and Manipulability | rank, singular values, condition number |
+| Required | 08 | Trajectory Generation | cubic/quintic trajectories, sampled motor commands |
+| Required | 09 | Manipulator Dynamics | parameterized PROTOs (Tutorial 7), inertia, gravity, payload effects |
+| Required | 10 | Joint-Space Control | P/PD/PID concepts, torque control, transient response |
+| Required | 11 | State Estimation and Parameter Identification | differentiation, filtering, least-squares fitting |
+| Required | 12 | Collision-Aware Planning | collision tests, waypoint planning, smoothing |
+| Required | Final | Integrated Manipulation Project | integration and optional sim-to-real transfer |
+
+## Optional Webots Basics
+
+These simulator-enrichment tutorials are available but are **not prerequisites, graded activities, or required deliverables**:
+
+| Status | Resource | Useful extra practice |
 |---|---|---|
-| 00 | Webots Fundamentals and Set Up | Tutorials 1, 2, and 4; rendering basics; official UR sample |
-| 01 | Webots and the UR5e | worlds, controllers, devices, sensing and actuation |
-| 02 | Coordinate Frames | frame trees, transformations, Supervisor measurements (Tutorial 8) |
-| 03 | Homogeneous Transformations | rotations, translations, transform composition |
-| 04 | Forward Kinematics | robot/joint modeling (Tutorials 5–6), DH chains, FK verification |
-| 05 | Inverse Kinematics | analytical planar IK, numerical UR5e IK |
-| 06 | Jacobian and Differential Kinematics | Jacobian, Cartesian velocity, pseudoinverse |
-| 07 | Singularities and Manipulability | rank, singular values, condition number |
-| 08 | Trajectory Generation | cubic/quintic trajectories, sampled motor commands |
-| 09 | Manipulator Dynamics | parameterized PROTOs (Tutorial 7), inertia, gravity, payload effects |
-| 10 | Joint-Space Control | P/PD/PID concepts, torque control, transient response |
-| 11 | State Estimation and Parameter Identification | differentiation, filtering, least-squares fitting |
-| 12 | Collision-Aware Planning | collision tests, waypoint planning, smoothing |
-| Final | Integrated Manipulation Project | integration and optional sim-to-real transfer |
+| Optional | [Tutorial 2 - Modification of the Environment](https://cyberbotics.com/doc/guide/tutorial-2-modification-of-the-environment?version=R2025a) | editing a world, navigating the Scene Tree, and adding or modifying environment objects |
+| Optional | [Tutorial 3 - Appearance](https://cyberbotics.com/doc/guide/tutorial-3-appearance?version=R2025a) | changing visual properties, inspecting rendering options, and distinguishing visual from physical properties |
+
+Use these resources if you want more Webots practice. Required labs provide the small amount of direct world-editing instruction needed for the robotics activities.
 
 ## Simulator version and safe workflow
 
 The course is pinned to the stable **Webots R2025a** release. Do not use nightly/development builds or upgrade during a graded lab. Every Lab 00–12 and the final project provides a protected `*_starter.wbt` and two non-motion diagnostics. Immediately save a separate `*_work.wbt`, keep controllers under Git, and validate **world → minimal controller → device access → one joint → full algorithm**. See [Troubleshooting Webots](docs/TROUBLESHOOTING_WEBOTS.md) before recovering a crashing project.
+
 ## Start here
 
-1. Complete [Lab 00 — Webots Fundamentals and UR5e Orientation](lab00_setup/README.md), including required Cyberbotics Tutorials 1, 2, and 4.
-2. Complete the selected rendering exercise from Tutorial 3 and restore plain rendering.
-3. Open the official Universal Robots `ure.wbt` sample and map the tutorial concepts to the UR5e.
-4. Complete labs in numerical order; each lab reuses earlier student code.
+1. Complete [Lab 00 — Webots Fundamentals and UR5e Orientation](lab00_setup/README.md), including required Cyberbotics Tutorials 1 and 4.
+2. Open the official Universal Robots `ure.wbt` sample and map the controller/device concepts to the UR5e.
+3. Complete the required labs in numerical order; each lab reuses earlier student code.
 
 If the managed Windows installation cannot download sample assets, run:
 
