@@ -17,12 +17,12 @@ Install the following before opening a course lab:
 
 - Windows 10 or Windows 11
 - stable **Webots R2025a** (do not use a nightly or development build)
-- **Python 3.11 or 3.12, 64-bit**, installed from [python.org](https://www.python.org/downloads/windows/)
+- **Python 3.11, 3.12, or later, installed from [python.org](https://www.python.org/downloads/windows/)
 - Visual Studio Code
 - Git
 - NumPy and Matplotlib
 
-Keep the repository in a short local path such as `C:\eel4664-ur5e-labs`. Avoid OneDrive, SharePoint, network drives, and deeply nested paths.
+Keep the repository in a short local path such as `C:\eel4664-robotic-labs`. Avoid OneDrive, SharePoint, network drives, and deeply nested paths.
 
 ## Part 1 - Install Python and Packages
 
@@ -36,7 +36,7 @@ Keep the repository in a short local path such as `C:\eel4664-ur5e-labs`. Avoid 
    where.exe python
    ```
 
-5. Confirm that the version is Python 3.11 or 3.12 and that `where.exe python` identifies the python.org installation.
+5. Confirm that the version is Python 3.11 or 3.12 or later and that `where.exe python` identifies the python.org installation.
 6. Install the required packages:
 
    ```powershell
@@ -52,7 +52,7 @@ If more than one Python installation exists, use `py -0p` to list their full pat
 1. Install stable **Webots R2025a**.
 2. Open Webots and confirm **Help -> About** reports R2025a.
 3. Open **Tools -> Preferences -> General**.
-4. Set **Python command** to the full path of the Python 3.11 or 3.12 `python.exe`, for example:
+4. Set **Python command** to the full path of the Python 3.11 or 3.12 or later `python.exe`, for example:
 
    ```text
    C:\Users\<username>\AppData\Local\Programs\Python\Python312\python.exe
@@ -76,12 +76,12 @@ Complete these two official Cyberbotics tutorials using Webots R2025a:
 
    Because Tutorials 2 and 3 are optional, start Tutorial 4 from the completed Cyberbotics sample `C:\Program Files\Webots\projects\samples\tutorials\worlds\appearance.wbt`. Immediately use **File -> Save World As...** to save a working copy outside `C:\Program Files\Webots`, then follow Tutorial 4 on that copy.
 
-Tutorials 2 and 3 are optional. You do not need to complete them for Lab 00.
+Tutorials 2 and 3 are optional. Do it if you want to learn how to create simple objects in Webots. You do not need to complete them for Lab 00.
 
 ## Lab 00 Completion Checklist
 
 - [ ] Webots R2025a launches normally
-- [ ] Python 3.11 or 3.12, 64-bit, is installed
+- [ ] Python 3.11 or 3.12 or later, 64-bit, is installed
 - [ ] `python --version` works
 - [ ] NumPy imports successfully
 - [ ] Git and VS Code are available
