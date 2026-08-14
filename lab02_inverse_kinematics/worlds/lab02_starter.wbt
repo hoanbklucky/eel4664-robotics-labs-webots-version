@@ -4,7 +4,7 @@
 EXTERNPROTO "../../../webots-eel4664-sample/projects/robots/universal_robots/protos/UR5e.proto"
 
 WorldInfo {
-  title "EEL 4664 clean UR5e starter"
+  title "EEL 4664 Lab 2 clean UR5e starter"
   basicTimeStep 8
 }
 Viewpoint {
@@ -41,4 +41,20 @@ Solid {
 }
 DEF UR5E UR5e {
   controller "void"
+  toolSlot [
+    GPS {
+      name "tool_position"
+    }
+    InertialUnit {
+      name "tool_orientation"
+    }
+    Pose {
+      translation 0.05 0 0
+      children [
+        GPS {
+          name "tool_test_point_position"
+        }
+      ]
+    }
+  ]
 }

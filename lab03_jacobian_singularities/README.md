@@ -29,7 +29,7 @@ You have completed the mission when:
 
 ## Prerequisites
 
-Complete Lab 2 and the [setup prerequisites](../lab00_setup/README.md). Bring tested FK, transform utilities, frame convention, and Webots adapter. Review Jacobians and singularities from lecture/homework.
+Complete Lab 2 and the [setup prerequisites](../lab00_setup/README.md). Bring the tested Lab 1 FK/transform modules, the Lab 2 IK results, frame convention, and Webots adapter. Review Jacobians and singularities from lecture/homework.
 
 ## Background
 
@@ -61,7 +61,7 @@ Webots measures the resulting motion; it must not compute the assigned Jacobian 
 4. **One joint:** move one joint slightly and verify predicted tool-motion direction.
 5. **Full algorithm:** enable Cartesian and near-singular experiments only after stages 1-4 pass.
 
-Import your Lab 2 FK rather than duplicating it. Establish conservative joint-rate, joint-limit, and condition-number stop thresholds before motion.
+Import your Lab 1 FK rather than duplicating it. Establish conservative joint-rate, joint-limit, and condition-number stop thresholds before motion.
 
 ## Part 2 - Core Implementation
 

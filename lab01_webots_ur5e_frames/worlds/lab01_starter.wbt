@@ -41,4 +41,20 @@ Solid {
 }
 DEF UR5E UR5e {
   controller "void"
+  toolSlot [
+    GPS {
+      name "tool_position"
+    }
+    InertialUnit {
+      name "tool_orientation"
+    }
+    Pose {
+      translation 0.05 0 0
+      children [
+        GPS {
+          name "tool_test_point_position"
+        }
+      ]
+    }
+  ]
 }

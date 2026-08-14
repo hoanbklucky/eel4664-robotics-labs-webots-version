@@ -1,17 +1,29 @@
 # Lab 1 Answers
 
-## Devices and frames
+## Validation Checkpoints
 
-Document the six-joint order, motor/sensor names, time step, controller assignment, and labeled frame tree.
+Copy and complete the Step 10 table. Record the last passing stage before diagnosing a failure.
 
-## Predictions and measurements
+## Devices and Frames
 
-Record the one-joint prediction, initial/final joint vectors, repeated multi-joint trial, and command-versus-measurement metrics.
+Document the six-joint order, motor/sensor names, basic time step, frame sketch, standard-DH convention, T_world_0, and fixed T_6_tool.
 
-## Coordinate-frame validation
+## Offline Transform and FK Tests
 
-State `T_ab`, the point/direction being transformed, your calculation, Supervisor reference, and error.
+Include transformation-test output, the zero and nonsymmetric FK structural tests, rotation orthogonality error, and determinant.
 
-## Reflection
+## FK Alignment and Held-Out Validation
 
-Answer every question in the Lab 1 README and identify the last staged validation boundary that passed.
+Identify the one alignment configuration. For Configurations 2-6, tabulate measured q, predicted/measured tool position, position error, and orientation error. Report aggregate held-out metrics.
+
+## Motion and Repeatability
+
+Record the one-joint prediction and results, both repeated multi-joint trials, command-versus-measurement metrics, and final-state repeatability.
+
+## Tool-Point Transformation
+
+State T_world_tool, p_tool = [0.05, 0, 0] m, rotation order, predicted world point, tool_test_point_position measurement, numerical error, and interpretation.
+
+## Engineering Reflection
+
+Answer every Engineering Question in the Lab 1 README and distinguish systematic from configuration-dependent FK residuals.

@@ -8,7 +8,8 @@ Useful mathematical starter code was moved with Git history into the active labs
 |---|---|
 | Lab 00 setup | [Course setup](../../lab00_setup/README.md) and [Lab 1](../../lab01_webots_ur5e_frames/README.md) |
 | Lab 02 coordinate frames | [Lab 1](../../lab01_webots_ur5e_frames/README.md) |
-| Labs 03-05 transforms/FK/IK | [Lab 2](../../lab02_forward_inverse_kinematics/README.md) |
+| Labs 03-04 transforms/FK | [Lab 1](../../lab01_webots_ur5e_frames/README.md) |
+| Lab 05 inverse kinematics | [Lab 2](../../lab02_inverse_kinematics/README.md) |
 | Labs 06-07 Jacobian/singularities | [Lab 3](../../lab03_jacobian_singularities/README.md) |
 | Lab 08 trajectory generation | [Lab 4](../../lab04_trajectory_tracking/README.md) |
 | Labs 09-11 dynamics/control/estimation/ID | [Lab 5](../../lab05_dynamics_control_identification/README.md) |

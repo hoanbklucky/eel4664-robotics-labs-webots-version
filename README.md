@@ -1,4 +1,4 @@
-# EEL 4664 - Kinematics and Control of Robotic Systems
+﻿# EEL 4664 - Kinematics and Control of Robotic Systems
 
 ## UR5e + Webots laboratory repository
 
@@ -46,8 +46,8 @@ Lab 00 covers software installation, Webots Python configuration, and required W
 | Status | Lab | Topic | Robotic mission/outcome |
 |---|---|---|---|
 | Required | 00 | [Software Setup and Webots Basics](lab00_setup/README.md) | install the supported software and complete Webots Tutorials 1 and 4 |
-| Required | 1 | [Webots, UR5e, and Coordinate Frames](lab01_webots_ur5e_frames/README.md) | bring the UR5e online, interpret its frames, and command verified motion |
-| Required | 2 | [Forward and Inverse Kinematics](lab02_forward_inverse_kinematics/README.md) | reach a specified end-effector pose using student FK/IK |
+| Required | 1 | [UR5e Frames and Forward Kinematics](lab01_webots_ur5e_frames/README.md) | bring the UR5e online and validate student FK across multiple poses |
+| Required | 2 | [Inverse Kinematics](lab02_inverse_kinematics/README.md) | reach specified poses using student IK and the tested Lab 1 FK |
 | Required | 3 | [Jacobian, Differential Kinematics, and Singularities](lab03_jacobian_singularities/README.md) | command Cartesian motion and demonstrate degradation near singularity |
 | Required | 4 | [Trajectory Generation and Tracking](lab04_trajectory_tracking/README.md) | execute and compare point-to-point and straight-line motion |
 | Required | 5 | [Dynamics, Joint Control, and Parameter Identification](lab05_dynamics_control_identification/README.md) | track under changed payload/model conditions and identify a parameter |
@@ -84,7 +84,7 @@ Avoid heavy Scene Tree modifications unless environment or collision modeling is
 ```text
 lab00_setup/                                required Lab 00 software setup and Webots basics
 lab01_webots_ur5e_frames/                   required Lab 1
-lab02_forward_inverse_kinematics/           required Lab 2
+lab02_inverse_kinematics/                   required Lab 2
 lab03_jacobian_singularities/               required Lab 3
 lab04_trajectory_tracking/                  required Lab 4
 lab05_dynamics_control_identification/      required Lab 5

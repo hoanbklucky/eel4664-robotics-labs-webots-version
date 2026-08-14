@@ -1,4 +1,4 @@
-> **Archived:** This README belongs to the former 13-lab sequence and is not assigned. Its useful source moved to the [active consolidated lab](../../../lab02_forward_inverse_kinematics/README.md). Paths and numbering below are retained for historical context.
+> **Archived:** This README belongs to the former 13-lab sequence and is not assigned. Its useful source moved to the [active consolidated lab](../../../lab02_inverse_kinematics/README.md). Paths and numbering below are retained for historical context.
 
 # Lab 05 — Inverse Kinematics
 

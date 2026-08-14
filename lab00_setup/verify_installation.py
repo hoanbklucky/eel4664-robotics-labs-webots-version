@@ -12,7 +12,7 @@ SAMPLE_WORLD = SAMPLE_ROOT / "robots/universal_robots/worlds/ure.wbt"
 UR5E_PROTO = SAMPLE_ROOT / "robots/universal_robots/protos/UR5e.proto"
 SIMULATION_PROJECTS = (
     "lab01_webots_ur5e_frames",
-    "lab02_forward_inverse_kinematics",
+    "lab02_inverse_kinematics",
     "lab03_jacobian_singularities",
     "lab04_trajectory_tracking",
     "lab05_dynamics_control_identification",
