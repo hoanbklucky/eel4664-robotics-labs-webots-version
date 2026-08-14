@@ -2,6 +2,29 @@
 
 This course is pinned to the stable **Webots R2025a** release. Do not use a nightly, development, or automatically upgraded build for graded work. Record the version shown by **Help → About Webots** when reporting a problem.
 
+## Python controller does not start
+
+This is a Python setup failure when `python --version` reports that Python was not found, a C controller works but a Python controller fails, or **Tools -> Preferences -> General -> Python command** is blank.
+
+1. Install 64-bit Python 3.11 or 3.12 from [python.org](https://www.python.org/downloads/windows/) and select **Add python.exe to PATH**. Do not rely on the Microsoft Store/App Execution Alias.
+2. Open a new PowerShell window and run:
+
+   ```powershell
+   python --version
+   where.exe python
+   py -0p
+   ```
+
+3. Select the real python.org interpreter. In Webots, open **Tools -> Preferences -> General** and set **Python command** to its full path, such as:
+
+   ```text
+   C:\Users\<username>\AppData\Local\Programs\Python\Python312\python.exe
+   ```
+
+4. Restart Webots.
+5. Retry `diagnostic_minimal`. Do not run a full lab controller until the minimal controller starts and steps normally.
+
+If `where.exe python` lists only a path under `WindowsApps`, install/repair normal CPython from python.org and reopen PowerShell.
 ## The required validation order
 
 Never debug world parsing, Python startup, device names, and motion in one step. For every lab world:

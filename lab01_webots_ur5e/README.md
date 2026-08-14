@@ -14,6 +14,8 @@ Identify Webots worlds, PROTO models, controllers, devices, and time steps; read
 
 Complete Lab 00, run its R2025a sample-preparation script, and inspect the official `ure.wbt` demonstration. Then use this lab's protected starter/work-world workflow. Predict how each named UR5e joint changes the robot.
 
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+
 ## Required Webots workflow and recovery
 
 Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.

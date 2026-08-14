@@ -10,6 +10,8 @@ The Jacobian predicts how joint motion becomes instantaneous tool motion and is 
 
 Derive and implement the geometric Jacobian; verify it by finite differences; test `Δx ≈ J Δq`; and compute joint velocity with an explicit pseudoinverse.
 
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+
 ## Required Webots workflow and recovery
 
 Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.

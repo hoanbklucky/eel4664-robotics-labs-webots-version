@@ -15,6 +15,8 @@ Interpret `M(q)qdd + C(q,qd)qd + g(q) = tau`; implement a simplified model; sepa
 Complete [Webots Tutorial 7: Your First PROTO](https://cyberbotics.com/doc/guide/tutorial-7-your-first-proto?version=R2025a) using the four-wheel robot saved in Lab 04. Confirm that a PROTO packages a node hierarchy and exposes selected fields with `IS`; it does not supply robot dynamics or control algorithms.
 
 Expose and vary the tutorial robot's `bodyMass`, then connect that experiment to Tutorial 5's `Physics.mass`, `density`, `centerOfMass`, and inertia concepts. For the UR5e trials below, use the same idea to define payload conditions as explicit model parameters. Do not edit or replace Cyberbotics' installed UR5e PROTO; work in a saved course-world copy or a small course-owned wrapper/payload PROTO.
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+
 ## Required Webots workflow and recovery
 
 Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.

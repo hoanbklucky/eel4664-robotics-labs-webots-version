@@ -8,7 +8,7 @@ The course uses:
 
 - the stable Webots R2025a release (nightly and development builds are unsupported);
 - Cyberbotics' official **Universal Robots** sample world and UR5e model;
-- Python 3, NumPy, Matplotlib, and CSV experiment logs.
+- 64-bit CPython 3.11 or 3.12, NumPy, Matplotlib, and CSV experiment logs.
 
 The sequence follows a Correll-style pattern:
 
@@ -16,6 +16,45 @@ The sequence follows a Correll-style pattern:
 
 Webots is an experimental apparatus, not a replacement for mathematics. Students explicitly implement FK, IK, Jacobians, singularity metrics, trajectories, dynamics, controllers, estimators, identification, collision checking, and planning.
 
+## Required semester environment
+
+Complete the [Lab 00 setup prerequisites](lab00_setup/README.md#1-required-student-environment) before beginning any Webots lab. The supported student environment is:
+
+- Windows 10 or Windows 11;
+- stable **Webots R2025a** (nightly and development builds are unsupported);
+- **64-bit CPython 3.11 or 3.12 installed from [python.org](https://www.python.org/downloads/windows/)**;
+- Visual Studio Code;
+- Git; and
+- NumPy, which is required by later labs.
+
+During Python installation, select **Add python.exe to PATH**. Use a normal python.org CPython installation; do not rely on the Microsoft Store package or Windows App Execution Alias. Verify the installation in PowerShell:
+
+```powershell
+python --version
+where.exe python
+py -0p
+python -m pip install --upgrade pip
+python -m pip install numpy
+python -c "import numpy as np; print(np.__version__)"
+```
+
+In Webots, open **Tools -> Preferences -> General**, set **Python command** to the full path of the installed `python.exe`, and restart Webots. For example:
+
+```text
+C:\Users\<username>\AppData\Local\Programs\Python\Python312\python.exe
+```
+
+Lab 00 contains the required minimal Python-controller test. Do not proceed to a full lab controller until that test runs without a crash.
+
+## Setup verification checklist
+
+- [ ] Webots launches normally
+- [ ] Python is installed
+- [ ] `python --version` works
+- [ ] Webots **Python command** is configured
+- [ ] The minimal Python controller runs
+- [ ] NumPy imports successfully
+- [ ] Git and VS Code are available
 ## Lab sequence
 
 | Lab | Topic | Main concepts |

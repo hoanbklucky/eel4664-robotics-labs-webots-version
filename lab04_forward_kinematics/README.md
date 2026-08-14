@@ -22,6 +22,8 @@ The four-wheel robot is not a manipulator model; it is a compact exercise in bui
 
 Do not call a simulator or library FK solver. Webots GPS/InertialUnit data is a reference only after your FK is computed. State any fixed base/tool-frame offset explicitly.
 
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+
 ## Required Webots workflow and recovery
 
 Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.

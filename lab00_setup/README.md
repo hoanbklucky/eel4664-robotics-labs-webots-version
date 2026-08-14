@@ -19,23 +19,130 @@ After this lab you should be able to:
 5. explain simulation time steps, rendering modes, and controller sampling;
 6. map the introductory e-puck concepts to the UR5e.
 
-## 1. Install Webots and Python
+## 1. Required student environment
 
-Install the stable Webots R2025a release—not a nightly or development build—and a Python interpreter with NumPy and Matplotlib:
+Complete this section before starting any Webots lab. The supported course environment is:
+
+- Windows 10 or Windows 11;
+- stable **Webots R2025a** (do not use a nightly or development build);
+- **Python 3.11 or 3.12, 64-bit**, installed from python.org;
+- Visual Studio Code;
+- Git; and
+- NumPy for later numerical labs.
+
+### 1.1 Install Python on Windows
+
+1. Download the 64-bit Windows installer from [python.org](https://www.python.org/downloads/windows/).
+2. On the first installer screen, check **Add python.exe to PATH**.
+3. Complete a normal CPython installation.
+4. Do not rely on the Microsoft Store version or the Windows **App Execution Alias** for `python.exe`.
+
+Open a new PowerShell window after installation and run:
 
 ```powershell
-py -m pip install numpy matplotlib
-py -c "import numpy, matplotlib; print(numpy.__version__)"
+python --version
+where.exe python
 ```
 
-In Webots, set **Tools → Preferences → Python command** to that interpreter if necessary.
+`python --version` must report Python 3.11 or 3.12. `where.exe python` should show the real python.org interpreter, typically below your user profile, rather than only a `WindowsApps` alias. If more than one Python installation exists, list all interpreters registered with the Python launcher:
+
+```powershell
+py -0p
+```
+
+Keep the full path of the 3.11 or 3.12 interpreter; Webots will use it in Section 1.3.
+
+### 1.2 Install and verify NumPy
+
+Use `python -m pip` so packages are installed into the same interpreter that `python` starts:
+
+```powershell
+python -m pip install --upgrade pip
+python -m pip install numpy
+python -c "import numpy as np; print(np.__version__)"
+```
+
+The final command must print a NumPy version without an exception. Some later plotting exercises also require Matplotlib:
+
+```powershell
+python -m pip install matplotlib
+```
+
+### 1.3 Configure Webots to use that Python
+
+1. Open Webots R2025a.
+2. Go to **Tools -> Preferences -> General**.
+3. Find **Python command**.
+4. Enter the full path to the installed `python.exe`, for example:
+
+   ```text
+   C:\Users\<username>\AppData\Local\Programs\Python\Python312\python.exe
+   ```
+
+5. Apply the change, close Webots, and restart it.
+
+Do not leave **Python command** blank. A full interpreter path also prevents Webots from selecting a Microsoft Store alias or a different Python installation.
+
+### 1.4 Verify a minimal Python controller
+
+Before using a lab controller, create a controller for a simple tutorial robot/world with this exact content:
+
+```python
+from controller import Robot
+
+robot = Robot()
+timestep = int(robot.getBasicTimeStep())
+
+print("Python controller started successfully")
+
+while robot.step(timestep) != -1:
+    pass
+```
+
+Place it in Webots' normal `controllers/<controller_name>/<controller_name>.py` layout, assign that controller name to the simple robot's `controller` field, then Reset and Play. Confirm that the Console prints `Python controller started successfully` and that Webots continues running without crashing. The repository's `diagnostic_minimal` controller provides the same no-motion startup boundary for each course starter world.
+
+### 1.5 Setup verification checklist
+
+Do not begin Lab 01 until every item passes:
+
+- [ ] Webots launches normally
+- [ ] Python is installed
+- [ ] `python --version` works
+- [ ] Webots **Python command** is configured
+- [ ] The minimal Python controller runs
+- [ ] NumPy imports successfully
+- [ ] Git and VS Code are available
+
+Run the Windows preflight and repository verifier from the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\lab00_setup\verify_installation.ps1
+```
+
+### 1.6 Troubleshoot Python-controller startup
+
+Use this section when any of the following is true:
+
+- `python --version` says Python was not found;
+- a Webots C controller works but a Python controller crashes or fails; or
+- Webots' **Python command** field is blank.
+
+Recover in this order:
+
+1. Install 64-bit Python 3.11 or 3.12 from python.org and select **Add python.exe to PATH**.
+2. Open a new PowerShell window and verify `python --version`.
+3. Locate the real interpreter with `where.exe python`; if several installations exist, also run `py -0p`.
+4. Enter the full path of the selected `python.exe` in **Tools -> Preferences -> General -> Python command**.
+5. Restart Webots.
+6. Retry the minimal controller from Section 1.4 before running a full lab controller.
+
+If `where.exe python` points only to `WindowsApps`, repair/reinstall Python from python.org and ensure the real installation is on PATH. See [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md) for the world/controller isolation procedure.
 
 Keep course work in a short local path such as `C:\eel4664-ur5e-labs`. Avoid OneDrive, SharePoint, network drives, and deeply nested project paths.
 
 Run the pinned sample-preparation command in Section 3 even if Webots can open its built-in samples. Later starter worlds deliberately reference this local R2025a asset copy so every student uses the same UR5e model.
 
 Before proceeding, bookmark [Webots troubleshooting](../docs/TROUBLESHOOTING_WEBOTS.md), including its safe recovery procedure and staged controller checks.
-
 ## Required Webots workflow and recovery
 
 Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.
@@ -173,7 +280,7 @@ Do not replace the UR5e controller during Lab 00. Lab 01 will connect the Python
 From the course repository, verify the installation:
 
 ```powershell
-py .\lab00_setup\verify_installation.py
+powershell -ExecutionPolicy Bypass -File .\lab00_setup\verify_installation.ps1
 ```
 
 ## Reflection

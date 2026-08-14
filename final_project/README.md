@@ -8,6 +8,8 @@ Integrate the semester's explicit algorithms into one reproducible Webots UR5e t
 
 At minimum use coordinate transformations, FK or IK, trajectory generation or collision-aware planning, feedback/state information, and quantitative evaluation.
 
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+
 ## Required Webots workflow and recovery
 
 Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.

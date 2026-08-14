@@ -10,6 +10,8 @@ A kinematically valid goal can still be unsafe when the arm or swept path inters
 
 Represent obstacles; use your FK to approximate robot links; implement configuration/edge collision tests; build a waypoint planner; smooth a path; and validate it in Webots.
 
+**Python prerequisite:** Before running this lab, complete [Lab 00 Section 1](../lab00_setup/README.md#1-required-student-environment), including the python.org CPython installation, Webots **Python command** configuration, minimal-controller test, and NumPy verification.
+
 ## Required Webots workflow and recovery
 
 Use the semester-pinned stable **Webots R2025a** release only; nightly and development builds are unsupported.
