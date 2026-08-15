@@ -344,11 +344,32 @@ New-Item -ItemType Directory -Force .\lab01_webots_ur5e_frames\controllers\read_
 Copy-Item .\lab01_webots_ur5e_frames\src\read_configuration.py .\lab01_webots_ur5e_frames\controllers\read_configuration\read_configuration.py
 ```
 
-1. Assign `read_configuration` in `lab01_work.wbt`.
-2. Reset and run once.
-3. Confirm it prints six values in the required joint order.
-4. Record the vector with at least six decimal places.
-5. Compute FK from that saved vector before reading tool ground truth.
+Assign and run the controller as follows:
+
+1. Open `lab01_work.wbt` in Webots and leave the simulation paused.
+2. In the Scene Tree, select and expand `UR5e "UR5E"`.
+3. Find the robot's `controller` field and double-click its current value.
+4. Choose `read_configuration` from the controller list, then confirm the selection. The field should now display `controller "read_configuration"`.
+5. Press **Reset** so Webots starts the newly assigned controller from the initial state.
+6. Press **Run**. Watch the **Console** panel at the bottom of Webots.
+7. Confirm that the controller prints one NumPy array containing six joint values in the required order.
+8. Pause the simulation and record all six values with at least six decimal places.
+9. Compute FK from that saved vector before reading tool ground truth.
+
+**No robot movement is expected.** This controller enables the six position sensors, reads them after one simulation step, prints the vector, and then exits normally.
+
+If `read_configuration` does not appear in the controller list, pause Webots and confirm this exact structure exists:
+
+```text
+lab01_webots_ur5e_frames/
+|-- controllers/
+|   `-- read_configuration/
+|       `-- read_configuration.py
+`-- worlds/
+    `-- lab01_work.wbt
+```
+
+The controller folder and Python filename must both be named `read_configuration`. After correcting the structure, reopen `lab01_work.wbt` and try the assignment again.
 
 ### Step 15 - Read the tool reference and align frames
 
@@ -360,19 +381,81 @@ Copy-Item .\lab01_webots_ur5e_frames\src\query_transform.py .\lab01_webots_ur5e_
 Copy-Item .\lab01_webots_ur5e_frames\src\transform_point.py .\lab01_webots_ur5e_frames\controllers\query_transform\transform_point.py
 ```
 
-Assign `query_transform`, Reset, and run. It prints:
+Using the same controller-assignment procedure from Step 14, assign `query_transform`, press **Reset**, and then press **Run**. No movement is expected. It prints:
 
 - `tool_position` in world coordinates;
 - tool roll, pitch, and yaw; and
-- `tool_test_point_position`.
+- `tool_test_point_position`, the measured world coordinates of a test point located 0.05 m along the tool frame's local +x axis.
 
-Use the assigned alignment configuration to determine the single fixed `T_6_tool`. Then lock that value. Validate it on the remaining configurations; never refit it per pose.
+The tool test point is defined as `p_tool = [0.05, 0, 0]` m. Later, you will transform this known local point with your predicted `T_world_tool` and compare the result with `tool_test_point_position`. Agreement checks whether both the predicted tool rotation and translation are correct.
 
-For rotation comparison, form:
+#### Determine the fixed transform from DH frame `{6}` to the Webots tool frame
 
-```text
-R_world_tool_measured = Rz(yaw) Ry(pitch) Rx(roll)
+Your DH calculation ends at frame `{6}`, but the Webots sensors are attached to the tool frame. These frames may have different axis directions or a fixed flange-to-tool offset. The rigid transform `T_6_tool` describes that constant relationship: it maps coordinates expressed in the tool frame into DH frame `{6}`.
+
+Use Configuration 1, the reset pose, only for this one-time alignment:
+
+1. Record the measured reset joint vector as `q_align` using `read_configuration`.
+2. Reset again without changing the robot or world, run `query_transform`, and record the measured tool position and `[roll, pitch, yaw]`.
+3. Construct the measured tool rotation using:
+
+   ```text
+   R_world_tool_measured = Rz(yaw) Ry(pitch) Rx(roll)
+   ```
+
+4. Build `T_world_tool_measured` from that rotation and the measured tool position.
+5. Compute the pose of DH frame `{6}` predicted from the same joint vector:
+
+   ```text
+   T_world_6 = T_world_0 T_0_6(q_align)
+   ```
+
+   In the supplied world, `T_world_0` is identity, so `T_world_6` equals `forward_kinematics(q_align)`.
+
+6. Solve the frame-chain equation
+
+   ```text
+   T_world_tool_measured = T_world_6 T_6_tool
+   ```
+
+   by left-multiplying with the inverse of `T_world_6`:
+
+   ```text
+   T_6_tool = inverse(T_world_6) T_world_tool_measured
+   ```
+
+Create a small analysis script and paste the three recorded arrays into this pattern:
+
+```python
+import numpy as np
+from lab01_webots_ur5e_frames.src.transforms import (
+    homogeneous, invert_transform, rotx, roty, rotz
+)
+from lab01_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics
+
+# Replace each ... with the values printed by the two read-only controllers.
+q_align = np.array([...])             # six measured joint angles
+origin_world = np.array([...])        # three measured tool coordinates
+rpy_world_tool = np.array([...])      # measured [roll, pitch, yaw]
+
+roll, pitch, yaw = rpy_world_tool
+R_world_tool = rotz(yaw) @ roty(pitch) @ rotx(roll)
+T_world_tool_measured = homogeneous(R_world_tool, origin_world)
+
+T_world_6 = forward_kinematics(q_align)  # T_world_0 is identity here
+T_6_tool = invert_transform(T_world_6) @ T_world_tool_measured
+print(np.array2string(T_6_tool, precision=8, suppress_small=True))
 ```
+
+Run this analysis script from the repository root. The printed matrix is the one alignment result to record in `answers.md`.
+
+**Lock the value** means saving this one numerical 4-by-4 matrix and reusing it unchanged. For every later validation pose, compute:
+
+```python
+T_world_tool_predicted = forward_kinematics(q_validation) @ T_6_tool
+```
+
+Do not recompute `T_6_tool` from Configurations 2-6. Doing so would force each prediction to match its measurement and hide FK, joint-order, sign, or frame errors. A correct fixed transform accounts only for the constant difference between frame `{6}` and the tool; the held-out poses then test whether your kinematic model generalizes.
 
 ### Step 16 - Add interpolation and synchronized logging
 
