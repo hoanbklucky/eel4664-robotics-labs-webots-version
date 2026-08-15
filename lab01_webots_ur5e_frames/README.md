@@ -2,7 +2,7 @@
 
 ## Mission
 
-**Predict where the UR5e tool will move, watch the robot execute the motion, and test your forward-kinematics model against Webots measurements.**
+**Predict where the UR5e tool will move, watch its bright tool test-point marker air-draw a loop, and test your forward-kinematics model against Webots measurements.**
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 
@@ -16,7 +16,7 @@ You have completed the mission when:
 - the robot completes a safe one-joint motion by Step 3;
 - you can explain the provided homogeneous-transform code;
 - your UR5e FK returns a valid transform;
-- one fixed tool-frame alignment is reused at three held-out poses; and
+- one fixed tool-frame alignment is reused while the robot air-draws through three held-out poses; and
 - position, orientation, and tool-point errors are reported quantitatively.
 
 ## Learning Objectives
@@ -132,7 +132,7 @@ In the supplied world, the robot base has zero world translation/rotation, so `T
 - `controllers/diagnostic_minimal/` - confirms that Python starts
 - `controllers/diagnostic_devices/` - lists the required devices
 - `controllers/eel4664_ur5e/` - safe one-joint motion and Webots device adapter
-- `controllers/fk_experiment/` - ready-to-run three-pose FK prediction challenge
+- `controllers/fk_experiment/` - ready-to-run FK prediction and air-drawing challenge
 - `src/transforms.py` and `src/transform_point.py` - complete, commented transform utilities
 - `src/test_transforms.py` - short offline transform test
 - `src/ur5e_fk_starter.py` - DH table and student FK starter
@@ -166,11 +166,11 @@ The robot moves in Step 3. Complete Steps 1-2 quickly, but stop if either diagno
    C:\eel4664-robotics-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt
    ```
 
-4. Confirm the complete robot and floor are visible and the robot controller is `void`.
+4. Confirm the complete robot, floor, and bright orange tool test-point marker are visible and the robot controller is `void`.
 5. Immediately select **File -> Save World As...** and save `lab01_work.wbt` beside the starter.
 6. Confirm the title bar shows `lab01_work.wbt`.
 
-**Never overwrite `lab01_starter.wbt`.** Make all controller assignments in the working copy.
+**Never overwrite `lab01_starter.wbt`.** Make all controller assignments in the working copy. If you created `lab01_work.wbt` before the orange marker was added, discard that old working copy and create a fresh one from the updated starter.
 
 ### Step 2 - Run two quick diagnostics
 
@@ -301,9 +301,9 @@ Save the printed 4-by-4 matrix in `answers.md`. This is a one-time frame alignme
 
 ## Part 3 - Robot Experiment
 
-### Step 7 - Predict, move, and compare three poses
+### Step 7 - Predict, air-draw a loop, and compare three poses
 
-The provided `fk_experiment` controller moves the UR5e smoothly through Poses A, B, and C in one run. Do not edit its targets.
+The provided `fk_experiment` controller moves the UR5e through Poses A, B, and C, then returns to A to close an air-drawn loop. The bright orange sphere marks `p_tool = [0.05, 0, 0]` m in the tool frame, making the motion easy to follow and tying the visual experiment to Step 8. Do not edit the targets.
 
 | Pose | Commanded `q_goal` [rad] |
 |---|---|
@@ -316,32 +316,35 @@ The provided `fk_experiment` controller moves the UR5e smoothly through Poses A,
 For each commanded `q_goal`, calculate:
 
 ```python
-T_world_tool_target = forward_kinematics(q_goal) @ T_6_tool
-p_world_tool_target = T_world_tool_target[:3, 3]
+T_world_tool_predicted_from_q_goal = forward_kinematics(q_goal) @ T_6_tool
+p_world_tool_predicted_from_q_goal = T_world_tool_predicted_from_q_goal[:3, 3]
 ```
 
-Record the three predicted tool positions before starting the controller. Also make a simple qualitative prediction: from A to B and from B to C, will the tool move mainly left/right, forward/backward, or up/down? These are genuine predictions; do not look at Webots measurements first.
+Record the three predicted tool positions before starting the controller. Also make a simple qualitative prediction for A to B, B to C, and C back to A: will the tool move mainly left/right, forward/backward, or up/down? These are genuine predictions; do not look at Webots measurements first.
 
 #### Watch the robot execute the experiment
 
 1. Open `lab01_work.wbt` and leave it paused.
 2. Select `UR5e "UR5E"`, double-click its `controller` field, and choose `fk_experiment`.
 3. Press **Reset** and visually confirm that the arm's workspace is clear.
-4. Press **Run** and watch the robot move through A, B, and C. Each smooth move takes eight seconds, followed by a short settling pause.
-5. Confirm the Console finishes with:
+4. Press **Run** and follow the orange tool test-point marker as the robot moves A -> B -> C -> A. Each smooth move takes eight seconds, followed by a short settling pause.
+5. Confirm that the marker returns to its starting point and the Console finishes with:
 
    ```text
-   [EXPERIMENT DONE] Poses A, B, and C completed.
+   [LOOP CLOSED] Returned to Pose A.
+   [EXPERIMENT DONE] Air-drawn loop A -> B -> C -> A completed.
    ```
 
-6. Copy the labeled measurement block for each pose into your results. Each block contains measured `q`, tool position, tool RPY, and tool-test-point position.
+6. Copy the labeled measurement block for Poses A, B, and C into your results. Each block contains measured `q`, tool position, tool RPY, and tool-test-point position. The return to A is a visual closure check, so the controller does not print a duplicate measurement block for it.
+
+The three segments may look curved rather than perfectly straight. This controller interpolates the six **joint angles**, so it does not command a straight Cartesian tool path. Generating and tracking straight tool-space paths is a later trajectory-planning objective.
 
 #### Make the quantitative comparison
 
 Commanded and measured joint angles can differ slightly. For the final accuracy calculation, recompute each prediction with the **measured** joint vector printed at that pose:
 
 ```python
-T_world_tool_predicted = forward_kinematics(q_measured) @ T_6_tool
+T_world_tool_predicted_from_q_measured = forward_kinematics(q_measured) @ T_6_tool
 ```
 
 Compare this result with the Webots tool measurement. Keep the pre-run commanded-angle prediction as evidence that you predicted the motion before observing it. Do not change the DH parameters or `T_6_tool` after seeing Poses A-C.
@@ -351,7 +354,7 @@ For Pose C, use:
 
 ```python
 p_tool = np.array([0.05, 0.0, 0.0])
-p_world_predicted = transform_point(T_world_tool_predicted, p_tool)
+p_world_predicted = transform_point(T_world_tool_predicted_from_q_measured, p_tool)
 ```
 
 Compare this prediction with the printed `tool_test_point_position`. This checks the predicted tool orientation and translation together.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Move through three FK validation poses and print synchronized measurements."""
+"""Visit three FK vertices, close an air-drawn loop, and print measurements."""
 
 from controller import Robot
 import numpy as np
@@ -11,6 +11,7 @@ TARGETS = (
     ("A", np.array([0.0, -1.20, 1.20, -1.50, -1.57, 0.0])),
     ("B", np.array([0.20, -0.80, 1.00, -1.10, -0.70, 0.30])),
     ("C", np.array([-0.30, -0.90, 1.10, -1.40, -1.20, -0.20])),
+    ("A-return", np.array([0.0, -1.20, 1.20, -1.50, -1.57, 0.0])),
 )
 MOVE_DURATION = 8.0
 SETTLE_DURATION = 1.0
@@ -44,7 +45,7 @@ if robot.step(arm.time_step) == -1:
     raise SystemExit
 
 q_start = arm.positions()
-print("FK experiment started. The robot will move through Poses A, B, and C.")
+print("FK air-drawing started: A -> B -> C -> A.")
 
 for label, q_goal in TARGETS:
     print(f"Moving to Pose {label}: {np.array2string(q_goal, precision=3)}")
@@ -68,10 +69,13 @@ for label, q_goal in TARGETS:
     else:
         raise SystemExit
 
-    print_measurement(label, arm)
+    if label == "A-return":
+        print("[LOOP CLOSED] Returned to Pose A.")
+    else:
+        print_measurement(label, arm)
     q_start = arm.positions()
 
-print("\n[EXPERIMENT DONE] Poses A, B, and C completed.")
+print("\n[EXPERIMENT DONE] Air-drawn loop A -> B -> C -> A completed.")
 
 # Keep the final target active until the student pauses or resets Webots.
 while robot.step(arm.time_step) != -1:

@@ -35,11 +35,13 @@ Record the one 4-by-4 `T_6_tool` calculated from the Step 3 alignment data. Expl
 
 ## Steps 7-8 - FK Prediction Challenge
 
-Before running Webots, record the commanded-angle tool-position prediction for Poses A-C and your qualitative prediction of the motion between poses.
+Before running Webots, record the commanded-angle tool-position prediction for Poses A-C and your qualitative prediction of the motion along A -> B -> C -> A.
 
 After the run, complete one table with the alignment pose and held-out Poses A-C. Include measured `q`, predicted/measured tool position, position error, and orientation error. Clearly mark the alignment row and do not include it in held-out statistics.
 
 For Pose C, include the predicted and measured world position of `p_tool = [0.05, 0, 0]` m and its Euclidean error.
+
+State whether the air-drawn segments appeared straight or curved, and explain the observation using joint-space interpolation.
 
 ## Quantitative Summary
 
