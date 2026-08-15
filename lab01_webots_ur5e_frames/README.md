@@ -2,7 +2,7 @@
 
 ## Mission
 
-**Predict where the UR5e tool will move, watch its bright tool test-point marker air-draw a loop, and test your forward-kinematics model against Webots measurements.**
+**Predict where the UR5e tool will move, watch its stylus air-draw a loop, and test your forward-kinematics model against Webots measurements.**
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 
@@ -166,11 +166,11 @@ The robot moves in Step 3. Complete Steps 1-2 quickly, but stop if either diagno
    C:\eel4664-robotics-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt
    ```
 
-4. Confirm the complete robot, floor, and bright orange tool test-point marker are visible and the robot controller is `void`.
+4. Confirm the complete robot, floor, and short stylus and bright orange tip are visible and the robot controller is `void`.
 5. Immediately select **File -> Save World As...** and save `lab01_work.wbt` beside the starter.
 6. Confirm the title bar shows `lab01_work.wbt`.
 
-**Never overwrite `lab01_starter.wbt`.** Make all controller assignments in the working copy. If you created `lab01_work.wbt` before the orange marker was added, discard that old working copy and create a fresh one from the updated starter.
+**Never overwrite `lab01_starter.wbt`.** Make all controller assignments in the working copy. If you created `lab01_work.wbt` before the stylus was added, discard that old working copy and create a fresh one from the updated starter.
 
 ### Step 2 - Run two quick diagnostics
 
@@ -303,7 +303,7 @@ Save the printed 4-by-4 matrix in `answers.md`. This is a one-time frame alignme
 
 ### Step 7 - Predict, air-draw a loop, and compare three poses
 
-The provided `fk_experiment` controller moves the UR5e through Poses A, B, and C, then returns to A to close an air-drawn loop. The bright orange sphere marks `p_tool = [0.05, 0, 0]` m in the tool frame, making the motion easy to follow and tying the visual experiment to Step 8. Do not edit the targets.
+The provided `fk_experiment` controller moves the UR5e through Poses A, B, and C, then returns to A to close an air-drawn loop. The supplied visual stylus extends 0.05 m along the tool frame's +x axis. Its bright orange tip marks `p_tool = [0.05, 0, 0]` m, making the motion easy to follow and tying the visual experiment to Step 8. It has no collision geometry or physics, so it cannot contact or disturb the environment. This is air drawing: the tip shows the path while moving but does not leave a permanent line. Do not edit the targets.
 
 | Pose | Commanded `q_goal` [rad] |
 |---|---|
@@ -327,8 +327,8 @@ Record the three predicted tool positions before starting the controller. Also m
 1. Open `lab01_work.wbt` and leave it paused.
 2. Select `UR5e "UR5E"`, double-click its `controller` field, and choose `fk_experiment`.
 3. Press **Reset** and visually confirm that the arm's workspace is clear.
-4. Press **Run** and follow the orange tool test-point marker as the robot moves A -> B -> C -> A. Each smooth move takes eight seconds, followed by a short settling pause.
-5. Confirm that the marker returns to its starting point and the Console finishes with:
+4. Press **Run** and follow the orange stylus tip as the robot moves A -> B -> C -> A. Each smooth move takes eight seconds, followed by a short settling pause.
+5. Confirm that the stylus tip returns to its starting point and the Console finishes with:
 
    ```text
    [LOOP CLOSED] Returned to Pose A.

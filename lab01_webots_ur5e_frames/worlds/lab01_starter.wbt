@@ -43,6 +43,25 @@ Solid {
 DEF UR5E UR5e {
   controller "void"
   toolSlot [
+    # Visual-only stylus: no boundingObject or Physics node.
+    Pose {
+      translation 0.025 0 0
+      rotation 0 0 1 -1.57079632679
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.12 0.14 0.18
+            metalness 0.65
+            roughness 0.3
+          }
+          geometry Cylinder {
+            height 0.05
+            radius 0.006
+            subdivision 24
+          }
+        }
+      ]
+    }
     Pose {
       translation 0.05 0 0
       children [
@@ -53,7 +72,7 @@ DEF UR5E UR5e {
             roughness 0.3
           }
           geometry Sphere {
-            radius 0.025
+            radius 0.012
             subdivision 2
           }
         }
