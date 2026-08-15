@@ -101,7 +101,29 @@ Relate the DH result to the measured tool frame explicitly:
 T_world_tool = T_world_0 T_0_6(q) T_6_tool
 ```
 
-In the supplied world, the robot base has zero world translation/rotation, so `T_world_0` is identity. Determine and document the single fixed frame-convention transform `T_6_tool` using the assigned alignment configuration, then keep it unchanged for every validation configuration. Do not fit a different offset at each pose.
+### How to read a transform chain
+
+The notation `T_a_b` means "convert coordinates from frame `{b}` into frame `{a}`." Therefore:
+
+- `forward_kinematics(q_goal)` returns `T_0_6`: the pose of DH frame `{6}` relative to base frame `{0}`;
+- `T_6_tool` converts from the tool frame to frame `{6}`; and
+- multiplying them gives `T_0_tool`, the tool pose relative to the base.
+
+```python
+T_0_tool = forward_kinematics(q_goal) @ T_6_tool
+```
+
+The NumPy `@` symbol means matrix multiplication. Read the chain from right to left: first convert tool coordinates into frame `{6}`, then convert frame `{6}` coordinates into frame `{0}`. The adjacent frame labels match and "cancel":
+
+```text
+T_0_6 T_6_tool = T_0_tool
+      ^ ^
+      same intermediate frame
+```
+
+Order matters. In general, `T_0_6 @ T_6_tool` is not equal to `T_6_tool @ T_0_6`. Use `@` for transform composition; do not use `*`, which performs element-by-element multiplication in NumPy.
+
+In the supplied world, the robot base has zero world translation/rotation, so `T_world_0` is identity. Consequently, `T_world_tool` and `T_0_tool` have the same numerical value in this lab. Determine `T_6_tool` once from the alignment configuration and keep it unchanged for every validation configuration.
 
 
 ## Provided Files
