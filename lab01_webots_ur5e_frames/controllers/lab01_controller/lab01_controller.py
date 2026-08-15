@@ -19,8 +19,8 @@ q_goal[0] += 0.10
 duration = 4.0
 t0 = robot.getTime()
 print("Joint order:", ", ".join(JOINT_NAMES))
-print("Initial q [rad]:", np.array2string(q0, precision=4))
-print("Target  q [rad]:", np.array2string(q_goal, precision=4))
+print("Initial q [rad]:", np.array2string(q0, precision=6))
+print("Target  q [rad]:", np.array2string(q_goal, precision=6))
 
 while robot.step(arm.time_step) != -1:
     elapsed = robot.getTime() - t0
@@ -28,10 +28,13 @@ while robot.step(arm.time_step) != -1:
     arm.command_positions(q_command)
     if elapsed >= duration:
         position, rpy = arm.measured_tool_pose()
-        print("Final q [rad]:", np.array2string(arm.positions(), precision=4))
+        test_point = arm.measured_tool_test_point()
+        print("Final q [rad]:", np.array2string(arm.positions(), precision=6))
         if position is not None:
-            print("Tool position [m]:", np.array2string(position, precision=4))
-            print("Tool RPY [rad]:", np.array2string(rpy, precision=4))
+            print("Tool position [m]:", np.array2string(position, precision=6))
+            print("Tool RPY [rad]:", np.array2string(rpy, precision=6))
+        if test_point is not None:
+            print("Tool test point [m]:", np.array2string(test_point, precision=6))
         break
 while robot.step(arm.time_step) != -1:
     arm.command_positions(q_goal)

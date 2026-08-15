@@ -82,15 +82,16 @@ for project_name in SIMULATION_PROJECTS:
         and "COURSE STARTER: DO NOT OVERWRITE" in world.read_text(encoding="utf-8")
         for world in starters
     )
+    workflow_markers = (
+        ("File -> Save World As...",),
+        ("diagnostic_minimal",),
+        ("diagnostic_devices",),
+        ("**One joint:**", "one-joint motion"),
+        ("**Full algorithm:**", "held-out"),
+    )
     workflow_is_documented = all(
-        phrase in readme
-        for phrase in (
-            "File -> Save World As...",
-            "diagnostic_minimal",
-            "diagnostic_devices",
-            "**One joint:**",
-            "**Full algorithm:**",
-        )
+        any(phrase in readme for phrase in alternatives)
+        for alternatives in workflow_markers
     )
     sections_are_complete = all(section in readme for section in REQUIRED_README_SECTIONS)
     checks.append(report(starter_is_protected, f"{project_name}: one protected R2025a starter world"))

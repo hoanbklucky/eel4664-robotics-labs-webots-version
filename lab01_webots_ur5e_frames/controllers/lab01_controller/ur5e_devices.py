@@ -21,10 +21,13 @@ class UR5eDevices:
         }
         self.tool_position = devices.get("tool_position")
         self.tool_orientation = devices.get("tool_orientation")
+        self.tool_test_point = devices.get("tool_test_point_position")
         if self.tool_position:
             self.tool_position.enable(self.time_step)
         if self.tool_orientation:
             self.tool_orientation.enable(self.time_step)
+        if self.tool_test_point:
+            self.tool_test_point.enable(self.time_step)
 
     def positions(self):
         return np.array([sensor.getValue() for sensor in self.sensors], dtype=float)
@@ -42,3 +45,9 @@ class UR5eDevices:
             return None, None
         return (np.array(self.tool_position.getValues(), dtype=float),
                 np.array(self.tool_orientation.getRollPitchYaw(), dtype=float))
+
+    def measured_tool_test_point(self):
+        """Return the optional world position of the tool-frame test point."""
+        if not self.tool_test_point:
+            return None
+        return np.array(self.tool_test_point.getValues(), dtype=float)

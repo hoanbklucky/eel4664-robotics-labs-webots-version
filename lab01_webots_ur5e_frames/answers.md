@@ -1,33 +1,48 @@
 # Lab 1 Answers
 
-## Validation Checkpoints
+## Step 2 - Quick Diagnostics
 
-Copy and complete the Step 10 table. Record the last passing stage before diagnosing a failure.
+Record whether `diagnostic_minimal` and `diagnostic_devices` passed. List any missing required device.
 
-## Devices and Frames
+## Step 3 - One-Joint Motion and Alignment Data
 
-Document the six-joint order, motor/sensor names, basic time step, frame sketch, standard-DH convention, T_world_0, and fixed T_6_tool.
+- Predicted moving links and direction:
+- Actual result:
+- Final measured `q_align` [rad]:
+- Measured tool position [m]:
+- Measured tool `[roll, pitch, yaw]` [rad]:
+- Measured tool-test-point position [m]:
 
-## Transform-Code Reading
+## Step 4 - Transform-Code Understanding
 
-Complete the Step 11 prediction table. Explain the right-hand-rule sine signs, why a point uses homogeneous coordinate 1 while a direction uses 0, and why inverse translation is `-R.T @ p`. Compare each prediction with the program output.
+Predict and then verify:
 
-## Offline Transform and FK Tests
+| Expression | Prediction | Program result | Explanation |
+|---|---|---|---|
+| `rotz(pi/2) @ [1, 0, 0]` | | | |
+| point `[0.1, 0.2, 0.3]` under translation `[1, 2, 3]` | | | |
+| direction `[1, 0, 0]` under the same translation | | | |
 
-Include the provided transformation-test output, the zero and nonsymmetric FK structural tests, rotation orthogonality error, and determinant.
+Explain why inverse translation is `-R.T @ p` and why points and directions use different homogeneous coordinates.
 
-## FK Alignment and Held-Out Validation
+## Step 5 - FK Convention and Offline Test
 
-Identify the one alignment configuration. For Configurations 2-6, tabulate measured q, predicted/measured tool position, position error, and orientation error. Report aggregate held-out metrics.
+State the joint order, standard-DH definition of `A_i`, multiplication order, and frame meanings. Include the zero and nonsymmetric FK test output, rotation orthogonality error, and determinant.
 
-## Motion and Repeatability
+## Step 6 - Fixed Tool Transform
 
-Record the one-joint prediction and results, both repeated multi-joint trials, command-versus-measurement metrics, and final-state repeatability.
+Record the one 4-by-4 `T_6_tool` calculated from the Step 3 alignment data. Explain what it maps and why it must remain fixed.
 
-## Tool-Point Transformation
+## Steps 7-8 - Held-Out Robot Results
 
-State T_world_tool, p_tool = [0.05, 0, 0] m, rotation order, predicted world point, tool_test_point_position measurement, numerical error, and interpretation.
+Complete one table with the alignment pose and held-out Poses A-C. Include measured `q`, predicted/measured tool position, position error, and orientation error. Clearly mark the alignment row and do not include it in held-out statistics.
 
-## Engineering Reflection
+For Pose C, include the predicted and measured world position of `p_tool = [0.05, 0, 0]` m and its Euclidean error.
 
-Answer every Engineering Question in the Lab 1 README and distinguish systematic from configuration-dependent FK residuals.
+## Quantitative Summary
+
+Report mean/maximum position error, mean/maximum orientation error, the required error plot, and a short interpretation of the residuals.
+
+## Engineering Questions
+
+Answer the six Engineering Questions in the Lab 1 README.
