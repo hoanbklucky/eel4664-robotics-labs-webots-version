@@ -53,17 +53,25 @@ Use radians, meters, seconds, and simulation time from `robot.getTime()`.
 | 4 | `wrist_2_joint` | `wrist_2_joint_sensor` |
 | 5 | `wrist_3_joint` | `wrist_3_joint_sensor` |
 
+A **point** is a location, such as the tool tip or an object center. A **direction** is an arrow with length and orientation but no fixed location, such as "move along +x" or the direction of a surface normal. The same three numbers can represent either one; their meaning determines how a coordinate transform treats them.
+
 For a point `p_b` expressed in frame `{b}`:
 
 ```text
+p_a = R_ab p_b + t_ab
 [p_a; 1] = T_ab [p_b; 1]
 ```
 
-A free direction has homogeneous coordinate zero, so translation does not affect it:
+The homogeneous coordinate 1 causes the translation column to be added. For example, if a frame moves 2 m in +x, the point `[1, 0, 0]` moves to `[3, 0, 0]` before any rotation is considered.
+
+A free direction has homogeneous coordinate zero:
 
 ```text
+v_a = R_ab v_b
 [v_a; 0] = T_ab [v_b; 0]
 ```
+
+Multiplying the translation column by zero removes its effect. Translating a frame does not change which way its +x arrow points; only rotation changes a direction.
 
 Webots supplies read-only tool sensors to validate your calculation. It does not perform the transformation for you.
 
@@ -191,7 +199,14 @@ Do not rewrite `src/transforms.py` or `src/transform_point.py`. Read the comment
 - Why does a point use homogeneous coordinate 1 while a direction uses 0?
 - Why is the inverse translation `-R.T @ p` rather than simply `-p`?
 
-Before running the code, predict the results of `rotz(pi/2) @ [1, 0, 0]` and of applying translation `[1, 2, 3]` to both a point and a direction. Then run:
+Before running the code, consider this operation:
+
+```python
+v_before = np.array([1.0, 0.0, 0.0])  # unit vector along +x
+v_after = rotz(np.pi / 2.0) @ v_before
+```
+
+`rotz(np.pi / 2.0)` creates a matrix for a positive 90-degree rotation about the z-axis. The NumPy `@` operator multiplies that rotation matrix by the vector. Using the right-hand rule, predict where the +x vector points afterward. Also predict what happens when translation `[1, 2, 3]` is applied to a point versus a direction. Then run:
 
 ```powershell
 python .\lab01_webots_ur5e_frames\src\test_transforms.py
