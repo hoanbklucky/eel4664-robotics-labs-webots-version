@@ -2,7 +2,7 @@
 
 ## Mission
 
-**Bring the UR5e online and predict its tool pose using your own forward-kinematics model.**
+**Predict where the UR5e tool will move, watch the robot execute the motion, and test your forward-kinematics model against Webots measurements.**
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 
@@ -110,6 +110,7 @@ In the supplied world, the robot base has zero world translation/rotation, so `T
 - `controllers/diagnostic_minimal/` - confirms that Python starts
 - `controllers/diagnostic_devices/` - lists the required devices
 - `controllers/eel4664_ur5e/` - safe one-joint motion and Webots device adapter
+- `controllers/fk_experiment/` - ready-to-run three-pose FK prediction challenge
 - `src/transforms.py` and `src/transform_point.py` - complete, commented transform utilities
 - `src/test_transforms.py` - short offline transform test
 - `src/ur5e_fk_starter.py` - DH table and student FK starter
@@ -278,27 +279,50 @@ Save the printed 4-by-4 matrix in `answers.md`. This is a one-time frame alignme
 
 ## Part 3 - Robot Experiment
 
-### Step 7 - Validate FK at three new poses
+### Step 7 - Predict, move, and compare three poses
 
-Use the same `lab01_controller`. For each row below, replace the three one-joint target lines with the listed `q_goal` and set `duration = 8.0`.
+The provided `fk_experiment` controller moves the UR5e smoothly through Poses A, B, and C in one run. Do not edit its targets.
 
-| Pose | `q_goal` [rad] |
+| Pose | Commanded `q_goal` [rad] |
 |---|---|
 | A | `[0.0, -1.20, 1.20, -1.50, -1.57, 0.0]` |
 | B | `[0.20, -0.80, 1.00, -1.10, -0.70, 0.30]` |
 | C | `[-0.30, -0.90, 1.10, -1.40, -1.20, -0.20]` |
 
-For each pose:
+#### Predict before running Webots
 
-1. edit and save `q_goal`;
-2. visually confirm the target is reasonable and the arm's swept region is clear;
-3. press **Reset**, then **Run**;
-4. record the final measured `q`, tool position, tool RPY, and test-point position;
-5. compute `T_world_tool_predicted = forward_kinematics(q) @ T_6_tool`; and
-6. add the predicted and measured results to one comparison table.
+For each commanded `q_goal`, calculate:
 
-The three poses are held out: do not change the DH parameters or `T_6_tool` to improve their results.
+```python
+T_world_tool_target = forward_kinematics(q_goal) @ T_6_tool
+p_world_tool_target = T_world_tool_target[:3, 3]
+```
 
+Record the three predicted tool positions before starting the controller. Also make a simple qualitative prediction: from A to B and from B to C, will the tool move mainly left/right, forward/backward, or up/down? These are genuine predictions; do not look at Webots measurements first.
+
+#### Watch the robot execute the experiment
+
+1. Open `lab01_work.wbt` and leave it paused.
+2. Select `UR5e "UR5E"`, double-click its `controller` field, and choose `fk_experiment`.
+3. Press **Reset** and visually confirm that the arm's workspace is clear.
+4. Press **Run** and watch the robot move through A, B, and C. Each smooth move takes eight seconds, followed by a short settling pause.
+5. Confirm the Console finishes with:
+
+   ```text
+   [EXPERIMENT DONE] Poses A, B, and C completed.
+   ```
+
+6. Copy the labeled measurement block for each pose into your results. Each block contains measured `q`, tool position, tool RPY, and tool-test-point position.
+
+#### Make the quantitative comparison
+
+Commanded and measured joint angles can differ slightly. For the final accuracy calculation, recompute each prediction with the **measured** joint vector printed at that pose:
+
+```python
+T_world_tool_predicted = forward_kinematics(q_measured) @ T_6_tool
+```
+
+Compare this result with the Webots tool measurement. Keep the pre-run commanded-angle prediction as evidence that you predicted the motion before observing it. Do not change the DH parameters or `T_6_tool` after seeing Poses A-C.
 ### Step 8 - Check a point attached to the tool
 
 For Pose C, use:
@@ -345,7 +369,8 @@ Briefly explain whether the remaining error is more consistent with rounded mode
 - completed `ur5e_fk_starter.py`;
 - completed `answers.md` with transform-code explanations and the DH convention;
 - Step 3 alignment measurements and fixed `T_6_tool`;
-- the alignment plus three-pose comparison table;
+- the three pre-run target-position predictions;
+- the alignment plus three-pose measured comparison table;
 - position, orientation, and tool-test-point errors;
 - one error plot; and
 - answers to the six Engineering Questions.
