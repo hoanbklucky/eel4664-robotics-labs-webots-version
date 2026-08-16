@@ -205,12 +205,12 @@ $$
 
 $$
 \mathbf J[:,j] \approx
-\frac{\operatorname{pose\_error}(T^-,T^+)}{2h},
+\frac{\mathbf e_{\mathrm{pose}}(T^-,T^+)}{2h},
 \qquad
-T^\pm = \operatorname{fk\_tool}(\mathbf q^\pm).
+T^\pm = T_{\mathrm{tool}}(\mathbf q^\pm).
 $$
 
-Here, `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the +/− evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
+Here, $\mathbf e_{\mathrm{pose}}$ is the pose difference calculated by `pose_error`, and $T_{\mathrm{tool}}(\mathbf q)$ is the transform returned by `fk_tool(q)`. The symbol `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the positive and negative evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
 
 ```text
 0.0008 / (2 * 0.001) = 0.4 m/rad
