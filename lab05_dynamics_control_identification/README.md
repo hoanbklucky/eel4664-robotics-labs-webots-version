@@ -5,6 +5,11 @@
 ## Mission
 
 Track the same trajectory under different payloads, tune the controller, and identify an unknown model parameter.
+### Why simulate dynamics and control?
+
+Controller tuning and parameter-identification experiments require repeated motion under changed gains, payloads, and disturbances. On hardware, poor gains or an inaccurate model can cause unsafe motion. Webots provides a repeatable experimental system in which you can measure transient and tracking behavior before considering real-robot deployment.
+
+Simulation does not reproduce every hardware effect, so successful Webots results are evidence that the method works under the modeled conditions—not a guarantee of identical physical performance. Your measurements and held-out validation must support the conclusion.
 
 ## Success Criteria
 

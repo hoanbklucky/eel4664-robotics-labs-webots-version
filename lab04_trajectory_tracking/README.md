@@ -5,6 +5,11 @@
 ## Mission
 
 Execute a smooth point-to-point motion and a straight-line Cartesian motion, then quantitatively compare them.
+### Why track trajectories in Webots?
+
+A generated trajectory is an ideal reference, not proof of the path a robot actually follows. Webots provides the experimental joint and tool measurements needed to compare the commanded and executed motions, including endpoint error, path straightness, smoothness, and maximum joint velocity.
+
+This follows the same workflow used with hardware: **generate -> execute -> measure -> evaluate**. The visual path is useful for intuition, but the recorded data determine whether the trajectory meets its requirements.
 
 ## Success Criteria
 

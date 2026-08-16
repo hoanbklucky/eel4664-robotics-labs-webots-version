@@ -3,6 +3,11 @@
 ## Mission
 
 **Predict where the UR5e tool will move, watch its stylus air-draw a loop, and test your forward-kinematics model against Webots measurements.**
+### Why compare with Webots?
+
+On a physical UR5e, you would calculate the expected tool pose and compare it with an independently measured pose. Because this course does not have access to a physical UR5e, Webots serves as the experimental robot. The comparison tests whether your coordinate-frame choices, transformations, forward kinematics, and fixed tool alignment correctly predict observed motion.
+
+A difference does not automatically mean the FK equations are wrong; it may come from joint tracking, frame alignment, or model conventions. The lab therefore asks you to report these effects rather than judge the result only by appearance.
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 

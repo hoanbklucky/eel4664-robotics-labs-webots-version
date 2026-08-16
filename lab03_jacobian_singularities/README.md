@@ -3,6 +3,11 @@
 ## Mission
 
 **Move the end effector along a Cartesian direction and experimentally demonstrate what happens near a singularity.**
+### Why experiment in Webots?
+
+The Jacobian predicts how small joint velocities produce tool velocity, but its physical meaning becomes clearer when the robot moves. Webots lets you compare that local prediction with measured tool motion and observe how the same Cartesian command becomes difficult near a singularity.
+
+This simulated experiment also permits repeatable approaches to problematic configurations without risking a physical robot. Numerical singularity metrics remain the evidence; the animation helps you interpret what motion capability is being lost.
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 

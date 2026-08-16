@@ -5,6 +5,11 @@
 ## Mission
 
 Complete an autonomous pick-and-place challenge.
+### Why integrate the system in Webots?
+
+A real pick-and-place task combines kinematics, planning, collision checking, trajectory execution, feedback, and safe recovery. Webots lets you test that complete chain against a physical scene before risking a robot, tool, or nearby object.
+
+Success means more than watching one animation complete: the robot must reach measured pose tolerances, maintain clearance, handle failures safely, and repeat the task from Reset. This is the same evidence-driven validation expected before transferring a system to hardware.
 
 ## Success Criteria
 
