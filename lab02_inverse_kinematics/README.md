@@ -106,86 +106,187 @@ Use `fk_tool` for the current pose and target pose so they match the Webots tool
 
 ### 5. Describe the pose error
 
-The position error is
+At each iteration, the solver compares the current tool pose with the target. Position error is
+
+$$
+\mathbf e_p = \mathbf p_{target} - \mathbf p_{current}.
+$$
+
+For example, suppose
 
 ```text
-e_p = p_target - p_current
+p_current = [0.50, 0.10, 0.30] m
+p_target  = [0.52, 0.08, 0.31] m
 ```
 
-For example, `[0.02, 0, 0]` m says the tool must move 2 cm in world +x.
-
-The orientation error is the small rotation that aligns the current tool axes with the target axes:
+Then
 
 ```text
-e_R = 0.5 * sum_i cross(R_current[:, i], R_target[:, i])
+e_p = [0.02, -0.02, 0.01] m
 ```
 
-Each matrix column is one tool axis expressed in the base frame. Stack position and orientation into one six-vector:
+The tool must move 2 cm in world +x, 2 cm in world -y, and 1 cm in world +z.
+
+Position alone is insufficient: the stylus may reach the correct point while pointing the wrong way. Use the small base-frame orientation error
+
+$$
+\mathbf e_R = \frac{1}{2}\sum_{i=1}^{3}
+\left(\mathbf R_{current}[:,i] \times \mathbf R_{target}[:,i]\right).
+$$
+
+Each rotation-matrix column is one tool axis expressed in the base frame. If the target is rotated approximately 2 degrees about world +z from the current orientation, then
 
 ```text
-e = [e_p; e_R]
+e_R approximately equals [0, 0, 0.0349] rad
 ```
 
-The semicolon means that the three orientation entries are placed below the three position entries. `pose_error` and the Jacobian must use the same frame and sign convention.
+because 2 degrees is 0.0349 rad. Stack position and orientation vertically:
+
+$$
+\mathbf e =
+\begin{bmatrix}
+\mathbf e_p \\
+\mathbf e_R
+\end{bmatrix}
+\in \mathbb R^6.
+$$
+
+Thus, `e[0:3]` describes translation and `e[3:6]` describes rotation. `pose_error` and the Jacobian must use the same frame and sign convention.
 
 ### 6. Estimate how each joint moves the tool
 
-The 6-by-6 task Jacobian `J` relates a small joint change to a small tool-pose change:
+Let
+
+$$
+\Delta \mathbf q =
+[\Delta q_1,\ldots,\Delta q_6]^T
+$$
+
+be a small change in the six joints. Let
+
+$$
+\Delta \mathbf x =
+[\Delta p_x,\Delta p_y,\Delta p_z,
+ \Delta \theta_x,\Delta \theta_y,\Delta \theta_z]^T
+$$
+
+be the resulting small tool-pose change. The task Jacobian gives the local linear approximation
+
+$$
+\boxed{\Delta \mathbf x \approx \mathbf J(\mathbf q)\,\Delta \mathbf q}.
+$$
+
+`J` is 6-by-6. Column `j` answers: "If only joint `j` changes by one small radian, how does the tool position and orientation change?"
+
+Estimate that column by nudging joint `j` in both directions:
+
+$$
+\mathbf q^+ = \mathbf q + h\mathbf u_j,
+\qquad
+\mathbf q^- = \mathbf q - h\mathbf u_j,
+$$
+
+$$
+\mathbf J[:,j] \approx
+\frac{\operatorname{pose\_error}(T^-,T^+)}{2h},
+\qquad
+T^\pm = \operatorname{fk\_tool}(\mathbf q^\pm).
+$$
+
+Here, `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the +/− evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
 
 ```text
-pose change approximately equals J delta_q
+0.0008 / (2 * 0.001) = 0.4 m/rad
 ```
 
-Column `j` describes what happens when only joint `j` moves. Estimate it by nudging that joint both ways:
+Repeat for all six joints. Large `h` gives a crude approximation; extremely small `h` exposes floating-point roundoff. Lab 3 derives the Jacobian directly.
 
-```text
-q_plus  = q + h e_j
-q_minus = q - h e_j
-J[:, j] approximately equals pose_error(T_minus, T_plus) / (2h)
-```
+### 7. Convert pose error into a joint correction
 
-Here, `e_j` is zero except at joint `j`. Repeat for all six joints. This is a centered finite difference. Very large `h` gives a crude approximation; very small `h` exposes floating-point roundoff. Lab 3 derives the Jacobian directly.
+If the linear model were exact, we would solve
 
-### 7. Calculate a stable joint correction
+$$
+\mathbf J\,\Delta\mathbf q = \mathbf e.
+$$
 
-Damped least squares turns the pose error into a joint update:
+Three common numerical choices are:
 
-```text
-delta_q = J^T (J J^T + lambda^2 I)^(-1) e
-q_next = q + alpha delta_q
-```
+| Method | Basic idea | Limitation |
+|---|---|---|
+| Jacobian transpose | move along `J.T @ e` | simple but may converge slowly |
+| pseudoinverse | use `pinv(J) @ e` | can create large changes near singularities |
+| damped least squares | regularize the pseudoinverse | more stable; requires a damping value |
 
-- `damping` (`lambda`) stabilizes difficult configurations.
-- `alpha` controls how much of the correction is applied.
-- a maximum joint step prevents sudden jumps.
+This lab uses damped least squares:
 
-Do not form the inverse explicitly. Use
+$$
+\Delta\mathbf q =
+\mathbf J^T\left(\mathbf J\mathbf J^T + \lambda^2\mathbf I\right)^{-1}\mathbf e,
+$$
+
+$$
+\mathbf q_{next}=\mathbf q+\alpha\,\Delta\mathbf q.
+$$
+
+- `lambda` (`damping`) stabilizes difficult configurations.
+- `alpha` controls how much of the proposed correction is applied.
+- `max_joint_step` prevents any joint from changing too much in one iteration.
+
+Do not form the inverse explicitly. Solve the linear system:
 
 ```python
 y = np.linalg.solve(J @ J.T + damping**2 * np.eye(6), error)
-delta_q = J.T @ y
+delta_q = alpha * (J.T @ y)
+delta_q = np.clip(delta_q, -max_joint_step, max_joint_step)
+q_next = q + delta_q
 ```
 
-Too little damping can produce large updates; too much can make convergence slow.
+Too little damping may produce large updates; too much damping may make convergence slow.
 
-### 8. Stop safely and interpret the result
+### 8. Put the numerical IK loop together
 
-Declare success only when both errors pass:
+The complete idea is:
 
-```text
-||e_p|| <= position tolerance
-||e_R|| <= orientation tolerance
+```python
+q = q_seed.copy()
+
+for iteration in range(max_iterations):
+    T_current = fk_tool(q)
+    error = pose_error(T_current, T_target)
+
+    if position_error_passes and orientation_error_passes:
+        return IKResult(q=q, converged=True, ...)
+
+    J = finite_difference_jacobian(fk_tool, q, h)
+    delta_q = alpha * damped_least_squares_step(J, error, damping)
+    delta_q = limit_each_joint_step(delta_q)
+    q = enforce_joint_limits(q + delta_q)
+
+return IKResult(q=q, converged=False, reason="iteration limit", ...)
 ```
 
-Return `converged=False` with a reason for an iteration limit, nonfinite value, or blocked joint limit. Never command a failed result in Webots.
+An illustrative residual history might look like this:
+
+| Iteration | Position error | Orientation error | Largest proposed joint change |
+|---:|---:|---:|---:|
+| 0 | 90 mm | 12.0 deg | 0.10 rad |
+| 10 | 31 mm | 4.2 deg | 0.08 rad |
+| 25 | 6 mm | 1.1 deg | 0.04 rad |
+| 42 | 0.7 mm | 0.3 deg | 0.01 rad |
+
+With tolerances of 1 mm and 0.5 degrees, the last row converges because **both** errors pass. Real results will differ; the important pattern is that the residuals decrease without unstable jumps.
+
+### 9. Stop safely and interpret the result
+
+Return `converged=False` with a clear reason if the iteration limit is reached, a value becomes NaN/Inf, or joint limits prevent progress. Never command a failed result in Webots. Even a converged endpoint must pass joint-limit and sampled-path safety checks.
 
 After execution, separate:
 
-1. **solver error:** target versus `fk_tool(q_goal)`;
-2. **tracking effect:** commanded versus measured joints through FK; and
-3. **model discrepancy:** FK at measured joints versus Webots measurement.
+1. **solver error:** `T_target` versus `fk_tool(q_goal)`;
+2. **tracking effect:** `fk_tool(q_goal)` versus `fk_tool(q_measured)`; and
+3. **model discrepancy:** `fk_tool(q_measured)` versus the Webots tool measurement.
 
-This tells you whether a problem comes from IK, joint tracking, or the model. Webots may measure and visualize the result, but it may not solve FK or IK for you.
+For example, a tiny solver error but a large Webots error suggests that the numerical IK converged and the remaining problem lies in tracking, frame alignment, or model mismatch. Webots may measure and visualize the result, but it may not solve FK or IK for you.
 ## Provided Files
 
 - `worlds/lab02_starter.wbt` - protected UR5e world
