@@ -8,9 +8,10 @@ WorldInfo {
   basicTimeStep 8
 }
 Viewpoint {
-  orientation 0.8090803385 0.3351320493 0.4827789509 1.4182146445
-  position 1.8 -1.8 1.5
-  fieldOfView 0.9
+  # Wide three-quarter view aimed at the center of the UR5e workspace.
+  orientation 0.794202870539 0.328969600253 0.510901950022 1.362522610741
+  position 2.8 -2.8 2.25
+  fieldOfView 0.75
 }
 Background {
   skyColor [
@@ -43,37 +44,58 @@ Solid {
 DEF UR5E UR5e {
   controller "void"
   toolSlot [
-    # Visual-only stylus: no boundingObject or Physics node.
+    # Visual-only stylus aligned with the Universal Robots tool-slot +y axis.
+    # No boundingObject or Physics node: it cannot alter the robot dynamics.
     Pose {
-      translation 0.025 0 0
-      rotation 0 0 1 -1.57079632679
+      translation 0 0.0125 0
+      rotation 1 0 0 -1.57079632679
       children [
         Shape {
           appearance PBRAppearance {
-            baseColor 0.12 0.14 0.18
-            metalness 0.65
-            roughness 0.3
+            baseColor 0.18 0.20 0.24
+            metalness 0.7
+            roughness 0.28
           }
           geometry Cylinder {
-            height 0.05
-            radius 0.006
+            height 0.025
+            radius 0.022
             subdivision 24
           }
         }
       ]
     }
     Pose {
-      translation 0.05 0 0
+      translation 0 0.065 0
+      rotation 1 0 0 -1.57079632679
       children [
         Shape {
           appearance PBRAppearance {
-            baseColor 1 0.15 0
-            emissiveColor 0.35 0.02 0
+            baseColor 0.04 0.24 0.62
+            metalness 0.15
+            roughness 0.32
+          }
+          geometry Cylinder {
+            height 0.08
+            radius 0.009
+            subdivision 24
+          }
+        }
+      ]
+    }
+    Pose {
+      translation 0 0.1175 0
+      rotation 1 0 0 -1.57079632679
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 1 0.18 0.02
+            emissiveColor 0.25 0.025 0
             roughness 0.3
           }
-          geometry Sphere {
-            radius 0.012
-            subdivision 2
+          geometry Cone {
+            height 0.025
+            bottomRadius 0.01
+            subdivision 24
           }
         }
       ]
@@ -85,7 +107,7 @@ DEF UR5E UR5e {
       name "tool_orientation"
     }
     Pose {
-      translation 0.05 0 0
+      translation 0 0.13 0
       children [
         GPS {
           name "tool_test_point_position"

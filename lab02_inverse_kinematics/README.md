@@ -2,423 +2,342 @@
 
 ## Mission
 
-**Move the UR5e to specified end-effector poses using your own inverse-kinematics solver and the FK model validated in Lab 1.**
+**Specify Cartesian tool poses, solve for UR5e joint configurations with your own inverse kinematics, and make the robot reach those poses in Webots.**
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 
 ## Success Criteria
 
-You have completed the mission when:
+You are finished when:
 
-- your planar IK returns both valid branches and rejects unreachable points;
-- your numerical UR5e IK uses the Lab 1 FK rather than a simulator solver;
-- at least two reachable target poses converge from multiple initial guesses;
-- one unreachable target terminates with an explicit failure reason;
-- a selected solution is checked for limits and executed smoothly in Webots;
-- desired-versus-achieved position and orientation errors are reported; and
-- you explain convergence, multiple solutions, damping, and failure behavior.
+- planar IK produces both branches and rejects unreachable points;
+- pose error and the finite-difference Jacobian pass offline tests;
+- guarded damped-least-squares IK converges from multiple seeds;
+- an unreachable target returns an explicit failure;
+- two accepted solutions execute safely in Webots; and
+- solver, tracking, and model errors are reported separately.
 
 ## Learning Objectives
 
-- Solve planar analytical IK with branches and reachability checks.
-- Define a six-dimensional pose-error vector.
-- Construct a finite-difference task Jacobian from the Lab 1 FK.
-- Implement pseudoinverse or damped least-squares IK with NumPy.
-- Apply tolerances, step limits, joint limits, and iteration limits.
-- Compare solutions from multiple initial guesses.
-- Execute a safe IK solution and quantify achieved pose error.
+- Explain why IK can have zero, one, or multiple solutions.
+- Solve and verify planar analytical IK.
+- Define a consistent position/orientation error.
+- Estimate a task Jacobian using the Lab 1 FK model.
+- Implement damped-least-squares IK with convergence and safety guards.
+- Compare seed-dependent solutions and safely execute accepted results.
 
 ## Prerequisites
 
-Complete [Lab 1 - UR5e Frames and Forward Kinematics](../lab01_webots_ur5e_frames/README.md). Bring:
+Complete [Lab 1 - UR5e Frames and Forward Kinematics](../lab01_webots_ur5e_frames/README.md). Reuse its tested `forward_kinematics(q)`, fixed `T_6_tool`, device adapter, and smooth joint interpolation. Do not copy or reimplement FK.
 
-- passing transformation/FK tests;
-- the finalized `forward_kinematics(q)` function;
-- the fixed `T_6_tool` convention;
-- the ordered UR5e device adapter;
-- the tested smooth interpolation function; and
-- the Lab 1 logger and pose-error calculations.
-
-Do not reimplement FK in Lab 2. Import and reuse the tested Lab 1 module.
+Complete the Python/NumPy prerequisites in [Lab 00](../lab00_setup/README.md).
 
 ## Background
 
-IK seeks `q` such that:
+### What IK solves
+
+Forward kinematics maps joints to a pose:
 
 ```text
-T_world_tool(q) approximately equals T_target
+q -> T_world_tool(q)
 ```
 
-At iteration `k`, form a six-dimensional task error:
+Inverse kinematics asks for a joint vector that produces a requested pose:
 
 ```text
-e = [p_target - p_current;
-     orientation_error(R_current, R_target)]
+T_target -> q
 ```
 
-Use the base-frame orientation-error convention assigned in lecture. One common small-angle form is:
+Unlike FK, IK may have no solution, one boundary solution, or several joint-space branches. A numerical solver normally finds one nearby solution, so its initial guess matters.
+
+### Planar analytical IK
+
+For a two-link planar arm,
 
 ```text
+x = l1 cos(q1) + l2 cos(q1 + q2)
+y = l1 sin(q1) + l2 sin(q1 + q2)
+```
+
+A target radius `r = sqrt(x^2 + y^2)` is reachable only if
+
+```text
+|l1 - l2| <= r <= l1 + l2
+```
+
+The two branches follow from
+
+```text
+c2 = (x^2 + y^2 - l1^2 - l2^2) / (2 l1 l2)
+s2 = +/- sqrt(1 - c2^2)
+q2 = atan2(s2, c2)
+q1 = atan2(y, x) - atan2(l2 s2, l1 + l2 c2)
+```
+
+The signs give elbow-up and elbow-down configurations. Verify every returned branch by substituting it into FK. Reject unreachable targets rather than returning NaN.
+
+### Tool-frame target and pose error
+
+Lab 1 FK ends at DH frame `{6}`, whereas Webots measures the tool. Use the one fixed Lab 1 alignment:
+
+```python
+def fk_tool(q):
+    return forward_kinematics(q) @ T_6_tool
+```
+
+The solver receives `fk_tool`, so its current pose, target pose, and Webots measurement refer to the same frame. Never refit `T_6_tool` for a new target.
+
+At iteration `k`, form a six-dimensional base-frame error:
+
+```text
+e = [e_p; e_R]
+e_p = p_target - p_current
 e_R = 0.5 * sum_i cross(R_current[:, i], R_target[:, i])
 ```
 
-Construct a finite-difference task Jacobian from your Lab 1 FK, then compute a guarded update. For damped least squares:
+The rotational expression is a small-angle approximation. A sign or frame mismatch between this error and the Jacobian usually causes divergence.
+
+### Finite-difference Jacobian and IK update
+
+The task Jacobian relates a small joint change to a small pose change:
+
+```text
+e approximately equals J delta_q
+```
+
+Estimate column `j` by perturbing only joint `j` and using centered differences:
+
+```text
+q_plus  = q + h e_j
+q_minus = q - h e_j
+J[:, j] approximately equals task_difference(T_minus, T_plus) / (2h)
+```
+
+Large `h` causes truncation error; extremely small `h` amplifies floating-point error. Lab 3 later derives the analytical Jacobian.
+
+Near ill-conditioning, use damped least squares:
 
 ```text
 delta_q = J^T (J J^T + lambda^2 I)^(-1) e
-q_next = q + alpha * delta_q
+q_next = q + alpha delta_q
 ```
 
-Use `numpy.linalg.solve` rather than explicitly forming a matrix inverse. Lab 3 later derives and studies the analytical geometric Jacobian; this lab uses finite differences only to support IK.
+Implement the solve without an explicit inverse:
 
-Webots may measure and visualize the result. It may not solve FK or IK for the submitted implementation.
+```python
+y = np.linalg.solve(J @ J.T + damping**2 * np.eye(6), error)
+delta_q = J.T @ y
+```
+
+`alpha` controls progress, damping suppresses large updates, and a maximum joint step prevents jumps. Declare success only when both position and orientation tolerances pass. All other exits must return `converged=False` and a reason.
+
+### What the final errors mean
+
+Keep three effects separate:
+
+1. **Solver error:** target versus `fk_tool(q_goal)`.
+2. **Tracking effect:** `fk_tool(q_goal)` versus `fk_tool(q_measured)`.
+3. **Model discrepancy:** `fk_tool(q_measured)` versus the Webots measurement.
+
+Webots may measure and visualize the result. It may not solve FK or IK for the submitted work.
 
 ## Provided Files
 
-- `worlds/lab02_starter.wbt` - protected clean world with tool sensors
+- `worlds/lab02_starter.wbt` - protected UR5e world
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
-- `src/planar_fk.py` and `src/planar_ik.py` - analytical warm-up
-- `src/numerical_ik.py` - pose error, finite-difference Jacobian, and IK scaffold
-- `src/execute_pose_target.py` - mission integration scaffold
-- `answers.md`
-
-The transformation utilities, configuration reader, and UR5e FK starter were moved to Lab 1 with Git history preserved.
+- `src/planar_fk.py` and `src/planar_ik.py`
+- `src/numerical_ik.py` - numerical IK scaffold
+- `src/execute_pose_target.py` - safe execution scaffold
+- `answers.md` - results template
 
 ## Part 1 - Setup / Validation
 
-Complete every checkpoint in order.
+### Step 1 - Open, copy, and validate
 
-### Step 1 - Recheck the Lab 1 mathematical dependency
+1. From the repository root, verify the Lab 1 dependency:
 
-From the repository root:
+   ```powershell
+   python .\lab01_webots_ur5e_frames\src\test_transforms.py
+   python -c "import numpy as np; from lab01_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; print(forward_kinematics(np.zeros(6)))"
+   ```
 
-```powershell
-python .\lab01_webots_ur5e_frames\src\test_transforms.py
-python -c "import numpy as np; from lab01_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; T=forward_kinematics(np.zeros(6)); print(T)"
-```
+2. Open `lab02_inverse_kinematics\worlds\lab02_starter.wbt` in Webots R2025a while paused.
+3. Confirm the robot and floor render and the controller is `void`.
+4. Immediately choose **File -> Save World As...** and create `lab02_work.wbt` beside the starter.
+5. Validate the working copy in order:
 
-Both commands must run successfully. If FK is incomplete or fails structural checks, return to Lab 1.
+   | Stage | Expected result |
+   |---|---|
+   | world with `void` | stable; no movement |
+   | `diagnostic_minimal` | 10 completed steps; no movement |
+   | `diagnostic_devices` | six motors, six sensors, and tool sensors; no movement |
+   | **One joint:** Lab 1 controller | shoulder pan changes by only +0.05 rad |
+   | **Full algorithm:** | wait until Steps 2-6 pass |
 
-### Step 2 - Open and copy the Lab 2 world
+Record pass/fail in `answers.md`. Stop at the first failure.
 
-1. Start Webots R2025a and keep it paused.
-2. Select **File -> Open World...**.
-3. Open `C:\eel4664-robotics-labs\lab02_inverse_kinematics\worlds\lab02_starter.wbt`.
-4. Confirm the robot and floor render and the UR5e controller is `void`.
-5. Immediately select **File -> Save World As...**.
-6. Save beside the starter as `lab02_work.wbt`.
-7. Confirm the title bar shows the working copy.
-
-Never overwrite `lab02_starter.wbt`.
-
-### Step 3 - Validate staged controller boundaries
-
-1. **World:** Reset and run `void` for about two seconds.
-2. **Minimal controller:** assign `diagnostic_minimal`, Reset, and confirm 10 completed steps.
-3. **Devices:** assign `diagnostic_devices` and confirm all six motors, six joint sensors, `tool_position`, and `tool_orientation`.
-4. **One joint:** repeat a conservative +0.05 rad shoulder-pan motion with the Lab 1 adapter.
-5. **Full algorithm:** do not execute IK until offline convergence, limits, and all earlier stages pass.
-
-Record pass/fail evidence in `answers.md`.
-
-### Step 4 - Create the Lab 2 execution controller
-
-Close Webots and run:
-
-```powershell
-Copy-Item .\lab01_webots_ur5e_frames\controllers\eel4664_ur5e .\lab02_inverse_kinematics\controllers\lab02_controller -Recurse
-Rename-Item .\lab02_inverse_kinematics\controllers\lab02_controller\eel4664_ur5e.py lab02_controller.py
-```
-
-If `lab02_controller` already exists, do not copy again.
-
-At the top of `lab02_controller.py`, add:
-
-```python
-from pathlib import Path
-import sys
-
-REPO_ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(REPO_ROOT))
-
-from lab01_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics
-from lab01_webots_ur5e_frames.src.send_joint_goal import interpolate
-```
-
-This imports the tested Lab 1 implementation directly. Do not make a second FK copy in Lab 2.
-
-### Step 5 - Confirm the controller import before motion
-
-Temporarily leave the controller target equal to measured `q0` and print:
-
-```python
-print("FK import check:")
-print(forward_kinematics(q0))
-```
-
-Assign `lab02_controller`, Reset, and run. Pass: a finite 4-by-4 matrix prints and the robot does not move.
-
-### Step 6 - Record the setup checkpoint table
-
-| Stage | Expected | Actual | Pass? |
-|---|---|---|---|
-| Lab 1 transforms/FK | offline tests pass | | |
-| `void` world | stable world | | |
-| `diagnostic_minimal` | 10 steps | | |
-| `diagnostic_devices` | required devices listed | | |
-| **One joint:** | +0.05 rad at joint 0 | | |
-| FK import | finite 4-by-4 matrix, no motion | | |
-| **Full algorithm:** | wait for Parts 2-3 | | |
+**Never overwrite `lab02_starter.wbt`.** Discard a damaged working copy and recreate it from the starter.
 
 ## Part 2 - Core Implementation
 
-### Step 7 - Complete the planar analytical warm-up
+### Step 2 - Solve the planar warm-up
 
-Implement `planar_3r_fk` and `planar_2r_ik`.
+Implement `planar_2r_fk` and `planar_2r_ik` using the Background equations. Test:
 
-`planar_2r_ik(x, y, l1, l2)` must:
+- one interior point, including both branches and FK reconstruction error;
+- one workspace-boundary point; and
+- one unreachable point that raises `ValueError`.
 
-- check `|l1-l2| <= sqrt(x^2+y^2) <= l1+l2`;
-- return both elbow-up and elbow-down branches when distinct;
-- reconstruct the requested point with planar FK; and
-- raise `ValueError` for an unreachable point.
+### Step 3 - Implement pose error and the task Jacobian
 
-Test at least:
+In `src/numerical_ik.py`:
 
-1. a point strictly inside the workspace;
-2. a point on a workspace boundary; and
-3. an unreachable point.
+1. Implement `pose_error(T_current, T_target)` and validate input shapes and finite values.
+2. Test identical poses, a +0.01 m target-x change, and a small positive target-z rotation.
+3. Implement a centered-difference `finite_difference_jacobian(fk_fn, q, h)`.
+4. Confirm a finite `(6, 6)` result at a nonsymmetric `q`.
+5. Compare `h = 1e-3, 1e-4, 1e-5, 1e-6` rad and justify one selection.
 
-Report both branches in radians and verify each with FK.
+Use the same base-frame orientation convention in both functions.
 
-### Step 8 - Implement and unit-test pose error
+### Step 4 - Implement guarded numerical IK
 
-In `src/numerical_ik.py`, implement `pose_error(T_current, T_target)`.
+Complete `damped_least_squares_step` and `numerical_ik`. Each iteration must calculate `fk_fn(q)`, save position/orientation residuals, test both tolerances, calculate a damped update, limit the joint step, and enforce joint limits. Return an `IKResult` for success and every failure condition.
 
-Pass these tests before continuing:
-
-- identical transforms produce six zeros;
-- +0.01 m target x translation produces the expected translational sign;
-- a small positive target z rotation produces the expected rotational sign; and
-- inputs not shaped `(4, 4)` are rejected.
-
-State whether the rotational error is expressed in the base or body frame and keep that convention consistent with the Jacobian.
-
-### Step 9 - Implement the finite-difference task Jacobian
-
-Implement `finite_difference_jacobian(fk_fn, q, h)` using your Lab 1 FK.
-
-Requirements:
-
-- output shape `(6, 6)`;
-- one column per joint in the required order;
-- centered differences unless otherwise approved;
-- translational and rotational rows use the same frame convention as `pose_error`; and
-- `h` is configurable.
-
-Evaluate at `h = 1e-3, 1e-4, 1e-5, 1e-6` rad. Select a value that balances truncation and floating-point error and justify it.
-
-### Step 10 - Implement a guarded IK iteration
-
-Complete `numerical_ik` with:
-
-1. current pose from Lab 1 FK;
-2. six-dimensional pose error;
-3. finite-difference Jacobian;
-4. damped least-squares update using `numpy.linalg.solve`;
-5. step scale `alpha`;
-6. maximum per-iteration joint step;
-7. joint-limit enforcement;
-8. separate position/orientation stopping tolerances;
-9. maximum iteration count; and
-10. returned residual history and failure reason.
-
-Recommended starting values:
+Use these starting values:
 
 | Parameter | Initial value |
 |---|---:|
 | `alpha` | 0.3 |
-| `lambda` | 0.02 |
+| damping | 0.02 |
 | finite-difference `h` | `1e-5` rad |
-| maximum `|delta_q_i|` | 0.10 rad/iteration |
+| maximum `|delta_q_i|` | 0.10 rad |
 | position tolerance | 0.001 m |
 | orientation tolerance | 0.5 degrees |
 | maximum iterations | 500 |
 
-These are starting values, not guaranteed optimal values. Never allow NaN/Inf, silent nonconvergence, or unlimited iterations.
+Reject invalid inputs, NaN/Inf, limit violations, and iteration-limit exits. Change only one tuning parameter at a time.
 
-### Step 11 - Define reproducible reachable targets
+### Step 5 - Test reachable targets, seeds, and failure
 
-Generate targets with the tested Lab 1 FK so their reachability is known:
+Create `fk_tool` with the fixed `T_6_tool`, then generate known-reachable targets:
 
 ```python
 q_reference_a = np.array([0.20, -1.00, 1.10, -1.30, -1.00, 0.20])
 q_reference_b = np.array([-0.40, -0.80, 0.90, -1.20, -1.20, -0.30])
-
-T_target_a = forward_kinematics(q_reference_a)
-T_target_b = forward_kinematics(q_reference_b)
+T_target_a = fk_tool(q_reference_a)
+T_target_b = fk_tool(q_reference_b)
 ```
 
-The solver receives only `T_target` and an initial guess; it must not use `q_reference` internally.
+The solver receives only a target and seed; it must not use `q_reference` internally. Solve each target from the measured Reset configuration, all zeros, and one nonsymmetric seed.
 
-For each target, solve from at least three seeds:
-
-- measured Reset configuration;
-- all zeros; and
-- one instructor-approved nonsymmetric seed.
-
-Save convergence flag, iterations, final position/orientation residual, final `q`, maximum step, and residual history.
-
-### Step 12 - Test explicit failure
-
-Create an unreachable target without changing its orientation:
+Test failure with:
 
 ```python
 T_unreachable = T_target_a.copy()
 T_unreachable[:3, 3] += np.array([1.5, 0.0, 0.0])
 ```
 
-Pass: the solver stops at the iteration limit or an explicit guard and returns `converged=False` with a useful reason. It must not return the last iterate as though it were a valid solution.
+Save convergence, reason, iterations, residuals, final `q`, and residual history. Plot a fast run, a slower/different-seed run, and the unreachable run.
 
-### Step 13 - Select an executable solution
-
-Before Webots motion, reject any candidate that:
-
-- did not meet both tolerances;
-- contains a nonfinite value;
-- violates the stated joint limits;
-- makes a discontinuous branch jump from measured `q0`; or
-- fails the sampled joint-space path checks.
-
-Among valid candidates, justify a selection criterion such as minimum wrapped joint distance from `q0`. IK endpoint convergence alone does not prove the path is safe.
-
-Do not call Webots, SciPy, MoveIt, or another library's FK/IK solver.
+Select one solution per reachable target. Reject nonconverged, nonfinite, limit-violating, discontinuous, or path-unsafe candidates. Prefer a valid solution near measured `q0`. Do not use Webots, SciPy, MoveIt, or another library to solve FK/IK.
 
 ## Part 3 - Robot Experiment
 
-### Step 14 - Freeze the offline solver results
+### Step 6 - Connect the solver to Webots safely
 
-Before opening Webots motion, save a table containing every target/seed result. Mark each candidate accepted or rejected and give the reason. Preserve residual histories for all accepted solutions and at least one failed run.
+1. Close Webots. If `controllers\lab02_controller` does not exist, run:
 
-### Step 15 - Integrate the selected solution
+   ```powershell
+   Copy-Item .\lab01_webots_ur5e_frames\controllers\eel4664_ur5e .\lab02_inverse_kinematics\controllers\lab02_controller -Recurse
+   Rename-Item .\lab02_inverse_kinematics\controllers\lab02_controller\eel4664_ur5e.py lab02_controller.py
+   ```
 
-Complete `src/execute_pose_target.py` so it:
+2. Add the repository root to `lab02_controller.py`:
 
-1. receives a target transform and measured `q0`;
-2. calls your IK solver;
-3. rejects nonconvergence or unsafe candidates;
-4. verifies the endpoint with Lab 1 FK;
-5. sends only an accepted `q_goal` to the Webots adapter;
-6. uses the tested Lab 1 interpolation; and
-7. logs desired/measured joints and measured tool pose.
+   ```python
+   from pathlib import Path
+   import sys
 
-Keep IK mathematics outside Webots device-I/O functions.
+   REPO_ROOT = Path(__file__).resolve().parents[3]
+   sys.path.insert(0, str(REPO_ROOT))
+   ```
 
-### Step 16 - Execute Target A
+3. Import Lab 1 FK/interpolation and the Lab 2 mission functions; do not copy the FK source.
+4. Complete `prepare_pose_mission` so it accepts only converged, finite, limit-safe solutions and verifies the endpoint with `fk_tool`.
+5. Complete `execute_pose_mission` so it interpolates from measured `q0`, commands all joints, holds the goal, and logs joints/tool pose.
+6. First set `q_goal = q0`; confirm a finite pose prints and the robot does not move.
 
-1. Open `lab02_work.wbt` paused.
-2. Repeat `void -> diagnostic_minimal -> diagnostic_devices -> one joint` if the world or controller changed.
-3. Assign `lab02_controller`.
-4. Reset and read measured `q0`.
-5. Recompute/select the valid Target A solution from that `q0`.
-6. Print target pose, selected `q_goal`, predicted final pose, and safety checks.
-7. Execute over at least 8 seconds.
-8. Hold the final command.
-9. Record measured final joints and tool pose.
-10. Reset and repeat once to check reproducibility.
+### Step 7 - Execute Target A and Target B
 
-### Step 17 - Execute Target B or a second branch
+For each target:
 
-Repeat Step 16 for Target B. If two valid IK solutions for one target are available and both paths are safe, the instructor may instead require execution of both branches.
+1. Open `lab02_work.wbt` paused, assign `lab02_controller`, and **Reset**.
+2. Read measured `q0` and select a validated solution near it.
+3. Print convergence, `q_goal`, predicted endpoint, joint-limit check, and sampled-path check.
+4. Stop without motion if any check fails.
+5. Otherwise execute a smooth move lasting at least eight seconds and hold the goal.
+6. Record measured final joints and Webots tool pose.
+7. Reset and repeat once for reproducibility.
 
-Never send `T_unreachable` or any nonconverged result to the robot.
-
-### Step 18 - Record achieved task-space error
-
-For each executed trial:
-
-1. evaluate Lab 1 FK at measured final `q`;
-2. apply fixed `T_world_0` and `T_6_tool`;
-3. compare predicted pose with the requested target;
-4. compare the measured Webots tool pose with the target; and
-5. distinguish solver residual, joint-tracking error, and model/simulator discrepancy.
-
-The outcome is a UR5e that reaches Cartesian targets because of your own IK solver and previously validated FK model.
+Never command the unreachable target or a failed result. Execute multiple branches only if assigned and both paths pass safety checks.
 
 ## Part 4 - Quantitative Analysis
 
-For every target/seed pair, report:
+### Step 8 - Separate and interpret the errors
 
-- convergence status and failure reason;
-- iteration count;
-- final position and orientation residual;
-- final joint vector;
-- distance from the initial guess;
-- maximum per-iteration joint step; and
-- whether the candidate passed execution checks.
-
-Plot residual norm versus iteration for at least:
-
-1. a fast converging run;
-2. a slower or differently seeded run; and
-3. the unreachable target.
-
-For each executed target, report:
+For both targets and repeated trials, calculate:
 
 ```text
-position_error = ||p_target - p_achieved||_2
-R_error = R_target^T R_achieved
-orientation_error = acos(clamp((trace(R_error)-1)/2, -1, 1))
+solver error:         T_target versus fk_tool(q_goal)
+measured-joint error: T_target versus fk_tool(q_measured)
+Webots error:         T_target versus T_webots_measured
 ```
 
-Provide separate values using:
+For each comparison use
 
-- the FK pose at the solver's `q_goal`;
-- FK at measured final joints; and
-- Webots measured tool pose.
+```text
+position_error = ||p_target - p_achieved||
+R_error = R_target^T R_achieved
+orientation_error = acos(clamp((trace(R_error) - 1) / 2, -1, 1))
+```
 
-This separates numerical convergence, joint tracking, and model discrepancy. Compare repeated trials and any multiple branches.
+Report position in millimeters and orientation in degrees in one table. Identify the dominant error layer. Also state whether different seeds found the same joint vector or different branches and which accepted solution required less joint travel.
 
 ## Engineering Questions
 
-1. Why does IK depend on an already validated FK model?
-2. Why can different initial guesses converge to different joint vectors?
-3. How do `alpha`, damping, and maximum step affect stability and speed?
-4. Why are position and orientation tolerances reported separately?
-5. Why is a small endpoint residual insufficient to guarantee safe execution?
-6. How does the unreachable-target residual history differ from convergence?
-7. Why must the finite-difference Jacobian use the same error-frame convention?
-8. Which errors come from IK, tracking, and the nominal Webots model?
+1. Why must IK reuse an already validated FK model?
+2. Why can different seeds produce different joint vectors for one pose?
+3. How do `alpha`, damping, and maximum joint step affect convergence?
+4. Why are position and orientation tolerances checked separately?
+5. Why does endpoint convergence not guarantee safe execution?
+6. How does an unreachable-target residual history differ from convergence?
+7. How do the three error layers locate a problem?
 
 ## What to Submit
 
-- completed planar and numerical IK source;
-- completed `execute_pose_target.py` and `lab02_controller`;
-- checkpoint table and direct Lab 1 FK import evidence;
-- planar branch/reachability tests;
-- pose-error and finite-difference Jacobian tests;
-- solver parameter table and safety limits;
-- target/seed convergence table;
-- residual-history plots including failure;
-- Webots logs for both targets and the repeated trial;
-- desired-versus-achieved position/orientation errors;
-- multiple-solution and failure analysis; and
-- completed `answers.md`.
+- completed four source scaffolds and the Lab 2 controller folder;
+- completed `answers.md`;
+- planar branch/reachability and numerical unit-test evidence;
+- target/seed table and three residual plots, including failure;
+- Webots logs for two targets and repeated trials;
+- three-layer error table; and
+- Engineering Question answers.
 
-Do not submit `lab02_work.wbt` unless requested.
+Do not submit `lab02_work.wbt`, vendor assets, or caches unless requested.
 
 ## Troubleshooting
 
 | Last passing stage | First failing stage | Likely problem |
 |---|---|---|
-| Lab 1 FK | Lab 2 import | repository path or module import |
-| planar IK | pose-error tests | transform direction or error sign |
-| pose error | Jacobian test | perturbation size, column order, or frame |
-| Jacobian | IK convergence | damping, step, limits, or target |
-| offline convergence | one-joint Webots check | controller/device boundary |
-| one joint | full IK motion | unsafe selection, interpolation, or units |
-| predicted endpoint | measured endpoint | tracking or model/tool-frame discrepancy |
+| Lab 1 tests | import | path or incomplete Lab 1 work |
+| planar IK | pose error | transform direction, sign, or frame |
+| pose error | Jacobian | perturbation, joint order, or rotation convention |
+| Jacobian | convergence | seed, damping, step, limits, or target |
+| offline solver | stationary controller | import boundary |
+| stationary controller | motion | safety rejection, adapter, interpolation, or units |
+| FK at measured joints | Webots pose | fixed tool transform or model discrepancy |
 
-If IK diverges, do not tune every parameter simultaneously. Save the failing residual history, test one target/seed offline, inspect one Jacobian column, and change one parameter at a time.
+If IK diverges, inspect one residual history and one Jacobian column, then change one parameter at a time.
 
-For a Webots failure, recover from `lab02_starter.wbt` and repeat `void -> minimal -> devices -> one joint`. Use [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md) for repeated crashes.
+For Webots recovery, reopen the protected starter, create a fresh working copy, repeat `void -> minimal -> devices -> one joint`, and run the stationary import test before full motion. See [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md) for repeated crashes.

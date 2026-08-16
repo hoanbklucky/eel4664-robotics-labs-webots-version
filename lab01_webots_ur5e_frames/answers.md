@@ -39,7 +39,7 @@ Before running Webots, record the commanded-angle tool-position prediction for P
 
 After the run, complete one table with the alignment pose and held-out Poses A-C. Include measured `q`, predicted/measured tool position, position error, and orientation error. Clearly mark the alignment row and do not include it in held-out statistics.
 
-For Pose C, include the predicted and measured world position of `p_tool = [0.05, 0, 0]` m and its Euclidean error.
+For Pose C, include the predicted and measured world position of `p_tool = [0, 0.13, 0]` m and its Euclidean error.
 
 State whether the air-drawn segments appeared straight or curved, and explain the observation using joint-space interpolation.
 
