@@ -166,7 +166,7 @@ The robot moves in Step 3. Complete Steps 1-2 quickly, but stop if either diagno
    C:\eel4664-robotics-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt
    ```
 
-4. Confirm the complete robot and floor are visible, including the short blue stylus with an orange tip, and that the robot controller is `void`.
+4. Confirm the complete robot and floor are visible immediately, without zooming or rotating the view. The short blue stylus with an orange tip should also be visible, and the robot controller should be `void`.
 5. Immediately select **File -> Save World As...** and save `lab01_work.wbt` beside the starter.
 6. Confirm the title bar shows `lab01_work.wbt`.
 
