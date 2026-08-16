@@ -34,38 +34,41 @@ Complete the Python/NumPy prerequisites in [Lab 00](../lab00_setup/README.md).
 
 ## Background
 
-### What IK solves
+### 1. What inverse kinematics does
 
-Forward kinematics maps joints to a pose:
+Suppose you want the stylus tip at a chosen location and orientation. You know the desired **tool pose**, but not the six joint angles that produce it.
+
+| Problem | Given | Find |
+|---|---|---|
+| Forward kinematics (FK) | joint angles `q` | tool pose `T_world_tool(q)` |
+| Inverse kinematics (IK) | desired pose `T_target` | joint angles `q` |
+
+FK asks, "Where will the hand be if the joints have these angles?" IK asks, "How should the joints bend to put the hand here?"
+
+IK can have no solution, one solution, or several solutions. For example, a target may be outside the workspace, or two different arm shapes may reach the same pose.
+
+### 2. Start with a two-link arm
+
+For a flat two-link arm,
 
 ```text
-q -> T_world_tool(q)
+base --(q1)-- link l1 --(q2)-- link l2 --> target (x, y)
 ```
 
-Inverse kinematics asks for a joint vector that produces a requested pose:
-
-```text
-T_target -> q
-```
-
-Unlike FK, IK may have no solution, one boundary solution, or several joint-space branches. A numerical solver normally finds one nearby solution, so its initial guess matters.
-
-### Planar analytical IK
-
-For a two-link planar arm,
+FK gives
 
 ```text
 x = l1 cos(q1) + l2 cos(q1 + q2)
 y = l1 sin(q1) + l2 sin(q1 + q2)
 ```
 
-A target radius `r = sqrt(x^2 + y^2)` is reachable only if
+First calculate `r = sqrt(x^2 + y^2)`. The point is reachable only if
 
 ```text
 |l1 - l2| <= r <= l1 + l2
 ```
 
-The two branches follow from
+For a reachable point,
 
 ```text
 c2 = (x^2 + y^2 - l1^2 - l2^2) / (2 l1 l2)
@@ -74,73 +77,115 @@ q2 = atan2(s2, c2)
 q1 = atan2(y, x) - atan2(l2 s2, l1 + l2 c2)
 ```
 
-The signs give elbow-up and elbow-down configurations. Verify every returned branch by substituting it into FK. Reject unreachable targets rather than returning NaN.
+The two signs of `s2` give elbow-up and elbow-down solutions. These are different IK **branches** that reach the same point. Check each answer by putting its angles back into FK. If the reachability test fails, report failure instead of returning NaN.
 
-### Tool-frame target and pose error
+### 3. Solve the UR5e by improving a guess
 
-Lab 1 FK ends at DH frame `{6}`, whereas Webots measures the tool. Use the one fixed Lab 1 alignment:
+Instead of deriving every UR5e branch, this lab uses a numerical loop:
+
+```text
+start with q
+   -> calculate the current pose with FK
+   -> measure the error to the target
+   -> calculate a small joint correction
+   -> update q and repeat
+```
+
+Because the process begins with a guess, different initial guesses can lead to different valid solutions.
+
+### 4. Use the same tool frame everywhere
+
+Lab 1 FK ends at DH frame `{6}`, while Webots measures the attached tool. Use the fixed Lab 1 alignment:
 
 ```python
 def fk_tool(q):
     return forward_kinematics(q) @ T_6_tool
 ```
 
-The solver receives `fk_tool`, so its current pose, target pose, and Webots measurement refer to the same frame. Never refit `T_6_tool` for a new target.
+Use `fk_tool` for the current pose and target pose so they match the Webots tool frame. Never recalculate `T_6_tool` for a new target.
 
-At iteration `k`, form a six-dimensional base-frame error:
+### 5. Describe the pose error
+
+The position error is
 
 ```text
-e = [e_p; e_R]
 e_p = p_target - p_current
+```
+
+For example, `[0.02, 0, 0]` m says the tool must move 2 cm in world +x.
+
+The orientation error is the small rotation that aligns the current tool axes with the target axes:
+
+```text
 e_R = 0.5 * sum_i cross(R_current[:, i], R_target[:, i])
 ```
 
-The rotational expression is a small-angle approximation. A sign or frame mismatch between this error and the Jacobian usually causes divergence.
-
-### Finite-difference Jacobian and IK update
-
-The task Jacobian relates a small joint change to a small pose change:
+Each matrix column is one tool axis expressed in the base frame. Stack position and orientation into one six-vector:
 
 ```text
-e approximately equals J delta_q
+e = [e_p; e_R]
 ```
 
-Estimate column `j` by perturbing only joint `j` and using centered differences:
+The semicolon means that the three orientation entries are placed below the three position entries. `pose_error` and the Jacobian must use the same frame and sign convention.
+
+### 6. Estimate how each joint moves the tool
+
+The 6-by-6 task Jacobian `J` relates a small joint change to a small tool-pose change:
+
+```text
+pose change approximately equals J delta_q
+```
+
+Column `j` describes what happens when only joint `j` moves. Estimate it by nudging that joint both ways:
 
 ```text
 q_plus  = q + h e_j
 q_minus = q - h e_j
-J[:, j] approximately equals task_difference(T_minus, T_plus) / (2h)
+J[:, j] approximately equals pose_error(T_minus, T_plus) / (2h)
 ```
 
-Large `h` causes truncation error; extremely small `h` amplifies floating-point error. Lab 3 later derives the analytical Jacobian.
+Here, `e_j` is zero except at joint `j`. Repeat for all six joints. This is a centered finite difference. Very large `h` gives a crude approximation; very small `h` exposes floating-point roundoff. Lab 3 derives the Jacobian directly.
 
-Near ill-conditioning, use damped least squares:
+### 7. Calculate a stable joint correction
+
+Damped least squares turns the pose error into a joint update:
 
 ```text
 delta_q = J^T (J J^T + lambda^2 I)^(-1) e
 q_next = q + alpha delta_q
 ```
 
-Implement the solve without an explicit inverse:
+- `damping` (`lambda`) stabilizes difficult configurations.
+- `alpha` controls how much of the correction is applied.
+- a maximum joint step prevents sudden jumps.
+
+Do not form the inverse explicitly. Use
 
 ```python
 y = np.linalg.solve(J @ J.T + damping**2 * np.eye(6), error)
 delta_q = J.T @ y
 ```
 
-`alpha` controls progress, damping suppresses large updates, and a maximum joint step prevents jumps. Declare success only when both position and orientation tolerances pass. All other exits must return `converged=False` and a reason.
+Too little damping can produce large updates; too much can make convergence slow.
 
-### What the final errors mean
+### 8. Stop safely and interpret the result
 
-Keep three effects separate:
+Declare success only when both errors pass:
 
-1. **Solver error:** target versus `fk_tool(q_goal)`.
-2. **Tracking effect:** `fk_tool(q_goal)` versus `fk_tool(q_measured)`.
-3. **Model discrepancy:** `fk_tool(q_measured)` versus the Webots measurement.
+```text
+||e_p|| <= position tolerance
+||e_R|| <= orientation tolerance
+```
 
-Webots may measure and visualize the result. It may not solve FK or IK for the submitted work.
+Return `converged=False` with a reason for an iteration limit, nonfinite value, or blocked joint limit. Never command a failed result in Webots.
 
+After execution, separate:
+
+1. **solver error:** target versus `fk_tool(q_goal)`;
+2. **tracking effect:** commanded versus measured joints through FK; and
+3. **model discrepancy:** FK at measured joints versus Webots measurement.
+
+This tells you whether a problem comes from IK, joint tracking, or the model. Webots may measure and visualize the result, but it may not solve FK or IK for you.
 ## Provided Files
 
 - `worlds/lab02_starter.wbt` - protected UR5e world
