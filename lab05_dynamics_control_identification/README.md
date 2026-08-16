@@ -35,9 +35,13 @@ tau_cmd = Kp (q_des - q) + Kd (qdot_des - qdot_est) + Ki integral(e)
 
 This approximation supports a controlled comparison; it does not replace full manipulator dynamics. Numerical differentiation amplifies noise, filtering introduces delay, and parameter estimates are credible only when units, excitation, conditioning, and held-out validation are reported.
 
+The starter keeps the same visual stylus and `p_tool = [0, 0.13, 0]` m used in Labs 1-4. It is visual-only: because it has no `Physics` or `boundingObject` node, it adds no payload, inertia, or contact force to the dynamics experiment.
+
+The green `BASELINE_CONDITION_PAD` and orange `PAYLOAD_CONDITION_PAD` distinguish the two matched trials visually. They are labels only and do not change dynamics; the actual Condition B payload/model change must remain instructor-approved and explicitly logged.
+
 ## Provided Files
 
-- `worlds/lab05_starter.wbt` - clean, known-good starter; never overwrite it
+- `worlds/lab05_starter.wbt` - clean starter with stylus, grid, and two condition pads; never overwrite it
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
 - `src/simple_dynamics.py` - simplified torque-model starter
 - `src/pd_control_sim.py` - independent NumPy plant/controller starter
@@ -48,7 +52,7 @@ This approximation supports a controlled comparison; it does not replace full ma
 
 ## Part 1 - Setup / Validation
 
-1. **World:** open `worlds/lab05_starter.wbt` paused, verify it, and immediately use **File -> Save World As...** to create `worlds/lab05_work.wbt`.
+1. **World:** open `worlds/lab05_starter.wbt` paused; verify the stylus, grid, `BASELINE_CONDITION_PAD`, and `PAYLOAD_CONDITION_PAD`; then immediately use **File -> Save World As...** to create `worlds/lab05_work.wbt`.
 2. **Minimal controller:** run `diagnostic_minimal`.
 3. **Devices:** run `diagnostic_devices` and verify the selected motor and sensor.
 4. **One joint:** execute a conservative position command before any instructor-approved effort-mode extension.

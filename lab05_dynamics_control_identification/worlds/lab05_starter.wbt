@@ -42,6 +42,162 @@ Solid {
     size 3 3 0.05
   }
 }
+# Shared visual-only Cartesian reference grid.
+DEF COURSE_GRID Shape {
+  appearance PBRAppearance {
+    baseColor 0.18 0.21 0.25
+    emissiveColor 0.025 0.03 0.04
+    roughness 1
+  }
+  geometry IndexedLineSet {
+    coord Coordinate {
+      point [
+        -0.8 -0.8 0.003, -0.8 0.8 0.003,
+        -0.4 -0.8 0.003, -0.4 0.8 0.003,
+        0 -0.8 0.003, 0 0.8 0.003,
+        0.4 -0.8 0.003, 0.4 0.8 0.003,
+        0.8 -0.8 0.003, 0.8 0.8 0.003,
+        -0.8 -0.8 0.003, 0.8 -0.8 0.003,
+        -0.8 -0.4 0.003, 0.8 -0.4 0.003,
+        -0.8 0 0.003, 0.8 0 0.003,
+        -0.8 0.4 0.003, 0.8 0.4 0.003,
+        -0.8 0.8 0.003, 0.8 0.8 0.003
+      ]
+    }
+    coordIndex [
+      0 1 -1, 2 3 -1, 4 5 -1, 6 7 -1, 8 9 -1,
+      10 11 -1, 12 13 -1, 14 15 -1, 16 17 -1, 18 19 -1
+    ]
+  }
+}
+DEF WORLD_FRAME_REFERENCE Group {
+  children [
+    Pose {
+      translation 0.12 0 0.012
+      children [
+        Shape {
+          appearance PBRAppearance { baseColor 0.9 0.08 0.08 emissiveColor 0.12 0 0 }
+          geometry Box { size 0.24 0.008 0.008 }
+        }
+      ]
+    }
+    Pose {
+      translation 0 0.12 0.012
+      children [
+        Shape {
+          appearance PBRAppearance { baseColor 0.08 0.8 0.12 emissiveColor 0 0.1 0 }
+          geometry Box { size 0.008 0.24 0.008 }
+        }
+      ]
+    }
+    Pose {
+      translation 0 0 0.12
+      children [
+        Shape {
+          appearance PBRAppearance { baseColor 0.08 0.25 0.95 emissiveColor 0 0.02 0.15 }
+          geometry Box { size 0.008 0.008 0.24 }
+        }
+      ]
+    }
+  ]
+}# Visual-only condition staging pads; they do not create payload physics.
+DEF BASELINE_CONDITION_PAD Pose {
+  translation 0.62 0.34 0.014
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0.12 0.75 0.22 emissiveColor 0 0.08 0.01 transparency 0.2 roughness 0.8 }
+      geometry Cylinder { height 0.018 radius 0.12 subdivision 32 }
+    }
+  ]
+}
+DEF PAYLOAD_CONDITION_PAD Pose {
+  translation 0.62 -0.34 0.014
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0.95 0.42 0.05 emissiveColor 0.12 0.02 0 transparency 0.2 roughness 0.8 }
+      geometry Cylinder { height 0.018 radius 0.12 subdivision 32 }
+    }
+  ]
+}
+DEF CONTROL_REFERENCE_LINE Shape {
+  appearance PBRAppearance { baseColor 0.72 0.75 0.8 emissiveColor 0.04 0.04 0.05 roughness 0.8 }
+  geometry IndexedLineSet {
+    coord Coordinate { point [ 0.62 -0.34 0.025, 0.62 0.34 0.025 ] }
+    coordIndex [ 0 1 -1 ]
+  }
+}
 DEF UR5E UR5e {
   controller "void"
+  toolSlot [
+    # Visual-only stylus aligned with the Universal Robots tool-slot +y axis.
+    # No boundingObject or Physics node: it cannot alter the robot dynamics.
+    Pose {
+      translation 0 0.0125 0
+      rotation 1 0 0 -1.57079632679
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.18 0.20 0.24
+            metalness 0.7
+            roughness 0.28
+          }
+          geometry Cylinder {
+            height 0.025
+            radius 0.022
+            subdivision 24
+          }
+        }
+      ]
+    }
+    Pose {
+      translation 0 0.065 0
+      rotation 1 0 0 -1.57079632679
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.04 0.24 0.62
+            metalness 0.15
+            roughness 0.32
+          }
+          geometry Cylinder {
+            height 0.08
+            radius 0.009
+            subdivision 24
+          }
+        }
+      ]
+    }
+    Pose {
+      translation 0 0.1175 0
+      rotation 1 0 0 -1.57079632679
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 1 0.18 0.02
+            emissiveColor 0.25 0.025 0
+            roughness 0.3
+          }
+          geometry Cone {
+            height 0.025
+            bottomRadius 0.01
+            subdivision 24
+          }
+        }
+      ]
+    }
+    GPS {
+      name "tool_position"
+    }
+    InertialUnit {
+      name "tool_orientation"
+    }
+    Pose {
+      translation 0 0.13 0
+      children [
+        GPS {
+          name "tool_test_point_position"
+        }
+      ]
+    }
+  ]
 }

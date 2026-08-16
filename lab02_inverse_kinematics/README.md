@@ -2,7 +2,13 @@
 
 ## Mission
 
-**Specify Cartesian tool poses, solve for UR5e joint configurations with your own inverse kinematics, and make the robot reach those poses in Webots.**
+**Choose Cartesian target poses, predict the required UR5e joint configurations with your own inverse-kinematics solver, command the robot in Webots, and measure how closely the stylus actually reaches each target pose.**
+
+### Why measure in Webots?
+
+On a physical UR5e, you would command the IK solution, measure the tool pose, and compare that measurement with the requested target. Because this course does not have access to a physical UR5e, Webots serves as the experimental robot. It preserves the same engineering workflow: **predict -> execute -> measure -> compare**.
+
+A small target-to-measurement error supports the conclusion that the complete IK experiment worked. A large error does not automatically mean the IK mathematics is wrong; it may instead come from joint tracking, frame alignment, or a difference between your kinematic model and the Webots model. You will report these effects separately later in the lab. Webots is therefore a repeatable experimental reference, not a substitute for every source of uncertainty found on real hardware.
 
 **Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
 
@@ -103,6 +109,17 @@ def fk_tool(q):
 ```
 
 Use `fk_tool` for the current pose and target pose so they match the Webots tool frame. Never recalculate `T_6_tool` for a new target.
+
+The tool-frame origin is at the stylus mount. The visible orange tip is the fixed point
+
+```python
+p_tool = np.array([0.0, 0.13, 0.0])
+p_world_tip = transform_point(fk_tool(q), p_tool)
+```
+
+The stylus has no mass or collision geometry. It makes pose changes visible without changing the robot dynamics.
+
+The starter also contains `TARGET_A` and `TARGET_B`. Each target has red/green/blue pose axes at the tool-frame origin and a translucent sphere at the desired stylus-tip point. These nodes are visual references only; the submitted solver must use the numerical `T_target`, not read target coordinates from Webots.
 
 ### 5. Describe the pose error
 
@@ -289,7 +306,7 @@ After execution, separate:
 For example, a tiny solver error but a large Webots error suggests that the numerical IK converged and the remaining problem lies in tracking, frame alignment, or model mismatch. Webots may measure and visualize the result, but it may not solve FK or IK for you.
 ## Provided Files
 
-- `worlds/lab02_starter.wbt` - protected UR5e world
+- `worlds/lab02_starter.wbt` - protected UR5e world with stylus, coordinate grid, work surface, and two visual pose targets
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
 - `src/planar_fk.py` and `src/planar_ik.py`
 - `src/numerical_ik.py` - numerical IK scaffold
@@ -308,7 +325,7 @@ For example, a tiny solver error but a large Webots error suggests that the nume
    ```
 
 2. Open `lab02_inverse_kinematics\worlds\lab02_starter.wbt` in Webots R2025a while paused.
-3. Confirm the robot and floor render and the controller is `void`.
+3. Confirm the robot, stylus, coordinate grid, `IK_WORK_SURFACE`, `TARGET_A`, and `TARGET_B` render and the controller is `void`.
 4. Immediately choose **File -> Save World As...** and create `lab02_work.wbt` beside the starter.
 5. Validate the working copy in order:
 
@@ -369,13 +386,13 @@ Reject invalid inputs, NaN/Inf, limit violations, and iteration-limit exits. Cha
 Create `fk_tool` with the fixed `T_6_tool`, then generate known-reachable targets:
 
 ```python
-q_reference_a = np.array([0.20, -1.00, 1.10, -1.30, -1.00, 0.20])
-q_reference_b = np.array([-0.40, -0.80, 0.90, -1.20, -1.20, -0.30])
+q_reference_a = np.array([0.20, -0.80, 1.00, -1.10, -0.70, 0.30])
+q_reference_b = np.array([-0.30, -0.90, 1.10, -1.40, -1.20, -0.20])
 T_target_a = fk_tool(q_reference_a)
 T_target_b = fk_tool(q_reference_b)
 ```
 
-The solver receives only a target and seed; it must not use `q_reference` internally. Solve each target from the measured Reset configuration, all zeros, and one nonsymmetric seed.
+The displayed `TARGET_A` and `TARGET_B` frames correspond to these two known-reachable configurations. They let you see whether the stylus reaches the requested pose, but they are not solver inputs. The solver receives only a target and seed; it must not use `q_reference` internally. Solve each target from the measured Reset configuration, all zeros, and one nonsymmetric seed.
 
 Test failure with:
 
@@ -423,7 +440,7 @@ For each target:
 3. Print convergence, `q_goal`, predicted endpoint, joint-limit check, and sampled-path check.
 4. Stop without motion if any check fails.
 5. Otherwise execute a smooth move lasting at least eight seconds and hold the goal.
-6. Record measured final joints and Webots tool pose.
+6. Confirm visually that the orange stylus tip enters the corresponding translucent target sphere and its orientation aligns with the target axes; then record measured final joints and Webots tool pose.
 7. Reset and repeat once for reproducibility.
 
 Never command the unreachable target or a failed result. Execute multiple branches only if assigned and both paths pass safety checks.

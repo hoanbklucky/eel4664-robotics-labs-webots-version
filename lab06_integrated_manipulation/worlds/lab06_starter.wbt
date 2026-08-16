@@ -42,6 +42,80 @@ Solid {
     size 3 3 0.05
   }
 }
+# Lab 6 physical manipulation cell.
+DEF MANIPULATION_TABLE Solid {
+  translation 0.68 0 0.18
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.42 0.30 0.20
+        roughness 0.72
+      }
+      geometry Box { size 1.0 1.1 0.08 }
+    }
+  ]
+  name "MANIPULATION_TABLE"
+  boundingObject Box { size 1.0 1.1 0.08 }
+}
+DEF PICK_OBJECT Solid {
+  translation 0.52 0.34 0.255
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.08 0.45 0.95
+        roughness 0.45
+      }
+      geometry Box { size 0.07 0.07 0.07 }
+    }
+  ]
+  name "PICK_OBJECT"
+  boundingObject Box { size 0.07 0.07 0.07 }
+  physics Physics { mass 0.08 }
+}
+DEF TRANSPORT_OBSTACLE Solid {
+  translation 0.68 0 0.43
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.88 0.16 0.08
+        roughness 0.6
+      }
+      geometry Box { size 0.14 0.18 0.42 }
+    }
+  ]
+  name "TRANSPORT_OBSTACLE"
+  boundingObject Box { size 0.14 0.18 0.42 }
+}
+# Visual destination bin: the object rests on the physical tabletop.
+DEF DESTINATION_BIN Group {
+  children [
+    Pose {
+      translation 0.80 -0.34 0.226
+      children [
+        Shape {
+          appearance PBRAppearance { baseColor 0.12 0.8 0.2 emissiveColor 0 0.08 0.01 transparency 0.18 roughness 0.8 }
+          geometry Box { size 0.24 0.24 0.012 }
+        }
+      ]
+    }
+    Pose {
+      translation 0.80 -0.455 0.27
+      children [ Shape { appearance PBRAppearance { baseColor 0.1 0.55 0.16 transparency 0.28 } geometry Box { size 0.24 0.012 0.09 } } ]
+    }
+    Pose {
+      translation 0.80 -0.225 0.27
+      children [ Shape { appearance PBRAppearance { baseColor 0.1 0.55 0.16 transparency 0.28 } geometry Box { size 0.24 0.012 0.09 } } ]
+    }
+    Pose {
+      translation 0.685 -0.34 0.27
+      children [ Shape { appearance PBRAppearance { baseColor 0.1 0.55 0.16 transparency 0.28 } geometry Box { size 0.012 0.24 0.09 } } ]
+    }
+    Pose {
+      translation 0.915 -0.34 0.27
+      children [ Shape { appearance PBRAppearance { baseColor 0.1 0.55 0.16 transparency 0.28 } geometry Box { size 0.012 0.24 0.09 } } ]
+    }
+  ]
+}
 DEF UR5E UR5e {
   controller "void"
 }

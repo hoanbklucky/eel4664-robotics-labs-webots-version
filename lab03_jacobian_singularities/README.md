@@ -44,9 +44,13 @@ A pseudoinverse maps Cartesian velocity to joint velocity. Near a singularity, a
 
 Webots measures the resulting motion; it must not compute the assigned Jacobian or inverse differential solution.
 
+The starter uses the same visual-only stylus as Labs 1-2. Its orange tip is `p_tool = [0, 0.13, 0]` m in the tool frame, so students can see the direction and amplification of differential motion. Predict the tip with `transform_point(T_world_tool, p_tool)`. The stylus has no mass or collision geometry.
+
+The `CARTESIAN_DIRECTION_REFERENCE` triad shows world +x (red), +y (green), and +z (blue) near the workspace. Use it to interpret the assigned Cartesian direction; it is not a commanded trajectory or a singularity detector.
+
 ## Provided Files
 
-- `worlds/lab03_starter.wbt`
+- `worlds/lab03_starter.wbt` - shared stylus, coordinate grid, tool-tip sensor, and Cartesian direction reference
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
 - `src/jacobian_starter.py`
 - `src/singularity_scan.py`
@@ -55,7 +59,7 @@ Webots measures the resulting motion; it must not compute the assigned Jacobian 
 
 ## Part 1 - Setup / Validation
 
-1. **World:** create `lab03_work.wbt` and verify controller `void`.
+1. **World:** create `lab03_work.wbt`; verify the grid, stylus, and `CARTESIAN_DIRECTION_REFERENCE`, and confirm controller `void`.
 2. **Minimal controller:** run `diagnostic_minimal`.
 3. **Devices:** run `diagnostic_devices` and confirm ordered joint sensing.
 4. **One joint:** move one joint slightly and verify predicted tool-motion direction.

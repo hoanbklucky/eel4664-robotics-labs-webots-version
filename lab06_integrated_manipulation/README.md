@@ -28,11 +28,13 @@ Complete Labs 1-5 and the [setup prerequisites](../lab00_setup/README.md). Reuse
 
 The task combines the course pipeline: frame reasoning locates targets, FK/IK generates configurations, collision checks reject unsafe states/edges, trajectories time-parameterize the path, and feedback executes it. Webots supplies simulated devices, physics, and visualization; it must not replace submitted transformations, kinematics, Jacobian calculations, trajectory generation, collision predicates, planning, control, or evaluation.
 
-The instructor will provide or approve the object, obstacle, target region, and a gripper or equivalent grasp interface. If no gripper is provided, an approved attachment/contact proxy may mark grasp and release while the student implementation still controls approach, transport, and placement.
+The starter provides a default physical `PICK_OBJECT`, physical `TRANSPORT_OBSTACLE`, `MANIPULATION_TABLE`, and visual `DESTINATION_BIN`. The instructor will provide or approve a gripper or equivalent grasp interface and may approve controlled scene variations. If no gripper is provided, an approved attachment/contact proxy may mark grasp and release while the student implementation still controls approach, transport, and placement.
+
+Unlike Labs 1-5, the Lab 6 starter intentionally does not include the course stylus. The instructor-approved gripper or grasp interface becomes the new tool. Determine and validate its fixed tool transform once, then keep that transform unchanged during the project.
 
 ## Provided Files
 
-- `worlds/lab06_starter.wbt` - clean, known-good starter; never overwrite it
+- `worlds/lab06_starter.wbt` - physical table/object/obstacle and visual destination bin; never overwrite it
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
 - `src/collision_planner.py` - explicit collision/planning starter
 - `src/COLLISION_PLANNER_NOTES.md` - modeling and reproducibility guidance
@@ -42,7 +44,7 @@ The instructor will provide or approve the object, obstacle, target region, and 
 
 ## Part 1 - Setup / Validation
 
-1. **World:** open `worlds/lab06_starter.wbt` paused, verify it, and immediately use **File -> Save World As...** to create `worlds/lab06_work.wbt`.
+1. **World:** open `worlds/lab06_starter.wbt` paused; verify `MANIPULATION_TABLE`, `PICK_OBJECT`, `TRANSPORT_OBSTACLE`, and `DESTINATION_BIN`; then immediately use **File -> Save World As...** to create `worlds/lab06_work.wbt`.
 2. **Minimal controller:** run `diagnostic_minimal`.
 3. **Devices:** run `diagnostic_devices` and confirm all devices required by the final controller.
 4. **One joint:** command one conservative joint through the final software stack.

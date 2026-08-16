@@ -37,9 +37,13 @@ RMSE_i = sqrt(mean(e_i(t)^2))
 
 and a Cartesian straightness error measured from each FK position to the desired line segment.
 
+The starter retains the common visual-only stylus. For a path that matches the visible orange tip, calculate `p_world_tip = transform_point(T_world_tool, [0, 0.13, 0])` and use that same point for desired and measured straightness. Do not compare a desired tool-origin path with a measured tip path.
+
+The `TRAJECTORY_REFERENCE_BOARD` shows a green straight segment, an orange curved segment, and common endpoints. It is a qualitative MoveL-versus-MoveJ reference, not measurement data. Grade straightness and tracking from logged FK/sensor values.
+
 ## Provided Files
 
-- `worlds/lab04_starter.wbt` - clean, known-good starter; never overwrite it
+- `worlds/lab04_starter.wbt` - clean starter with stylus, grid, and trajectory reference board; never overwrite it
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
 - `src/cubic_trajectory.py` - coefficient and sampling starter
 - `src/send_trajectory.py` - Webots execution outline
@@ -48,7 +52,7 @@ and a Cartesian straightness error measured from each FK position to the desired
 
 ## Part 1 - Setup / Validation
 
-1. **World:** open `worlds/lab04_starter.wbt` paused, verify it, and immediately use **File -> Save World As...** to create `worlds/lab04_work.wbt`.
+1. **World:** open `worlds/lab04_starter.wbt` paused; verify the grid, stylus, and `TRAJECTORY_REFERENCE_BOARD`; then immediately use **File -> Save World As...** to create `worlds/lab04_work.wbt`.
 2. **Minimal controller:** assign and run `diagnostic_minimal`.
 3. **Devices:** assign `diagnostic_devices` and confirm all six motors and sensors.
 4. **One joint:** run a low-speed polynomial on one joint and compare desired and measured position.
