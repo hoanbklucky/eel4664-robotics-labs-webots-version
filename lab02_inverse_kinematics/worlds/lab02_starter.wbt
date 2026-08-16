@@ -43,33 +43,6 @@ Solid {
   }
 }
 # Shared visual-only Cartesian reference grid.
-DEF COURSE_GRID Shape {
-  appearance PBRAppearance {
-    baseColor 0.18 0.21 0.25
-    emissiveColor 0.025 0.03 0.04
-    roughness 1
-  }
-  geometry IndexedLineSet {
-    coord Coordinate {
-      point [
-        -0.8 -0.8 0.003, -0.8 0.8 0.003,
-        -0.4 -0.8 0.003, -0.4 0.8 0.003,
-        0 -0.8 0.003, 0 0.8 0.003,
-        0.4 -0.8 0.003, 0.4 0.8 0.003,
-        0.8 -0.8 0.003, 0.8 0.8 0.003,
-        -0.8 -0.8 0.003, 0.8 -0.8 0.003,
-        -0.8 -0.4 0.003, 0.8 -0.4 0.003,
-        -0.8 0 0.003, 0.8 0 0.003,
-        -0.8 0.4 0.003, 0.8 0.4 0.003,
-        -0.8 0.8 0.003, 0.8 0.8 0.003
-      ]
-    }
-    coordIndex [
-      0 1 -1, 2 3 -1, 4 5 -1, 6 7 -1, 8 9 -1,
-      10 11 -1, 12 13 -1, 14 15 -1, 16 17 -1, 18 19 -1
-    ]
-  }
-}
 DEF WORLD_FRAME_REFERENCE Group {
   children [
     Pose {
@@ -100,39 +73,27 @@ DEF WORLD_FRAME_REFERENCE Group {
       ]
     }
   ]
-}# Visual-only IK target station. No collision or physics nodes.
-DEF IK_WORK_SURFACE Pose {
-  translation 0.65 0.20 0.08
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.22 0.26 0.31
-        roughness 0.8
-        transparency 0.18
-      }
-      geometry Box { size 0.9 0.9 0.04 }
-    }
-  ]
 }
+# Compact visual-only pose targets. No collision or physics nodes.
 DEF TARGET_A Pose {
   translation 0.662437 0.349048 0.277152
   rotation -0.388546 0.905112 -0.172639 2.541619
   children [
     Pose {
-      translation 0.04 0 0
-      children [ Shape { appearance PBRAppearance { baseColor 0.95 0.08 0.08 emissiveColor 0.12 0 0 } geometry Box { size 0.08 0.006 0.006 } } ]
+      translation 0.0275 0 0
+      children [ Shape { appearance PBRAppearance { baseColor 0.95 0.08 0.08 emissiveColor 0.12 0 0 } geometry Box { size 0.055 0.004 0.004 } } ]
     }
     Pose {
-      translation 0 0.04 0
-      children [ Shape { appearance PBRAppearance { baseColor 0.08 0.85 0.12 emissiveColor 0 0.12 0 } geometry Box { size 0.006 0.08 0.006 } } ]
+      translation 0 0.0275 0
+      children [ Shape { appearance PBRAppearance { baseColor 0.08 0.85 0.12 emissiveColor 0 0.12 0 } geometry Box { size 0.004 0.055 0.004 } } ]
     }
     Pose {
-      translation 0 0 0.04
-      children [ Shape { appearance PBRAppearance { baseColor 0.08 0.25 0.95 emissiveColor 0 0.02 0.15 } geometry Box { size 0.006 0.006 0.08 } } ]
+      translation 0 0 0.0275
+      children [ Shape { appearance PBRAppearance { baseColor 0.08 0.25 0.95 emissiveColor 0 0.02 0.15 } geometry Box { size 0.004 0.004 0.055 } } ]
     }
     Pose {
       translation 0 0.13 0
-      children [ Shape { appearance PBRAppearance { baseColor 0.1 0.95 0.2 emissiveColor 0 0.18 0.02 transparency 0.45 } geometry Sphere { radius 0.035 subdivision 2 } } ]
+      children [ Shape { appearance PBRAppearance { baseColor 0.1 0.95 0.2 emissiveColor 0 0.18 0.02 transparency 0.68 } geometry Sphere { radius 0.022 subdivision 2 } } ]
     }
   ]
 }
@@ -141,20 +102,20 @@ DEF TARGET_B Pose {
   rotation -0.452474 0.798551 -0.396968 2.128298
   children [
     Pose {
-      translation 0.04 0 0
-      children [ Shape { appearance PBRAppearance { baseColor 0.95 0.08 0.08 emissiveColor 0.12 0 0 } geometry Box { size 0.08 0.006 0.006 } } ]
+      translation 0.0275 0 0
+      children [ Shape { appearance PBRAppearance { baseColor 0.95 0.08 0.08 emissiveColor 0.12 0 0 } geometry Box { size 0.055 0.004 0.004 } } ]
     }
     Pose {
-      translation 0 0.04 0
-      children [ Shape { appearance PBRAppearance { baseColor 0.08 0.85 0.12 emissiveColor 0 0.12 0 } geometry Box { size 0.006 0.08 0.006 } } ]
+      translation 0 0.0275 0
+      children [ Shape { appearance PBRAppearance { baseColor 0.08 0.85 0.12 emissiveColor 0 0.12 0 } geometry Box { size 0.004 0.055 0.004 } } ]
     }
     Pose {
-      translation 0 0 0.04
-      children [ Shape { appearance PBRAppearance { baseColor 0.08 0.25 0.95 emissiveColor 0 0.02 0.15 } geometry Box { size 0.006 0.006 0.08 } } ]
+      translation 0 0 0.0275
+      children [ Shape { appearance PBRAppearance { baseColor 0.08 0.25 0.95 emissiveColor 0 0.02 0.15 } geometry Box { size 0.004 0.004 0.055 } } ]
     }
     Pose {
       translation 0 0.13 0
-      children [ Shape { appearance PBRAppearance { baseColor 0.95 0.15 0.85 emissiveColor 0.16 0 0.12 transparency 0.45 } geometry Sphere { radius 0.035 subdivision 2 } } ]
+      children [ Shape { appearance PBRAppearance { baseColor 0.95 0.15 0.85 emissiveColor 0.16 0 0.12 transparency 0.68 } geometry Sphere { radius 0.022 subdivision 2 } } ]
     }
   ]
 }

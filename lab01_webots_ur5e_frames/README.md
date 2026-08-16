@@ -133,7 +133,7 @@ In the supplied world, the robot base has zero world translation/rotation, so `T
 
 ## Provided Files
 
-- `worlds/lab01_starter.wbt` - protected UR5e world with stylus, validation sensors, floor grid, and world-frame reference
+- `worlds/lab01_starter.wbt` - protected UR5e world with stylus, validation sensors, and a compact world-frame reference
 - `controllers/diagnostic_minimal/` - confirms that Python starts
 - `controllers/diagnostic_devices/` - lists the required devices
 - `controllers/eel4664_ur5e/` - safe one-joint motion and Webots device adapter
@@ -171,7 +171,7 @@ The robot moves in Step 3. Complete Steps 1-2 quickly, but stop if either diagno
    C:\eel4664-robotics-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt
    ```
 
-4. Confirm the complete robot and floor are visible immediately, without zooming or rotating. The short blue stylus, floor grid, colored world-frame axes, and orange drawing reference should be visible, and the robot controller should be `void`.
+4. Confirm the complete robot and floor are visible immediately, without zooming or rotating. The short blue stylus and compact colored world-frame axes should be visible, and the robot controller should be `void`.
 5. Immediately select **File -> Save World As...** and save `lab01_work.wbt` beside the starter.
 6. Confirm the title bar shows `lab01_work.wbt`.
 
@@ -342,7 +342,7 @@ Record the three predicted tool positions before starting the controller. Also m
 
 6. Copy the labeled measurement block for Poses A, B, and C into your results. Each block contains measured `q`, tool position, tool RPY, and tool-test-point position. The return to A is a visual closure check, so the controller does not print a duplicate measurement block for it.
 
-The orange floor reference provides visual scale and direction only; it is not the predicted tool path. The three robot-motion segments may look curved rather than perfectly straight. This controller interpolates the six **joint angles**, so it does not command a straight Cartesian tool path. Generating and tracking straight tool-space paths is a later trajectory-planning objective.
+The three robot-motion segments may look curved rather than perfectly straight. This controller interpolates the six **joint angles**, so it does not command a straight Cartesian tool path. Generating and tracking straight tool-space paths is a later trajectory-planning objective.
 
 #### Make the quantitative comparison
 

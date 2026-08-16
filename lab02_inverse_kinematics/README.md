@@ -119,7 +119,7 @@ p_world_tip = transform_point(fk_tool(q), p_tool)
 
 The stylus has no mass or collision geometry. It makes pose changes visible without changing the robot dynamics.
 
-The starter also contains `TARGET_A` and `TARGET_B`. Each target has red/green/blue pose axes at the tool-frame origin and a translucent sphere at the desired stylus-tip point. These nodes are visual references only; the submitted solver must use the numerical `T_target`, not read target coordinates from Webots.
+The starter also contains `TARGET_A` and `TARGET_B`. Each target has short red/green/blue pose axes at the tool-frame origin and a small translucent sphere at the desired stylus-tip point. These nodes are visual references only; the submitted solver must use the numerical `T_target`, not read target coordinates from Webots.
 
 ### 5. Describe the pose error
 
@@ -306,7 +306,7 @@ After execution, separate:
 For example, a tiny solver error but a large Webots error suggests that the numerical IK converged and the remaining problem lies in tracking, frame alignment, or model mismatch. Webots may measure and visualize the result, but it may not solve FK or IK for you.
 ## Provided Files
 
-- `worlds/lab02_starter.wbt` - protected UR5e world with stylus, coordinate grid, work surface, and two visual pose targets
+- `worlds/lab02_starter.wbt` - protected UR5e world with stylus and two compact visual pose targets
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
 - `src/planar_fk.py` and `src/planar_ik.py`
 - `src/numerical_ik.py` - numerical IK scaffold
@@ -325,7 +325,7 @@ For example, a tiny solver error but a large Webots error suggests that the nume
    ```
 
 2. Open `lab02_inverse_kinematics\worlds\lab02_starter.wbt` in Webots R2025a while paused.
-3. Confirm the robot, stylus, coordinate grid, `IK_WORK_SURFACE`, `TARGET_A`, and `TARGET_B` render and the controller is `void`.
+3. Confirm the robot, stylus, `TARGET_A`, and `TARGET_B` render and the controller is `void`. The target markers should appear as small colored axes with faint tip spheres, not as physical scene objects.
 4. Immediately choose **File -> Save World As...** and create `lab02_work.wbt` beside the starter.
 5. Validate the working copy in order:
 
