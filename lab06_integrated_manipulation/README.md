@@ -5,6 +5,7 @@
 ## Mission
 
 Complete an autonomous pick-and-place challenge.
+
 ### Why integrate the system in Webots?
 
 A real pick-and-place task combines kinematics, planning, collision checking, trajectory execution, feedback, and safe recovery. Webots lets you test that complete chain against a physical scene before risking a robot, tool, or nearby object.
@@ -28,6 +29,9 @@ By the end of this project, you should be able to:
 ## Prerequisites
 
 Complete Labs 1-5 and the [setup prerequisites](../lab00_setup/README.md). Reuse tested mathematical modules rather than hiding them inside a monolithic controller. A physical robot extension is optional; successful Webots completion satisfies the required project.
+
+
+**Platform note:** The required workflow supports Windows, macOS, and Ubuntu when configured through Lab 00. Terminal examples use `python`; on macOS or Ubuntu, use `python3` instead if `python` is not recognized.
 
 ## Background
 

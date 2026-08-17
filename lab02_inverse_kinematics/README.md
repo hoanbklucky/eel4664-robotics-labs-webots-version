@@ -38,6 +38,9 @@ Complete [Lab 1 - UR5e Frames and Forward Kinematics](../lab01_webots_ur5e_frame
 
 Complete the Python/NumPy prerequisites in [Lab 00](../lab00_setup/README.md).
 
+
+**Platform note:** The required workflow supports Windows, macOS, and Ubuntu when configured through Lab 00. Terminal examples use `python`; on macOS or Ubuntu, use `python3` instead if `python` is not recognized.
+
 ## Background
 
 ### 1. What inverse kinematics does
@@ -304,6 +307,7 @@ After execution, separate:
 3. **model discrepancy:** `fk_tool(q_measured)` versus the Webots tool measurement.
 
 For example, a tiny solver error but a large Webots error suggests that the numerical IK converged and the remaining problem lies in tracking, frame alignment, or model mismatch. Webots may measure and visualize the result, but it may not solve FK or IK for you.
+
 ## Provided Files
 
 - `worlds/lab02_starter.wbt` - protected UR5e world with stylus and two compact visual pose targets
@@ -319,12 +323,12 @@ For example, a tiny solver error but a large Webots error suggests that the nume
 
 1. From the repository root, verify the Lab 1 dependency:
 
-   ```powershell
-   python .\lab01_webots_ur5e_frames\src\test_transforms.py
+   ```bash
+   python lab01_webots_ur5e_frames/src/test_transforms.py
    python -c "import numpy as np; from lab01_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; print(forward_kinematics(np.zeros(6)))"
    ```
 
-2. Open `lab02_inverse_kinematics\worlds\lab02_starter.wbt` in Webots R2025a while paused.
+2. Open `lab02_inverse_kinematics/worlds/lab02_starter.wbt` in Webots R2025a while paused.
 3. Confirm the robot, stylus, `TARGET_A`, and `TARGET_B` render and the controller is `void`. The target markers should appear as small colored axes with faint tip spheres, not as physical scene objects.
 4. Immediately choose **File -> Save World As...** and create `lab02_work.wbt` beside the starter.
 5. Validate the working copy in order:
@@ -409,11 +413,10 @@ Select one solution per reachable target. Reject nonconverged, nonfinite, limit-
 
 ### Step 6 - Connect the solver to Webots safely
 
-1. Close Webots. If `controllers\lab02_controller` does not exist, run:
+1. Close Webots. If `controllers/lab02_controller` does not exist, run this cross-platform command from the repository root:
 
-   ```powershell
-   Copy-Item .\lab01_webots_ur5e_frames\controllers\eel4664_ur5e .\lab02_inverse_kinematics\controllers\lab02_controller -Recurse
-   Rename-Item .\lab02_inverse_kinematics\controllers\lab02_controller\eel4664_ur5e.py lab02_controller.py
+   ```bash
+   python -c "from pathlib import Path; import shutil; src=Path('lab01_webots_ur5e_frames/controllers/eel4664_ur5e'); dst=Path('lab02_inverse_kinematics/controllers/lab02_controller'); shutil.copytree(src,dst); (dst/'eel4664_ur5e.py').rename(dst/'lab02_controller.py')"
    ```
 
 2. Add the repository root to `lab02_controller.py`:

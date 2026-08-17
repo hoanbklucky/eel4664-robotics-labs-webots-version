@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the pinned Webots R2025a setup and six-lab repository structure."""
+"""Verify the cross-platform Webots R2025a setup and six-lab repository structure."""
 
 from importlib.util import find_spec
 from pathlib import Path
@@ -33,6 +33,11 @@ REQUIRED_README_SECTIONS = (
     "## What to Submit",
     "## Troubleshooting",
 )
+SUPPORTED_PLATFORMS = {
+    "win32": "Windows",
+    "darwin": "macOS",
+    "linux": "Ubuntu/Linux",
+}
 
 
 def report(ok, message):
@@ -40,24 +45,46 @@ def report(ok, message):
     return ok
 
 
-python_on_path = shutil.which("python") or shutil.which("python.exe")
+def find_webots():
+    command = shutil.which("webots") or shutil.which("webots.exe")
+    candidates = (
+        Path(r"C:\Program Files\Webots\msys64\mingw64\bin\webots.exe"),
+        Path("/Applications/Webots.app/webots"),
+        Path.home() / "Applications/Webots.app/webots",
+        Path("/usr/local/webots/webots"),
+        Path("/usr/bin/webots"),
+    )
+    return command or next((str(path) for path in candidates if path.is_file()), None)
+
+
+platform_name = SUPPORTED_PLATFORMS.get(sys.platform, sys.platform)
+python_on_path = (
+    shutil.which("python") or shutil.which("python3") or shutil.which("python.exe")
+)
 course_version = sys.version_info >= (3, 11)
 is_64_bit = sys.maxsize > 2**32
 
+print(f"[INFO] Platform: {platform_name}")
 print(f"[INFO] Running interpreter: {sys.executable}")
 checks = [
-    report(sys.platform == "win32", "Windows 10/11 course platform"),
+    report(sys.platform in SUPPORTED_PLATFORMS, "supported Windows, macOS, or Ubuntu/Linux platform"),
     report(
         python_on_path is not None,
-        "python.exe is on PATH; install from python.org and select Add python.exe to PATH if this fails",
+        "Python is on PATH; repeat the platform-specific Lab 00 installation if this fails",
     ),
     report(course_version, f"Python {sys.version.split()[0]} (course requires Python 3.11 or newer)"),
     report(is_64_bit, "64-bit Python interpreter"),
     report(find_spec("numpy") is not None, "NumPy import is available"),
     report(find_spec("matplotlib") is not None, "Matplotlib import is available"),
     report((ROOT / "docs/TROUBLESHOOTING_WEBOTS.md").is_file(), "Webots recovery guide exists"),
-    report((ROOT / "lab00_setup/prepare_webots_sample.ps1").is_file(), "R2025a sample preparation exists"),
-    report((ROOT / "lab00_setup/worlds/setup_smoke_test_starter.wbt").is_file(), "setup smoke-test world exists"),
+    report(
+        (ROOT / "lab00_setup/prepare_webots_sample.py").is_file(),
+        "cross-platform R2025a sample preparation exists",
+    ),
+    report(
+        (ROOT / "lab00_setup/worlds/setup_smoke_test_starter.wbt").is_file(),
+        "setup smoke-test world exists",
+    ),
     report(
         (ROOT / "webots/controllers/diagnostic_minimal/diagnostic_minimal.py").is_file(),
         "canonical minimal diagnostic exists",
@@ -99,14 +126,7 @@ for project_name in SIMULATION_PROJECTS:
     checks.append(report(workflow_is_documented, f"{project_name}: staged safety workflow documented"))
     checks.append(report(sections_are_complete, f"{project_name}: required student-facing sections present"))
 
-webots = shutil.which("webots") or shutil.which("webots.exe")
-known_windows = Path(r"C:\Program Files\Webots\msys64\mingw64\bin\webots.exe")
-checks.append(
-    report(
-        webots is not None or known_windows.is_file(),
-        "Webots executable found (confirm Help > About says R2025a)",
-    )
-)
+checks.append(report(find_webots() is not None, "Webots executable found (confirm Help -> About says R2025a)"))
 checks.append(
     report(
         SAMPLE_WORLD.is_file() and UR5E_PROTO.is_file(),

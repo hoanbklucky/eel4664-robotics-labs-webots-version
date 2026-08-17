@@ -5,6 +5,7 @@
 ## Mission
 
 Track the same trajectory under different payloads, tune the controller, and identify an unknown model parameter.
+
 ### Why simulate dynamics and control?
 
 Controller tuning and parameter-identification experiments require repeated motion under changed gains, payloads, and disturbances. On hardware, poor gains or an inaccurate model can cause unsafe motion. Webots provides a repeatable experimental system in which you can measure transient and tracking behavior before considering real-robot deployment.
@@ -28,6 +29,9 @@ By the end of this lab, you should be able to:
 ## Prerequisites
 
 Complete Lab 4 and the [setup prerequisites](../lab00_setup/README.md). Bring a tested trajectory generator and logger. The instructor must approve the two payload/model conditions and any effort-control limits. Do not edit the installed Cyberbotics UR5e PROTO.
+
+
+**Platform note:** The required workflow supports Windows, macOS, and Ubuntu when configured through Lab 00. Terminal examples use `python`; on macOS or Ubuntu, use `python3` instead if `python` is not recognized.
 
 ## Background
 

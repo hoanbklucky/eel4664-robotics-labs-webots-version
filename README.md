@@ -2,7 +2,7 @@
 
 ## [eel4664-robotics-labs](https://github.com/hoanbklucky/eel4664-robotics-labs-webots-version/tree/main)
 
-This course repository is referred to as **eel4664-robotics-labs**. Store the local working copy in `C:\eel4664-robotics-labs` so course commands and troubleshooting paths are consistent.
+This course repository is referred to as **eel4664-robotics-labs**. Use a short local path: `C:\eel4664-robotics-labs` on Windows or `~/eel4664-robotics-labs` on macOS and Ubuntu. Avoid cloud-synchronized and network folders.
 
 ### UR5e + Webots laboratory repository
 
@@ -21,11 +21,13 @@ ROS 2 and Gazebo remain optional advanced topics.
 
 ## Required semester environment
 
-Complete [Lab 00 - Setup](lab00_setup/README.md) before Lab 1. The supported environment is:
+Complete [Lab 00 - Setup](lab00_setup/README.md) before Lab 1. Choose one supported operating system below, then install the common course tools:
 
-- Windows 10 or Windows 11;
-- stable **Webots R2025a**; nightly and development builds are unsupported;
-- 64-bit CPython 3.11 or newer installed from [python.org](https://www.python.org/downloads/windows/);
+- **Windows:** 64-bit Windows 10 or Windows 11;
+- **macOS:** macOS 12 Monterey through macOS 14 Sonoma on Intel or Apple silicon;
+- **Ubuntu:** Ubuntu 24.04 LTS on 64-bit x86-64;
+- stable **Webots R2025a** for the selected operating system; nightly and development builds are unsupported;
+- 64-bit CPython 3.11 or newer;
 - Visual Studio Code;
 - Git; and
 - NumPy and Matplotlib.
@@ -34,10 +36,11 @@ Lab 00 covers software installation, Webots Python configuration, and required W
 
 ## Lab 00 completion checklist
 
+- [ ] A supported Windows, macOS, or Ubuntu environment is being used
 - [ ] Webots R2025a launches normally
 - [ ] Python 3.11 or newer is installed
-- [ ] `python --version` works
-- [ ] Webots **Python command** points to the full `python.exe` path
+- [ ] `python --version` or `python3 --version` works
+- [ ] Webots **Python command** points to the verified Python interpreter
 - [ ] Webots Tutorial 1 is complete
 - [ ] The Python-controller portion of Webots Tutorial 4 is complete
 - [ ] A Python controller runs without crashing

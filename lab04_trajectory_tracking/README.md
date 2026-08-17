@@ -5,6 +5,7 @@
 ## Mission
 
 Execute a smooth point-to-point motion and a straight-line Cartesian motion, then quantitatively compare them.
+
 ### Why track trajectories in Webots?
 
 A generated trajectory is an ideal reference, not proof of the path a robot actually follows. Webots provides the experimental joint and tool measurements needed to compare the commanded and executed motions, including endpoint error, path straightness, smoothness, and maximum joint velocity.
@@ -28,6 +29,9 @@ By the end of this lab, you should be able to:
 ## Prerequisites
 
 Complete Labs 1-3 and the [setup prerequisites](../lab00_setup/README.md). Bring tested joint ordering, FK, IK, safe-motion checks, and logging. Webots Tutorials 2 and 3 remain optional enrichment; they are not prerequisites.
+
+
+**Platform note:** The required workflow supports Windows, macOS, and Ubuntu when configured through Lab 00. Terminal examples use `python`; on macOS or Ubuntu, use `python3` instead if `python` is not recognized.
 
 ## Background
 

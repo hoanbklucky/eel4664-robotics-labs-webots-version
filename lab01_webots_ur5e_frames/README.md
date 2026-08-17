@@ -3,6 +3,7 @@
 ## Mission
 
 **Predict where the UR5e tool will move, watch its stylus air-draw a loop, and test your forward-kinematics model against Webots measurements.**
+
 ### Why compare with Webots?
 
 On a physical UR5e, you would calculate the expected tool pose and compare it with an independently measured pose. Because this course does not have access to a physical UR5e, Webots serves as the experimental robot. The comparison tests whether your coordinate-frame choices, transformations, forward kinematics, and fixed tool alignment correctly predict observed motion.
@@ -38,6 +39,9 @@ You have completed the mission when:
 Complete [Lab 00 - Software Setup and Webots Basics](../lab00_setup/README.md), including Webots Tutorials 1 and 4. Review coordinate frames, rotation matrices, homogeneous transforms, and the forward-kinematics derivation from lecture.
 
 Tutorials 2 and 3 remain optional in [Optional Webots Basics](../README.md#optional-webots-basics).
+
+
+**Platform note:** The required workflow supports Windows, macOS, and Ubuntu when configured through Lab 00. Terminal examples use `python`; on macOS or Ubuntu, use `python3` instead if `python` is not recognized.
 
 ## Background
 
@@ -150,26 +154,32 @@ The robot moves in Step 3. Complete Steps 1-2 quickly, but stop if either diagno
 
 ### Step 1 - Prepare and open the working world
 
-1. Open PowerShell and go to the repository:
+1. Open a terminal and go to the repository.
+
+   Windows PowerShell:
 
    ```powershell
    cd C:\eel4664-robotics-labs
    ```
 
+   macOS or Ubuntu Terminal:
+
+   ```bash
+   cd ~/eel4664-robotics-labs
+   ```
+
+   The commands below use `python`. On macOS or Ubuntu, use `python3` if needed, as explained in Lab 00.
+
 2. Close Webots and prepare the pinned R2025a UR5e assets:
 
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .\lab00_setup\prepare_webots_sample.ps1
-   Test-Path .\webots\vendor\webots_r2025a\projects\robots\universal_robots\protos\UR5e.proto
+   ```bash
+   python lab00_setup/prepare_webots_sample.py
+   python -c "from pathlib import Path; print(Path('webots/vendor/webots_r2025a/projects/robots/universal_robots/protos/UR5e.proto').is_file())"
    ```
 
-   The script downloads one known-good copy of the official UR5e model and its dependencies inside the repository. The final command must return `True`.
+   The cross-platform script downloads one known-good copy of the official R2025a UR5e model and its dependencies inside the repository. It does not use the installed Webots asset paths. The first command should end with `[READY] Official Universal Robots sample:` and the final command must print `True`.
 
-3. Start Webots R2025a while paused and open:
-
-   ```text
-   C:\eel4664-robotics-labs\lab01_webots_ur5e_frames\worlds\lab01_starter.wbt
-   ```
+3. Start Webots R2025a while paused and open `lab01_webots_ur5e_frames/worlds/lab01_starter.wbt` from your repository.
 
 4. Confirm the complete robot and floor are visible immediately, without zooming or rotating. The short blue stylus and compact colored world-frame axes should be visible, and the robot controller should be `void`.
 5. Immediately select **File -> Save World As...** and save `lab01_work.wbt` beside the starter.
@@ -190,11 +200,10 @@ For the device check, confirm six motors, six joint sensors, `tool_position`, `t
 
 ### Step 3 - Move one joint and save the alignment data
 
-If `controllers\lab01_controller` does not already exist, close Webots and run:
+If `controllers/lab01_controller` does not already exist, close Webots and run this cross-platform command from the repository root:
 
-```powershell
-Copy-Item .\lab01_webots_ur5e_frames\controllers\eel4664_ur5e .\lab01_webots_ur5e_frames\controllers\lab01_controller -Recurse
-Rename-Item .\lab01_webots_ur5e_frames\controllers\lab01_controller\eel4664_ur5e.py lab01_controller.py
+```bash
+python -c "from pathlib import Path; import shutil; src=Path('lab01_webots_ur5e_frames/controllers/eel4664_ur5e'); dst=Path('lab01_webots_ur5e_frames/controllers/lab01_controller'); shutil.copytree(src,dst); (dst/'eel4664_ur5e.py').rename(dst/'lab01_controller.py')"
 ```
 
 Confirm `lab01_controller.py` contains:
@@ -236,8 +245,8 @@ v_after = rotz(np.pi / 2.0) @ v_before
 
 `rotz(np.pi / 2.0)` creates a matrix for a positive 90-degree rotation about the z-axis. The NumPy `@` operator multiplies that rotation matrix by the vector. Using the right-hand rule, predict where the +x vector points afterward. Also predict what happens when translation `[1, 2, 3]` is applied to a point versus a direction. Then run:
 
-```powershell
-python .\lab01_webots_ur5e_frames\src\test_transforms.py
+```bash
+python lab01_webots_ur5e_frames/src/test_transforms.py
 python -c "import numpy as np; from lab01_webots_ur5e_frames.src.transform_point import transform_point,transform_direction; T=np.eye(4); T[:3,3]=[1,2,3]; print(transform_point(T,np.array([.1,.2,.3]))); print(transform_direction(T,np.array([1,0,0])))"
 ```
 
@@ -260,7 +269,7 @@ The Background section defines the standard-DH convention, parameter table, and 
 
 Write the definition of `A_i` and the frame order in `answers.md`, then run:
 
-```powershell
+```bash
 python -c "import numpy as np; from lab01_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; T=forward_kinematics(np.zeros(6)); print(T); print('orthogonality=',np.linalg.norm(T[:3,:3].T@T[:3,:3]-np.eye(3))); print('det=',np.linalg.det(T[:3,:3]))"
 ```
 
@@ -353,6 +362,7 @@ T_world_tool_predicted_from_q_measured = forward_kinematics(q_measured) @ T_6_to
 ```
 
 Compare this result with the Webots tool measurement. Keep the pre-run commanded-angle prediction as evidence that you predicted the motion before observing it. Do not change the DH parameters or `T_6_tool` after seeing Poses A-C.
+
 ### Step 8 - Check a point attached to the tool
 
 For Pose C, use:

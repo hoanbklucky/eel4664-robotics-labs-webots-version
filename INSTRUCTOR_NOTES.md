@@ -18,7 +18,7 @@ The schedule may overlap lab work with the corresponding analytical homework and
 
 ## Before release to students
 
-1. Test every command on the exact Fall 2026 Windows, Python, and Webots R2025a environment.
+1. Test the platform-specific commands on the supported Fall 2026 Windows, macOS, and Ubuntu environments with Python 3.11 or newer and Webots R2025a.
 2. Confirm all six `*_starter.wbt` files open from a clean clone and that the shared diagnostics run.
 3. Validate the published UR5e DH/frame convention, fixed DH-to-tool transform, target configurations, and ground-truth method for Lab 1.
 4. Validate Lab 2 target poses, initial guesses, joint limits, step limits, damping, convergence tolerances, and safe execution paths.

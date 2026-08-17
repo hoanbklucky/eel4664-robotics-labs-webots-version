@@ -2,7 +2,7 @@
 
 ## Mission
 
-Install the course software and learn the minimum Webots skills needed to begin Lab 1.
+Install Python and Webots on Windows, macOS, or Ubuntu, verify that Python controllers run, and learn the minimum Webots skills needed to begin Lab 1.
 
 Lab 00 has two required outcomes:
 
@@ -13,100 +13,52 @@ There is no UR5e mathematics or graded robot experiment in this lab.
 
 ## Required Software
 
-Install the following before opening a course lab:
+Choose one supported course environment:
 
-- Windows 10 or Windows 11
-- stable **Webots R2025a** (do not use a nightly or development build)
-- **Python 3.11 or newer**, 64-bit, installed from [python.org](https://www.python.org/downloads/windows/)
-- [Git for Windows](https://git-scm.com/download/win)
-- [Visual Studio Code](https://code.visualstudio.com/download)
-- NumPy and Matplotlib
+| Operating system | Course support |
+|---|---|
+| Windows | 64-bit Windows 10 or Windows 11 |
+| macOS | macOS 12 Monterey through macOS 14 Sonoma; Intel and Apple silicon |
+| Ubuntu | Ubuntu 24.04 LTS, 64-bit x86-64 |
 
-Git is required to obtain course updates, track controller code, and restore a damaged starter file. VS Code is the course-supported code editor and is used in the instructions. Webots does not technically depend on VS Code, but students should use it unless the instructor approves another editor.
+These selections follow the official [Webots system requirements](https://cyberbotics.com/doc/guide/system-requirements). Webots also supports Ubuntu 22.04, but this course recommends Ubuntu 24.04 because its standard Python already meets the course requirement.
 
-Keep the repository in a short local path such as `C:\eel4664-robotics-labs`. Avoid OneDrive, SharePoint, network drives, and deeply nested paths.
+Install:
 
-## Part 1 - Install and Configure Git
+- **Python 3.11 or newer**, 64-bit;
+- stable **Webots R2025a** for your operating system; do not use a nightly or development build;
+- [Git](https://git-scm.com/downloads);
+- [Visual Studio Code](https://code.visualstudio.com/download);
+- the Microsoft **Python** extension for VS Code; and
+- NumPy and Matplotlib.
 
-1. Download **Git for Windows** from [git-scm.com](https://git-scm.com/download/win).
-2. Run the installer. The default options are appropriate for this course. Keep the option that allows Git to run from PowerShell and other third-party software.
-3. Close any existing PowerShell windows, open a new one, and verify the installation:
+Git obtains course updates, tracks controller code, and restores damaged starter files. VS Code is the course-supported editor, although Webots does not technically require it.
 
-   ```powershell
-   git --version
-   where.exe git
-   ```
+Use a short local repository path:
 
-4. Set the name and email that Git will record in your commits. Replace the examples with your real information:
+- Windows: `C:\eel4664-robotics-labs`
+- macOS or Ubuntu: `~/eel4664-robotics-labs`
 
-   ```powershell
-   git config --global user.name "Your Full Name"
-   git config --global user.email "your.email@example.com"
-   ```
+Avoid OneDrive, iCloud Drive, SharePoint, network drives, and deeply nested paths.
 
-   If you use GitHub, use an email connected to your GitHub account, or use your GitHub-provided private `noreply` address if you do not want to expose a personal email in commits.
+## Part 1 - Install Python and Packages
 
-5. Verify the saved values:
+Webots launches Python controllers using the interpreter selected in **Python command**, so install Python before Webots.
 
-   ```powershell
-   git config --global --get user.name
-   git config --global --get user.email
-   git config --list --show-origin
-   ```
+### Windows
 
-6. Clone [**eel4664-robotics-labs**](https://github.com/hoanbklucky/eel4664-robotics-labs-webots-version/tree/main) into the required local folder:
-
-   ```powershell
-   cd C:\
-   git clone https://github.com/hoanbklucky/eel4664-robotics-labs-webots-version.git eel4664-robotics-labs
-   cd C:\eel4664-robotics-labs
-   git status --short
-   ```
-
-   Run `git clone` only once. If the repository already exists at this location, do not clone over it.
-
-The `--global` setting normally needs to be completed only once on each computer. Every commit records this identity, as explained in the official [First-Time Git Setup](https://git-scm.com/book/ms/v2/Getting-Started-First-Time-Git-Setup).
-
-## Part 2 - Install Visual Studio Code
-
-1. Download the Windows **User Installer** from [code.visualstudio.com](https://code.visualstudio.com/download). The User Installer is recommended for most students and normally does not require administrator access.
-2. Run the installer and keep **Add to PATH** enabled if that option is shown.
-3. Close PowerShell, open a new PowerShell window, and verify the installation:
-
-   ```powershell
-   code --version
-   ```
-
-4. Open VS Code, select **Extensions** on the left, search for `Python`, and install the **Python** extension published by Microsoft.
-5. From PowerShell, open the course repository as one VS Code workspace:
-
-   ```powershell
-   cd C:\eel4664-robotics-labs
-   code .
-   ```
-
-6. In VS Code, select **File -> Open Folder...** if needed and confirm that the Explorer shows `lab00_setup`, `lab01_webots_ur5e_frames`, and the other lab folders.
-
-Optional but recommended: make VS Code the editor Git opens for commit messages:
-
-```powershell
-git config --global core.editor "code --wait"
-```
-
-## Part 3 - Install Python and Packages
-
-1. Download the 64-bit Windows installer from [python.org](https://www.python.org/downloads/windows/).
-2. On the first installer screen, check **Add python.exe to PATH**.
-3. Complete a normal CPython installation. Do not rely on the Microsoft Store package or Windows App Execution Alias.
-4. Open a new PowerShell window and run:
+1. Download the 64-bit installer from [python.org](https://www.python.org/downloads/windows/).
+2. On the first installer screen, select **Add python.exe to PATH**.
+3. Complete a normal CPython installation. Do not rely on the Microsoft Store package or App Execution Alias.
+4. Open a new PowerShell window and verify:
 
    ```powershell
    python --version
    where.exe python
+   py -0p
    ```
 
-5. Confirm that the version is Python 3.11 or newer and that `where.exe python` identifies the python.org installation.
-6. Install the required packages:
+5. Install and verify the packages:
 
    ```powershell
    python -m pip install --upgrade pip
@@ -114,26 +66,190 @@ git config --global core.editor "code --wait"
    python -c "import numpy as np; print(np.__version__)"
    ```
 
-If more than one Python installation exists, use `py -0p` to list their full paths.
+### macOS
 
-## Part 4 - Install and Configure Webots
+1. Download and run the macOS installer from [python.org](https://www.python.org/downloads/macos/).
+2. Open a new Terminal window and verify:
 
-1. Install stable **Webots R2025a**.
-2. Open Webots and confirm **Help -> About** reports R2025a.
-3. Open **Tools -> Preferences -> General**.
-4. Set **Python command** to the full path of the Python 3.11 or newer `python.exe`, for example:
-
-   ```text
-   C:\Users\<username>\AppData\Local\Programs\Python\Python312\python.exe
+   ```bash
+   python3 --version
+   which -a python3
    ```
 
-5. Apply the change and restart Webots.
+3. Install and verify the packages for your user account:
 
-Do not leave **Python command** blank.
+   ```bash
+   python3 -m pip install --upgrade --user pip
+   python3 -m pip install --user numpy matplotlib
+   python3 -c "import numpy as np; print(np.__version__)"
+   ```
+
+### Ubuntu 24.04
+
+Install Python and the course packages from Ubuntu's package manager:
+
+```bash
+sudo apt update
+sudo apt install python3 python3-pip python3-numpy python3-matplotlib
+python3 --version
+which python3
+python3 -c "import numpy as np; print(np.__version__)"
+```
+
+The reported version must be Python 3.11 or newer and 64-bit.
+
+**Command-name note:** later lab examples use `python`. On macOS or Ubuntu, use `python3` instead if `python` is not recognized. No additional Python environment setup is required.
+
+## Part 2 - Install and Configure Webots
+
+Follow Cyberbotics' official [Installing Webots](https://cyberbotics.com/doc/guide/installing-webots?version=R2025a) guidance and use the exact stable course release.
+
+1. Open the official [Webots R2025a release](https://github.com/cyberbotics/webots/releases/tag/R2025a).
+2. Install the correct package:
+
+   **Windows**
+
+   - Download `webots-R2025a_setup.exe`.
+   - Double-click it and follow the installer.
+   - If Windows SmartScreen appears for the installer downloaded from the official Cyberbotics release, select **More info -> Run anyway**.
+
+   **macOS**
+
+   - Download `webots-R2025a.dmg`.
+   - Open the disk image and copy `Webots.app` to `/Applications` or `~/Applications`.
+   - On Apple silicon, use the native application and leave **Open using Rosetta** disabled unless there is a specific reason to use Intel emulation.
+   - If Gatekeeper blocks the official download, Control-click `Webots.app`, select **Open**, and approve it.
+
+   **Ubuntu 24.04**
+
+   - Download `webots_2025a_amd64.deb`.
+   - Double-click the package and install it with Ubuntu Software, or run from the download directory:
+
+     ```bash
+     sudo apt install ./webots_2025a_amd64.deb
+     ```
+
+3. Launch Webots. Confirm **Help -> About Webots** reports **R2025a**. On macOS, use **Webots -> About Webots** if macOS relocates the menu.
+4. Print the full path of the Python interpreter installed in Part 1.
+
+   Windows PowerShell:
+
+   ```powershell
+   python -c "import sys; print(sys.executable)"
+   ```
+
+   macOS or Ubuntu Terminal:
+
+   ```bash
+   python3 -c "import sys; print(sys.executable)"
+   ```
+
+5. Open Webots Preferences and select **General**:
+   - Windows or Ubuntu: **Tools -> Preferences -> General**
+   - macOS: **Webots -> Preferences -> General**
+6. Set **Python command** to the exact full path printed in Step 4. Do not leave it blank.
+7. Apply the change, close Webots, and restart it.
+
+This follows Cyberbotics' [Using Python](https://cyberbotics.com/doc/guide/using-python?version=R2025a) guidance: Webots may use the Python found on `PATH`, or an explicitly selected interpreter in Preferences.
+
+## Part 3 - Install Git and Clone the Repository
+
+### Windows
+
+1. Download and install [Git for Windows](https://git-scm.com/download/win).
+2. Keep the option that allows Git to run from PowerShell and third-party software.
+3. Open a new PowerShell window and verify:
+
+   ```powershell
+   git --version
+   where.exe git
+   ```
+
+### macOS
+
+Open Terminal and run `git --version`. If macOS offers to install the Command Line Tools, accept and run the command again. A current installer is also available from [git-scm.com](https://git-scm.com/download/mac).
+
+```bash
+git --version
+which git
+```
+
+### Ubuntu
+
+```bash
+sudo apt update
+sudo apt install git
+git --version
+which git
+```
+
+### Configure Git on every platform
+
+Replace the examples with your real information:
+
+```bash
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@example.com"
+git config --global --get user.name
+git config --global --get user.email
+```
+
+Use an email connected to GitHub or its private `noreply` address. See [First-Time Git Setup](https://git-scm.com/book/ms/v2/Getting-Started-First-Time-Git-Setup).
+
+Clone the repository only once.
+
+Windows PowerShell:
+
+```powershell
+cd C:\
+git clone https://github.com/hoanbklucky/eel4664-robotics-labs-webots-version.git eel4664-robotics-labs
+cd C:\eel4664-robotics-labs
+git status --short
+```
+
+macOS or Ubuntu Terminal:
+
+```bash
+cd ~
+git clone https://github.com/hoanbklucky/eel4664-robotics-labs-webots-version.git eel4664-robotics-labs
+cd ~/eel4664-robotics-labs
+git status --short
+```
+
+Do not clone over an existing course repository.
+
+## Part 4 - Install Visual Studio Code
+
+1. Download the installer for your operating system from [code.visualstudio.com](https://code.visualstudio.com/download).
+2. Install VS Code:
+   - Windows: keep **Add to PATH** enabled if shown.
+   - macOS: move Visual Studio Code to **Applications**. To use `code` from Terminal, open the Command Palette and run **Shell Command: Install 'code' command in PATH**.
+   - Ubuntu: install the official `.deb` package or follow the official Linux instructions.
+3. Open a new terminal and verify:
+
+   ```bash
+   code --version
+   ```
+
+4. Open VS Code, select **Extensions**, and install **Python** published by Microsoft.
+5. Go to `eel4664-robotics-labs` and run:
+
+   ```bash
+   code .
+   ```
+
+6. Confirm the Explorer shows `lab00_setup`, `lab01_webots_ur5e_frames`, and the remaining lab folders.
+7. If VS Code asks for a Python interpreter, select the same interpreter path entered in Webots Preferences.
+
+Optional but recommended:
+
+```bash
+git config --global core.editor "code --wait"
+```
 
 ## Part 5 - Complete the Required Webots Tutorials
 
-Complete these two official Cyberbotics tutorials using Webots R2025a:
+Complete these official tutorials using Webots R2025a:
 
 1. [Tutorial 1 - Your First Simulation in Webots](https://cyberbotics.com/doc/guide/tutorial-1-your-first-simulation-in-webots?version=R2025a)
 
@@ -141,22 +257,23 @@ Complete these two official Cyberbotics tutorials using Webots R2025a:
 
 2. [Tutorial 4 - More About Controllers](https://cyberbotics.com/doc/guide/tutorial-4-more-about-controllers?tab-language=python&version=R2025a)
 
-   Complete the **Python controller** portion. Confirm that Webots starts the controller, prints its console output, reads devices, and continues stepping without crashing.
+   Complete the **Python controller** portion. Confirm that Webots starts Python, prints controller output, reads devices, and continues stepping without crashing.
 
-   Because Tutorials 2 and 3 are optional, start Tutorial 4 from the completed Cyberbotics sample `C:\Program Files\Webots\projects\samples\tutorials\worlds\appearance.wbt`. Immediately use **File -> Save World As...** to save a working copy outside `C:\Program Files\Webots`, then follow Tutorial 4 on that copy.
+   Because Tutorials 2 and 3 are optional, select **File -> Open Sample World...**, search for `appearance.wbt`, and open that Cyberbotics sample. Immediately use **File -> Save World As...** to create a working copy in a personal Webots project folder, then follow Tutorial 4 on the copy.
 
-Tutorials 2 and 3 are optional. Do it if you want to learn how to create simple objects in Webots. You do not need to complete them for Lab 00.
+Tutorials 2 and 3 remain optional enrichment. They are not Lab 00 prerequisites or graded deliverables.
 
 ## Lab 00 Completion Checklist
 
-- [ ] Webots R2025a launches normally
+- [ ] A supported Windows, macOS, or Ubuntu installation is being used
+- [ ] Python 3.11 or newer, 64-bit, is installed
+- [ ] `python --version` or `python3 --version` works
+- [ ] NumPy and Matplotlib import successfully
+- [ ] Webots R2025a launches and renders normally
+- [ ] Webots **Python command** points to the verified system Python interpreter
 - [ ] Git is installed and `git --version` works
 - [ ] Git `user.name` and `user.email` are configured
 - [ ] VS Code is installed and `code --version` works
-- [ ] Python 3.11 or newer, 64-bit, is installed
-- [ ] `python --version` works
-- [ ] NumPy imports successfully
-- [ ] Webots **Python command** points to the correct `python.exe`
 - [ ] Webots Tutorial 1 is complete
 - [ ] The Python portion of Webots Tutorial 4 is complete
 - [ ] A Python controller runs without crashing
@@ -167,9 +284,10 @@ When every item passes, continue to [Lab 1](../lab01_webots_ur5e_frames/README.m
 
 Submit the instructor-requested evidence, normally:
 
-- a screenshot of **Help -> About** showing Webots R2025a;
-- PowerShell output from `git --version` and `code --version`;
-- PowerShell output from `python --version` and the NumPy import command;
+- terminal output from the Python version and NumPy verification commands;
+- a screenshot of **About Webots** showing R2025a;
+- the full interpreter path entered in Webots **Python command**;
+- terminal output from `git --version` and `code --version`;
 - a screenshot of the completed Tutorial 1 world; and
 - Tutorial 4 Python-controller console output.
 
@@ -177,10 +295,10 @@ Do not submit installed software or the Webots installation directory.
 
 ## Troubleshooting
 
-If `python --version` fails, reinstall Python from python.org with **Add python.exe to PATH** selected, then open a new PowerShell window.
+If Python is not found, repeat Part 1 and open a new terminal. Windows students should use `where.exe python` and `py -0p`; macOS and Ubuntu students should use `which -a python3` or `which python3`.
 
-If `git` or `code` is not recognized, close PowerShell, open a new window, and retry. If it still fails, rerun the corresponding installer and enable its PATH option.
+If NumPy fails to import, repeat the package-installation command for your operating system and verify that Webots **Python command** points to that same interpreter.
 
-If a C controller runs but a Python controller fails, locate Python with `where.exe python` or `py -0p`, enter the full interpreter path in Webots Preferences, restart Webots, and retry Tutorial 4.
+If a C controller runs but a Python controller fails, print `sys.executable` again, copy the exact path into Webots Preferences, restart Webots, and retry Tutorial 4.
 
-For repeated Webots crashes, blank scenes, or recovery mode, use [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md).
+For repeated crashes, blank scenes, safe mode, or platform-specific recovery commands, use [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md).

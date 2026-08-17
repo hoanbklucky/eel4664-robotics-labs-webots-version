@@ -3,6 +3,7 @@
 ## Mission
 
 **Move the end effector along a Cartesian direction and experimentally demonstrate what happens near a singularity.**
+
 ### Why experiment in Webots?
 
 The Jacobian predicts how small joint velocities produce tool velocity, but its physical meaning becomes clearer when the robot moves. Webots lets you compare that local prediction with measured tool motion and observe how the same Cartesian command becomes difficult near a singularity.
@@ -35,6 +36,9 @@ You have completed the mission when:
 ## Prerequisites
 
 Complete Lab 2 and the [setup prerequisites](../lab00_setup/README.md). Bring the tested Lab 1 FK/transform modules, the Lab 2 IK results, frame convention, and Webots adapter. Review Jacobians and singularities from lecture/homework.
+
+
+**Platform note:** The required workflow supports Windows, macOS, and Ubuntu when configured through Lab 00. Terminal examples use `python`; on macOS or Ubuntu, use `python3` instead if `python` is not recognized.
 
 ## Background
 
