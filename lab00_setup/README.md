@@ -261,7 +261,7 @@ Complete these official tutorials using Webots R2025a:
 
    Because Tutorials 2 and 3 are optional, select **File -> Open Sample World...**, search for `appearance.wbt`, and open that Cyberbotics sample. Immediately use **File -> Save World As...** to create a working copy in a personal Webots project folder, then follow Tutorial 4 on the copy.
 
-Tutorials 2 and 3 remain optional enrichment. They are not Lab 00 prerequisites or graded deliverables.
+Tutorials 2 and 3 remain optional enrichment for those of you who want to learn more about Webots. They are not Lab 00 prerequisites or graded deliverables.
 
 ## Lab 00 Completion Checklist
 
@@ -284,12 +284,8 @@ When every item passes, continue to [Lab 1](../lab01_webots_ur5e_frames/README.m
 
 Submit the instructor-requested evidence, normally:
 
-- terminal output from the Python version and NumPy verification commands;
-- a screenshot of **About Webots** showing R2025a;
-- the full interpreter path entered in Webots **Python command**;
-- terminal output from `git --version` and `code --version`;
-- a screenshot of the completed Tutorial 1 world; and
-- Tutorial 4 Python-controller console output.
+- a screenshot of the completed Webots Tutorial 1 world; and
+- a movie or link to movie showing epuck moving (Webots Tutorial 4) similar to this one https://youtu.be/7IA7Zfb3OLE.
 
 Do not submit installed software or the Webots installation directory.
 
