@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the cross-platform Webots R2025a setup and six-lab repository structure."""
+"""Verify the cross-platform Webots R2025a setup and seven-lab repository structure."""
 
 from importlib.util import find_spec
 from pathlib import Path
@@ -11,27 +11,30 @@ SAMPLE_ROOT = ROOT / "webots/vendor/webots_r2025a/projects"
 SAMPLE_WORLD = SAMPLE_ROOT / "robots/universal_robots/worlds/ure.wbt"
 UR5E_PROTO = SAMPLE_ROOT / "robots/universal_robots/protos/UR5e.proto"
 SIMULATION_PROJECTS = (
-    "lab01_webots_ur5e_frames",
-    "lab02_inverse_kinematics",
-    "lab03_jacobian_singularities",
-    "lab04_trajectory_tracking",
-    "lab05_dynamics_control_identification",
-    "lab06_integrated_manipulation",
+    "lab01_ur5e_playground",
+    "lab02_webots_ur5e_frames",
+    "lab03_inverse_kinematics",
+    "lab04_jacobian_singularities",
+    "lab05_trajectory_tracking",
+    "lab06_dynamics_control_identification",
+    "lab07_integrated_manipulation",
 )
-REQUIRED_README_SECTIONS = (
+COMMON_README_SECTIONS = (
     "## Mission",
-    "## Success Criteria",
     "## Learning Objectives",
-    "## Prerequisites",
-    "## Background",
+    "## Prerequisite",
     "## Provided Files",
+    "## What to Submit",
+    "## Troubleshooting",
+)
+TECHNICAL_README_SECTIONS = (
+    "## Success Criteria",
+    "## Background",
     "## Part 1 - Setup / Validation",
     "## Part 2 - Core Implementation",
     "## Part 3 - Robot Experiment",
     "## Part 4 - Quantitative Analysis",
     "## Engineering Questions",
-    "## What to Submit",
-    "## Troubleshooting",
 )
 SUPPORTED_PLATFORMS = {
     "win32": "Windows",
@@ -109,20 +112,27 @@ for project_name in SIMULATION_PROJECTS:
         and "COURSE STARTER: DO NOT OVERWRITE" in world.read_text(encoding="utf-8")
         for world in starters
     )
+    is_playground = project_name == "lab01_ur5e_playground"
     workflow_markers = (
-        ("File -> Save World As...",),
-        ("diagnostic_minimal",),
-        ("diagnostic_devices",),
-        ("**One joint:**", "one-joint motion"),
-        ("**Full algorithm:**", "held-out"),
+        (("File -> Save World As...",), ("ur5e_playground",), ("safe exploration pose",))
+        if is_playground
+        else (
+            ("File -> Save World As...",),
+            ("diagnostic_minimal",),
+            ("diagnostic_devices",),
+            ("**One joint:**", "one-joint motion"),
+            ("**Full algorithm:**", "held-out"),
+        )
     )
     workflow_is_documented = all(
         any(phrase in readme for phrase in alternatives)
         for alternatives in workflow_markers
     )
-    sections_are_complete = all(section in readme for section in REQUIRED_README_SECTIONS)
+    required_sections = COMMON_README_SECTIONS + (() if is_playground else TECHNICAL_README_SECTIONS)
+    sections_are_complete = all(section in readme for section in required_sections)
     checks.append(report(starter_is_protected, f"{project_name}: one protected R2025a starter world"))
-    checks.append(report(diagnostics, f"{project_name}: both diagnostic controllers installed"))
+    if not is_playground:
+        checks.append(report(diagnostics, f"{project_name}: both diagnostic controllers installed"))
     checks.append(report(workflow_is_documented, f"{project_name}: staged safety workflow documented"))
     checks.append(report(sections_are_complete, f"{project_name}: required student-facing sections present"))
 

@@ -238,7 +238,7 @@ Do not clone over an existing course repository.
    code .
    ```
 
-6. Confirm the Explorer shows `lab00_setup`, `lab01_webots_ur5e_frames`, and the remaining lab folders.
+6. Confirm the Explorer shows `lab00_setup`, `lab01_ur5e_playground`, and the remaining lab folders.
 7. If VS Code asks for a Python interpreter, select the same interpreter path entered in Webots Preferences.
 
 Optional but recommended:
@@ -278,7 +278,7 @@ Tutorials 2 and 3 remain optional enrichment for those of you who want to learn 
 - [ ] The Python portion of Webots Tutorial 4 is complete
 - [ ] A Python controller runs without crashing
 
-When every item passes, continue to [Lab 1](../lab01_webots_ur5e_frames/README.md).
+When every item passes, continue to [Lab 1 - UR5e Playground](../lab01_ur5e_playground/README.md).
 
 ## What to Submit
 

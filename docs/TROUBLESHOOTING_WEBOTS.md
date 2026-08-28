@@ -74,7 +74,7 @@ To restore a tracked starter that was accidentally changed, first preserve any w
 
 ```bash
 git status --short
-git restore lab01_webots_ur5e_frames/worlds/lab01_starter.wbt
+git restore lab01_ur5e_playground/worlds/lab01_starter.wbt
 ```
 
 Change the path for the relevant lab. `git restore` discards uncommitted changes to that exact starter, so inspect `git status` first.
