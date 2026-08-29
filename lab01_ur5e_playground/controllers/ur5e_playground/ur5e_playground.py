@@ -34,7 +34,8 @@ JOINT_STEP = 0.04
 def print_help():
     print("\n=== UR5e PLAYGROUND ===")
     print("1-6: select joint | UP/DOWN: move selected joint")
-    print("R: safe reset | D: start/stop dance | P: print pose | H: help")
+    print("R: safe reset | D: start dance | S: stop dance")
+    print("P: print pose | H: help")
     print("Click the 3D view if Webots is not receiving your keys.\n")
 
 
@@ -47,6 +48,7 @@ time_step = int(robot.getBasicTimeStep())
 keyboard = robot.getKeyboard()
 keyboard.enable(time_step)
 
+# Connect the ordered motor and joint-sensor devices.
 motors = [robot.getDevice(name) for name in JOINT_NAMES]
 sensors = [robot.getDevice(f"{name}_sensor") for name in JOINT_NAMES]
 for motor in motors:
@@ -70,6 +72,8 @@ for motor, target in zip(motors, q_command):
 print_help()
 print("Selected joint 1:", JOINT_NAMES[selected])
 
+# The controller repeats: update automatic actions, process keys, send joint
+# targets, and check whether the stylus has reached a target bubble.
 while robot.step(time_step) != -1:
     now = robot.getTime()
 
@@ -82,14 +86,18 @@ while robot.step(time_step) != -1:
             dance_index = 0
             print("[DANCE COMPLETE] Your turn again.")
 
+    # Read and process every keyboard event currently waiting in the queue.
     key = keyboard.getKey()
     while key != -1:
         if ord("1") <= key <= ord("6"):
             selected = key - ord("1")
-            dance_active = False
             print(f"Selected joint {selected + 1}: {JOINT_NAMES[selected]}")
         elif key == Keyboard.UP or key == Keyboard.DOWN:
-            dance_active = False
+            if dance_active:
+                q_command = [sensor.getValue() for sensor in sensors]
+                dance_active = False
+                dance_index = 0
+                print("[DANCE] Stopped by manual joint control.")
             direction = 1.0 if key == Keyboard.UP else -1.0
             proposed = q_command[selected] + direction * JOINT_STEP
             lower = motors[selected].getMinPosition()
@@ -104,10 +112,20 @@ while robot.step(time_step) != -1:
             dance_active = False
             print("[RESET] Returning to the safe exploration pose.")
         elif key in (ord("D"), ord("d")):
-            dance_active = not dance_active
-            dance_index = 0
-            dance_switch_time = now
-            print("[DANCE]", "Started." if dance_active else "Stopped.")
+            # D is intentionally idempotent. Keyboard auto-repeat can enqueue
+            # several events for one physical press, so toggling here would
+            # sometimes start and immediately stop the dance.
+            if not dance_active:
+                dance_active = True
+                dance_index = 0
+                dance_switch_time = now
+                print("[DANCE] Started. Press S to stop.")
+        elif key in (ord("S"), ord("s")):
+            if dance_active:
+                q_command = [sensor.getValue() for sensor in sensors]
+                dance_active = False
+                dance_index = 0
+                print("[DANCE] Stopped and holding the current pose.")
         elif key in (ord("P"), ord("p")):
             q_measured = [sensor.getValue() for sensor in sensors]
             tip = tool_tip.getValues()
@@ -120,9 +138,11 @@ while robot.step(time_step) != -1:
             print_help()
         key = keyboard.getKey()
 
+    # Send the current six-angle command to the six joint motors.
     for motor, target in zip(motors, q_command):
         motor.setPosition(target)
 
+    # Give visual exploration a simple quantitative success signal.
     tip = tool_tip.getValues()
     for name, point in TARGETS.items():
         if name not in reached and distance(tip, point) <= TARGET_RADIUS:
