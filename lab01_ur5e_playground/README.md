@@ -45,6 +45,10 @@ Complete [Lab 00 - Software Setup and Webots Basics](../lab00_setup/README.md), 
    python lab00_setup\prepare_webots_sample.py
    ```
 
+   The Windows example below shows VS Code opened at the correct repository folder. The terminal prompt begins with `PS C:\eel4664-robotics-labs>`, and `Get-ChildItem` lists `lab00_setup` and `lab01_ur5e_playground` before the preparation command is run.
+
+   ![VS Code and PowerShell opened at the eel4664-robotics-labs repository root](images/repository_root_windows.png)
+
    **macOS or Ubuntu Terminal:**
 
    ```bash
