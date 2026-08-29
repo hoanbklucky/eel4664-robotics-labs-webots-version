@@ -8,6 +8,18 @@ This is an exploration lab. You are not expected to know forward kinematics, DH 
 
 Plan for approximately 45-60 minutes.
 
+## Meet the Real Robot
+
+Before opening Webots, watch [UR5e Cobot with 3D Scanner for Metrology Inspection](https://www.youtube.com/watch?v=8OF0ReM8GA8) (1 minute 48 seconds), published by *Automation World*. It shows a physical UR5e carrying a 3D scanner to inspect a manufactured part.
+
+As you watch, notice:
+
+- how several joints move together to position and orient the tool;
+- how the 3D scanner is attached as the robot's tool; and
+- why the inspection task requires the robot to control both tool position and orientation.
+
+No written response is required. The video provides a real-world reference for the simulated UR5e you will control in this lab.
+
 ## Success Criteria
 
 You have completed the mission when you have explored all six joints, brought the stylus near at least one target, recorded one target-pose joint vector, and can explain why a robot program needs something better than trial and error.
