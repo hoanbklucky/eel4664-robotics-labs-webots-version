@@ -40,7 +40,7 @@ Complete [Lab 00 - Software Setup and Webots Basics](../lab00_setup/README.md), 
 ## Provided Files
 
 - `worlds/lab01_starter.wbt` - UR5e playground with an orange stylus and three visual target bubbles
-- `controllers/ur5e_playground/ur5e_playground.py` - complete keyboard controller; read it, but do not modify it
+- `controllers/ur5e_playground/ur5e_playground.py` - complete keyboard controller with one guided key-mapping change for you to make
 - `answers.md` - short observation and reflection template
 
 ## Part 1 - Open the Playground
@@ -82,7 +82,7 @@ Never overwrite `lab01_starter.wbt`. If the working world becomes damaged, disca
 
 ### Read how the keyboard controller works
 
-Before moving the robot, open `controllers/ur5e_playground/ur5e_playground.py` in VS Code. This is supplied example code; you should understand its main flow, but you do not need to modify or submit it.
+Before moving the robot, open `controllers/ur5e_playground/ur5e_playground.py` in VS Code. This is supplied example code. First trace its main flow, and then make the small guided change below. You do not need to submit the controller file.
 
 Find these five stages in the code:
 
@@ -95,20 +95,46 @@ Find these five stages in the code:
 Trace two examples from input to action:
 
 - **Manual motion:** a number key changes `selected`; an arrow key changes `q_command[selected]`; then `motor.setPosition(target)` sends the updated targets to the robot.
-- **Dance:** `D` sets `dance_active`; the main loop selects poses from `DANCE_POSES`; then the same `motor.setPosition(target)` loop sends each pose to the robot.
+- **Dance:** `D` initially sets `dance_active`; the main loop selects poses from `DANCE_POSES`; then the same `motor.setPosition(target)` loop sends each pose to the robot.
 
 Also find the final loop that compares the measured stylus-tip position with `TARGETS` and prints `[TARGET REACHED]`. No response about the code is required in `answers.md`.
 
+### Make one keyboard change
+
+Change the dance-start key from `D` to `M`. This requires two related edits:
+
+1. In the keyboard `if`/`elif` section, find:
+
+   ```python
+   elif key in (ord("D"), ord("d")):
+   ```
+
+   Change both occurrences of `D` to `M`:
+
+   ```python
+   elif key in (ord("M"), ord("m")):
+   ```
+
+2. In `print_help()`, change the displayed instruction from `D: start dance` to `M: start dance`. A controller's help text should always agree with its actual key mapping.
+
+Save the file. Return to Webots, press **Reset** to restart the Python controller, press **Run**, and click inside the large simulation panel. Verify that:
+
+- `M` starts the dance;
+- `S` stops the dance; and
+- `D` no longer starts the dance.
+
+If `D` still starts the dance, confirm that you saved the file and reset Webots after editing it. Do not change any other controller behavior.
+
 ### Explore the robot
 
-The controller starts from a safe exploration pose. Use these keys:
+After completing the guided change, use these keys:
 
 | Key | Action |
 |---|---|
 | `1`-`6` | select a joint |
 | Up / Down arrow | increase / decrease the selected joint target |
 | `R` | return to the safe exploration pose |
-| `D` | start the short preset robot dance |
+| `M` | start the short preset robot dance |
 | `S` | stop the robot dance |
 | `P` | print the current joint angles, stylus position, and target distances |
 | `H` | print the controls again |
@@ -138,7 +164,7 @@ Optional challenges:
 - Reach all three targets in one run.
 - Return close to a previous target using the recorded joint angles.
 - Find two visibly different arm shapes that place the stylus in approximately the same region.
-- Press `D` and explain why the stylus path is more complicated than the individual joint motions.
+- Press `M` and explain why the stylus path is more complicated than the individual joint motions.
 
 This is not an accuracy competition. A target attempt that teaches you something about the robot is useful even if it misses.
 
