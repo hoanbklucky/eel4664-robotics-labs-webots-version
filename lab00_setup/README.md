@@ -9,7 +9,7 @@ If you already cloned the course repository, update it before starting the lab. 
 ```powershell
 cd C:\eel4664-robotics-labs
 git status --short
-git pull
+git pull --rebase
 ```
 
 **macOS or Ubuntu Terminal:**
@@ -17,12 +17,65 @@ git pull
 ```bash
 cd ~/eel4664-robotics-labs
 git status --short
-git pull
+git pull --rebase
 ```
 
 If this is your first time completing Lab 00, skip this update for now; Part 3 installs Git and clones the repository.
 
-If `git pull` reports local changes or a conflict, do not force the update or discard your work. Keep the terminal message visible and ask your instructor for help.
+### What these Git commands mean
+
+**Git** is the program that tracks versions of files on your computer. **GitHub** hosts the course's shared copy of the repository online. Your **local repository** is the `eel4664-robotics-labs` folder on your computer; the GitHub repository is the **remote repository**.
+
+- `git status --short` checks your local repository. No output means that Git sees no local file changes. Lines containing file names identify work that has been modified, added, or deleted.
+- A **commit** is a saved checkpoint in the repository's history. A local commit remains on your computer unless it is pushed to a remote repository.
+- `git pull --rebase` downloads new commits from GitHub and updates your current local branch. If you have local commits, **rebase** temporarily moves them aside, applies the new course commits, and then replays your commits on top. This produces a simpler history than creating an automatic merge commit.
+- A **stash** is temporary local storage for changes that have not been committed. Stashing does not upload your work to GitHub and is not a permanent backup.
+- A **conflict** occurs when Git cannot safely combine two changes, usually because your work and a course update changed the same part of a file. Git pauses so a person can choose the correct final content.
+
+A successful update reports `Already up to date.` or lists files that Git updated. These commands do not submit your lab work to GitHub.
+
+### If the repository cannot update cleanly
+
+Do not use **Force**, `git reset --hard`, or commands that discard changes. First copy the files you edited to a backup folder outside the repository.
+
+If Git says your uncommitted local changes would be overwritten, temporarily store them:
+
+```bash
+git stash push --include-untracked -m "My work before course update"
+git pull --rebase
+```
+
+Here, `git stash push` places the current uncommitted changes on a temporary shelf, `--include-untracked` also includes new files that Git has not started tracking, and `-m` adds a recognizable description. If it reports `No local changes to save`, continue with `git pull --rebase`.
+
+If the local and GitHub branches have **diverged**, both sides contain commits that the other side does not have. `git pull --rebase` normally resolves this by replaying your local commits after the newest course commits. It changes the ordering of your local history; it does not force-push anything to GitHub. If it stops on a conflict:
+
+1. Run `git status` to see which files conflict.
+2. In VS Code, open **Source Control** and each file under **Merge Changes**.
+3. Compare both versions. Keep your work while incorporating the required course update, and remove all conflict markers (`<<<<<<<`, `=======`, and `>>>>>>>`).
+4. Save each resolved file and run:
+
+   ```bash
+   git add path/to/resolved-file
+   git rebase --continue
+   ```
+
+   Replace `path/to/resolved-file` with the file shown by `git status`. Here, `git add` tells Git that you finished resolving that file; it does not upload the file. `git rebase --continue` resumes replaying the remaining local commits.
+
+5. Repeat these steps if Git stops at another conflicting commit.
+
+If you are uncertain how to resolve a file, safely return the branch to its state before the rebase and ask your instructor for help:
+
+```bash
+git rebase --abort
+```
+
+After the rebase finishes successfully, restore any uncommitted work you stashed:
+
+```bash
+git stash pop
+```
+
+`git stash pop` reapplies the temporarily stored changes and removes the stash only when Git can do so successfully. If it reports a conflict, run `git status` and use VS Code's Merge Editor to combine the course version with your work. Save each resolved file and run `git add path/to/resolved-file`, but do **not** run `git rebase --continue` because the rebase has already finished. Do not run `git stash pop` again. The stash is normally retained when a conflict occurs, so do not delete it or your backup until your instructor has inspected the repository and you have tested every restored file.
 
 ## Mission
 

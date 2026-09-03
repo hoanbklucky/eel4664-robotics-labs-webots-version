@@ -9,7 +9,7 @@ Before starting the lab, save your work, close Webots, and update the course rep
 ```powershell
 cd C:\eel4664-robotics-labs
 git status --short
-git pull
+git pull --rebase
 ```
 
 **macOS or Ubuntu Terminal:**
@@ -17,12 +17,14 @@ git pull
 ```bash
 cd ~/eel4664-robotics-labs
 git status --short
-git pull
+git pull --rebase
 ```
 
 A successful update reports either `Already up to date.` or the files that Git updated.
 
-If `git pull` reports local changes or a conflict, do not force the update or discard your work. Keep the terminal message visible and ask your instructor for help.
+`git status --short` lists local file changes; no output means there are none. `git pull --rebase` downloads new course commits from GitHub and then reapplies any of your local commits after them. It does not submit your work to GitHub. See [What these Git commands mean](../lab00_setup/README.md#what-these-git-commands-mean) for an explanation of Git terminology.
+
+If `git pull --rebase` reports local changes, a conflict, or another error, do not force the update or discard your work. Follow [If the repository cannot update cleanly](../lab00_setup/README.md#if-the-repository-cannot-update-cleanly).
 
 ## Mission
 
