@@ -1,5 +1,29 @@
 # Lab 00 - Software Setup and Webots Basics
 
+## Get the Latest Course Files
+
+If you already cloned the course repository, update it before starting the lab. Open a terminal and use the commands for your operating system.
+
+**Windows PowerShell:**
+
+```powershell
+cd C:\eel4664-robotics-labs
+git status --short
+git pull
+```
+
+**macOS or Ubuntu Terminal:**
+
+```bash
+cd ~/eel4664-robotics-labs
+git status --short
+git pull
+```
+
+If this is your first time completing Lab 00, skip this update for now; Part 3 installs Git and clones the repository.
+
+If `git pull` reports local changes or a conflict, do not force the update or discard your work. Keep the terminal message visible and ask your instructor for help.
+
 ## Mission
 
 Install Python and Webots on Windows, macOS, or Ubuntu, verify that Python controllers run, and learn the minimum Webots skills needed to begin Lab 1.

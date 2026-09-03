@@ -1,5 +1,29 @@
 # Lab 3 - Inverse Kinematics
 
+## Get the Latest Course Files
+
+Before starting the lab, save your work, close Webots, and update the course repository. Open a terminal and use the commands for your operating system.
+
+**Windows PowerShell:**
+
+```powershell
+cd C:\eel4664-robotics-labs
+git status --short
+git pull
+```
+
+**macOS or Ubuntu Terminal:**
+
+```bash
+cd ~/eel4664-robotics-labs
+git status --short
+git pull
+```
+
+A successful update reports either `Already up to date.` or the files that Git updated.
+
+If `git pull` reports local changes or a conflict, do not force the update or discard your work. Keep the terminal message visible and ask your instructor for help.
+
 ## Mission
 
 **Choose Cartesian target poses, predict the required UR5e joint configurations with your own inverse-kinematics solver, command the robot in Webots, and measure how closely the stylus actually reaches each target pose.**

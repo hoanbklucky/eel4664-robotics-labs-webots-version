@@ -1,5 +1,29 @@
 # Lab 4 - Jacobian, Differential Kinematics, and Singularities
 
+## Get the Latest Course Files
+
+Before starting the lab, save your work, close Webots, and update the course repository. Open a terminal and use the commands for your operating system.
+
+**Windows PowerShell:**
+
+```powershell
+cd C:\eel4664-robotics-labs
+git status --short
+git pull
+```
+
+**macOS or Ubuntu Terminal:**
+
+```bash
+cd ~/eel4664-robotics-labs
+git status --short
+git pull
+```
+
+A successful update reports either `Already up to date.` or the files that Git updated.
+
+If `git pull` reports local changes or a conflict, do not force the update or discard your work. Keep the terminal message visible and ask your instructor for help.
+
 ## Mission
 
 **Move the end effector along a Cartesian direction and experimentally demonstrate what happens near a singularity.**
