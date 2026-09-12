@@ -46,7 +46,7 @@ You have completed the mission when:
 
 - the world and two quick diagnostics pass;
 - the robot completes a safe one-joint motion by Step 3;
-- you can explain the provided homogeneous-transform code;
+- the provided homogeneous-transform utility check passes;
 - your UR5e FK returns a valid transform;
 - one fixed tool-frame alignment is reused while the robot air-draws through three held-out poses; and
 - position, orientation, and tool-point errors are reported quantitatively.
@@ -54,7 +54,7 @@ You have completed the mission when:
 ## Learning Objectives
 
 - Identify the UR5e joint order, link sequence, base frame, and tool frame.
-- Read, explain, and verify NumPy implementations of rotation matrices and homogeneous transforms.
+- Use provided NumPy rotation and homogeneous-transform utilities in the FK workflow.
 - Implement a six-link UR5e FK chain from an explicit DH convention.
 - Read ordered Webots joint sensors without using simulator kinematics.
 - Validate predicted tool position and orientation against read-only sensors.
@@ -145,7 +145,7 @@ The subscripts matter: `alpha_previous` and `a_previous` in the Python code foll
 
 Relate the DH result to the measured tool frame explicitly:
 
-`	ext
+```text
 T_world_tool = T_world_0 T_0_6(q) T_6_tool
 ```
 
@@ -217,6 +217,9 @@ The robot moves in Step 3. Complete Steps 1-2 quickly, but stop if either diagno
    ```
 
    The cross-platform script downloads one known-good copy of the official R2025a UR5e model and its dependencies inside the repository. It does not use the installed Webots asset paths. The first command should end with `[READY] Official Universal Robots sample:` and the final command must print `True`.
+![Successful preparation of the pinned Webots R2025a UR5e assets](images/prepare_assets_success.png)
+
+*Example successful result. The download finishes with `[READY]`, and the file check prints `True`. The repository path shown in your terminal may be different; the two success indicators are what matter.*
 
 3. Start Webots R2025a while paused and open `lab02_webots_ur5e_frames/worlds/lab02_starter.wbt` from your repository.
 
@@ -230,13 +233,22 @@ The robot moves in Step 3. Complete Steps 1-2 quickly, but stop if either diagno
 
 To assign a controller, select `UR5e "UR5E"` in the Scene Tree, double-click its `controller` field, choose the controller name, press **Reset**, and then press **Run**.
 
-| Controller | Expected result | Movement? |
-|---|---|---|
-| `diagnostic_minimal` | Console prints `[DIAGNOSTIC PASS] completed 10 steps` | none |
-| `diagnostic_devices` | Console ends with `[DIAGNOSTIC PASS] all device handles enumerated` | none |
+Run the controllers in this order:
 
-For the device check, confirm six motors, six joint sensors, `tool_position`, `tool_orientation`, and `tool_test_point_position` appear. These diagnostics do not command joints. If either fails, use the Troubleshooting section before continuing.
+| Controller | What it checks | Expected result | Movement? |
+|---|---|---|---|
+| `diagnostic_minimal` | Webots can start the configured Python interpreter, load a controller, and advance the world through simulation steps | Console prints `[DIAGNOSTIC PASS] completed 10 steps` and then `[DIAGNOSTIC DONE]` | none |
+| `diagnostic_devices` | The UR5e model exposes the device names that later controllers will request | Console lists 15 devices and ends with `[DIAGNOSTIC PASS] all device handles enumerated` | none |
 
+The minimal diagnostic deliberately does almost nothing. It creates the Webots `Robot` object, reads the basic time step, advances the simulation briefly, and exits normally. It does not obtain motor handles or send commands. If it fails, investigate Python configuration, the controller folder, or the world before debugging any robotics mathematics.
+
+The device diagnostic asks Webots for the names and node types of every device attached to the UR5e. Confirm that the list contains six motors, six joint sensors, `tool_position`, `tool_orientation`, and `tool_test_point_position`. It only enumerates handles: it does not enable sensors, change motor targets, or move the robot. If the minimal test passes but this test fails, the likely problem is the robot model, device names, or prepared assets rather than Python itself.
+
+![Successful minimal-controller and device-listing diagnostics in Webots](images/diagnostics_pass.png)
+
+*Example successful result. The Console first shows the minimal controller completing normally, followed by the device controller finding all 15 expected handles. The blue outlines only indicate that the UR5e is selected in the Scene Tree; they are not an error. No robot movement is expected during either diagnostic.*
+
+Continue to Step 3 only after both diagnostics pass. If either fails, use the Troubleshooting section before running motion code.
 ### Step 3 - Move one joint and save the alignment data
 
 If `controllers/lab02_controller` does not already exist, close Webots and run this cross-platform command from the repository root:
@@ -252,6 +264,9 @@ q_goal = q0.copy()
 q_goal[0] += 0.10
 duration = 4.0
 ```
+![Lab 2 working world with lab02_controller assigned and the one-joint command visible](images/one_joint_controller_ready.png)
+
+*Example immediately before the Step 3 motion test. The title bar shows the working copy `lab02_work.wbt`, the UR5e `controller` field is `lab02_controller`, and the editor shows the small `q_goal[0] += 0.10` command. Keep the simulation paused until you have made the prediction in item 2. Console lines from the earlier device diagnostic may still be visible; they are not the Step 3 motion result.*
 
 1. Open `lab02_work.wbt` and assign `lab02_controller`.
 2. Before running, predict which links will move and in which direction.
@@ -267,37 +282,23 @@ These synchronized final measurements are the one alignment data set used later.
 
 ## Part 2 - Core Implementation
 
-### Step 4 - Read and check the provided transform code
+### Step 4 - Verify the provided transform utilities
 
-Do not rewrite `src/transforms.py` or `src/transform_point.py`. Read the comments and be able to answer:
+`src/transforms.py` and `src/transform_point.py` are complete support files. **Do not modify them.** You are not required to implement or answer questions about `rotx`, `roty`, or `rotz` in this lab.
 
-- Which coordinate stays fixed in `rotx`, `roty`, and `rotz`?
-- Why does a point use homogeneous coordinate 1 while a direction uses 0?
-- Why is the inverse translation `-R.T @ p` rather than simply `-p`?
-
-Before running the code, consider this operation:
-
-```python
-v_before = np.array([1.0, 0.0, 0.0])  # unit vector along +x
-v_after = rotz(np.pi / 2.0) @ v_before
-```
-
-`rotz(np.pi / 2.0)` creates a matrix for a positive 90-degree rotation about the z-axis. The NumPy `@` operator multiplies that rotation matrix by the vector. Using the right-hand rule, predict where the +x vector points afterward. Also predict what happens when translation `[1, 2, 3]` is applied to a point versus a direction. Then run:
+From the repository root, run this short check:
 
 ```bash
 python lab02_webots_ur5e_frames/src/test_transforms.py
-python -c "import numpy as np; from lab02_webots_ur5e_frames.src.transform_point import transform_point,transform_direction; T=np.eye(4); T[:3,3]=[1,2,3]; print(transform_point(T,np.array([.1,.2,.3]))); print(transform_direction(T,np.array([1,0,0])))"
 ```
 
-Expected output includes:
+Expected output:
 
 ```text
 All transformation tests passed.
-[1.1 2.2 3.3]
-[1. 0. 0.]
 ```
 
-Record your predictions and one-sentence explanations in `answers.md`.
+This check only confirms that the provided rotation and homogeneous-transform utilities work. Your required FK coding begins in Step 5: complete the two marked entries in the modified-DH matrix.
 
 ### Step 5 - Implement forward kinematics
 
@@ -308,7 +309,7 @@ The Background section gives the modified-DH matrix, parameter table, and frame 
 
 Use the class formula to decide which products of sine, cosine, and `d` belong in those locations. Do not copy a robotics-library FK function. In `answers.md`, write the two expressions you inserted and explain the frame multiplication order. Then run:
 
-`ash
+```bash
 python -c "import numpy as np; from lab02_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; T=forward_kinematics(np.zeros(6)); print(T); print('orthogonality=',np.linalg.norm(T[:3,:3].T@T[:3,:3]-np.eye(3))); print('det=',np.linalg.det(T[:3,:3]))"
 ```
 
@@ -441,12 +442,11 @@ Briefly explain whether the remaining error is more consistent with rounded mode
 3. Why must `T_6_tool` remain fixed for Poses A-C?
 4. Why should FK use measured joint angles instead of commanded targets?
 5. What error pattern would suggest a wrong joint sign or transform order?
-6. Why does translation affect a point but not a free direction?
 
 ## What to Submit
 
 1. Completed `ur5e_fk_starter.py`.
-2. Completed `answers.md`, containing the transform-code explanations and DH convention, fixed alignment transform, pre-run predictions, comparison table, required errors and summary, one error plot, and answers to the Engineering Questions.
+2. Completed `answers.md`, containing the DH convention, fixed alignment transform, pre-run predictions, comparison table, required errors and summary, one error plot, and answers to the Engineering Questions.
 
 Do not submit `lab02_work.wbt`, installed software, downloaded vendor assets, or caches unless requested.
 

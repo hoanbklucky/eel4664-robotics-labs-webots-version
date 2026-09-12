@@ -6,24 +6,10 @@ Record whether `diagnostic_minimal` and `diagnostic_devices` passed. List any mi
 
 ## Step 3 - One-Joint Motion and Alignment Data
 
-- Predicted moving links and direction:
-- Actual result:
 - Final measured `q_align` [rad]:
 - Measured tool position [m]:
 - Measured tool `[roll, pitch, yaw]` [rad]:
 - Measured tool-test-point position [m]:
-
-## Step 4 - Transform-Code Understanding
-
-Predict and then verify:
-
-| Expression | Prediction | Program result | Explanation |
-|---|---|---|---|
-| `rotz(pi/2) @ [1, 0, 0]` | | | |
-| point `[0.1, 0.2, 0.3]` under translation `[1, 2, 3]` | | | |
-| direction `[1, 0, 0]` under the same translation | | | |
-
-Explain why inverse translation is `-R.T @ p` and why points and directions use different homogeneous coordinates.
 
 ## Step 5 - FK Convention and Offline Test
 
@@ -49,4 +35,4 @@ Report mean/maximum position error, mean/maximum orientation error, the required
 
 ## Engineering Questions
 
-Answer the six Engineering Questions in the Lab 2 README.
+Answer the five Engineering Questions in the Lab 2 README.

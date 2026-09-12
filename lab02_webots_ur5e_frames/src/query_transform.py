@@ -25,6 +25,6 @@ print("tool RPY in world [rad]:", np.array2string(rpy_world_tool, precision=6))
 print("test point in world [m]:", np.array2string(test_point_world, precision=6))
 
 # TODO: construct R_world_tool = Rz(yaw) @ Ry(pitch) @ Rx(roll).
-# TODO: build T_world_tool and call your transform_point implementation
+# TODO: build T_world_tool and call the provided transform_point function
 #       for p_tool = np.array([0.0, 0.13, 0.0]).
 # TODO: report Euclidean prediction error without a simulator transform solver.
