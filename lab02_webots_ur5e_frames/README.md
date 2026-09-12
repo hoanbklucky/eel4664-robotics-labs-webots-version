@@ -149,7 +149,8 @@ The robot base is at the world origin in this lab, so `T_world_0` is identity.
 - `src/ur5e_fk_starter.py` - the two-entry FK exercise
 - `src/predict_fk_poses.py` - provided runner for the three pre-experiment FK predictions
 - `src/compare_fk_with_webots.py` - interactive comparison of FK predictions and Webots measurements
-- `answers.md` - response template
+- `Lab02_Report_Template.docx` - editable Word report for pasted results, screenshots, and interpretation
+- `answers.md` - legacy text reference; students do not submit this file
 
 ## Student Workflow
 
@@ -205,7 +206,7 @@ Assign `lab02_controller` in `lab02_work.wbt`. This supplied controller changes 
 
 ![Lab 2 working world with the one-joint controller assigned](images/one_joint_controller_ready.png)
 
-Press **Reset**, then **Run**. The shoulder-pan joint should move smoothly by about `+0.10` rad, hold for one second, and print `[TRACKING PASS]`. Small differences between target and measured angles are normal. No values from this step are required in `answers.md`.
+Press **Reset**, then **Run**. The shoulder-pan joint should move smoothly by about `+0.10` rad, hold for one second, and print `[TRACKING PASS]`. Small differences between target and measured angles are normal. No values from this step are required in the report.
 
 ### Step 4 - Complete and test forward kinematics
 
@@ -236,7 +237,7 @@ For both runs:
 - orthogonality error must be below `1e-8`; and
 - determinant must be within `1e-8` of `1`.
 
-The zero pose is easy to inspect, but many sine terms vanish there. The nonsymmetric pose activates more terms and is more likely to reveal a sign or placement mistake. Record the two completed entries and both outputs in `answers.md`.
+The zero pose is easy to inspect, but many sine terms vanish there. The nonsymmetric pose activates more terms and is more likely to reveal a sign or placement mistake. Paste the two completed entries and both outputs into `Lab02_Report_Template.docx`.
 
 ### Step 5 - Predict the three tool poses
 
@@ -262,7 +263,7 @@ $$
 T_{predicted}=T_6(\mathbf q_{goal})\,{}^6T_{tool}.
 $$
 
-Record the predicted position and RPY for poses A, B, and C in `answers.md` before continuing. If the program prints `[STOP]`, return to Step 4 and complete the two marked modified-DH entries.
+Paste the predicted position and RPY for poses A, B, and C into `Lab02_Report_Template.docx` before continuing. If the program prints `[STOP]`, return to Step 4 and complete the two marked modified-DH entries.
 
 ### Step 6 - Move the robot and compare with Webots
 
@@ -277,16 +278,10 @@ Follow this sequence:
    - the six measured joint angles;
    - the Webots tool position; and
    - the Webots tool RPY orientation.
-5. Copy the three printed vectors for A, B, and C into `answers.md`.
+5. Paste the three printed vectors for A, B, and C into `Lab02_Report_Template.docx` and add a screenshot of the completed Webots motion.
 6. Pause Webots after `[EXPERIMENT DONE]` appears.
 
-First check that the measured joints are close to the commanded target:
-
-$$
-e_q=\max_i\left|q_{measured,i}-q_{goal,i}\right|.
-$$
-
-A small $e_q$ confirms that Webots reached the configuration used for the Step 5 prediction. If it is unexpectedly large, reset and repeat the motion before judging the FK model.
+First check that the measured joint angles are close to the commanded target angles. Small differences are normal. If the difference is unexpectedly large, reset and repeat the motion before judging the FK model.
 
 Next run the provided comparison program from the repository root:
 
@@ -294,20 +289,14 @@ Next run the provided comparison program from the repository root:
 python lab02_webots_ur5e_frames/src/compare_fk_with_webots.py
 ```
 
-For each pose, paste the measured joint vector, tool position, and tool RPY from the Webots Console when prompted. The program recomputes the Step 5 prediction from $\mathbf q_{goal}$ and reports:
+For each pose, paste the measured joint vector, tool position, and tool RPY from the Webots Console when prompted. The program repeats the Step 5 prediction and reports:
 
-$$
-e_p=1000\left\|\mathbf p_{predicted}-\mathbf p_{Webots}\right\|_2
-\quad\text{millimeters},
-$$
+- the largest difference between a commanded and measured joint angle;
+- the straight-line distance between the FK-predicted and Webots tool positions, in millimeters;
+- one orientation-difference angle, in degrees, where 0 degrees means the two orientations match; and
+- the mean and maximum errors across all three poses.
 
-and the angle of the relative orientation,
-
-$$
-e_R=\cos^{-1}\!\left(\frac{\mathrm{tr}(R_{predicted}^{T}R_{Webots})-1}{2}\right).
-$$
-
-Copy the three tracking, position, and orientation errors plus the mean and maximum pose errors into `answers.md`.
+You do not need to derive or calculate these error measures by hand. Paste the program output into `Lab02_Report_Template.docx` and include a screenshot of the comparison results.
 
 Interpret the result:
 
@@ -321,12 +310,13 @@ Webots supplies the comparison measurements; it does not calculate FK for the su
 ## What to Submit
 
 1. Completed `src/ur5e_fk_starter.py`.
-2. Completed `answers.md` containing:
+2. Completed `Lab02_Report_Template.docx` containing:
    - the two modified-DH entries;
    - both offline FK test outputs;
    - three pre-run tool-pose predictions;
-   - the joint-tracking and A-C tool-pose comparison tables; and
-   - the error summary and interpretation.
+   - pasted Webots and comparison-program output;
+   - the requested screenshots; and
+   - a short interpretation of the errors.
 
 Do not submit `lab02_work.wbt`, downloaded vendor assets, installed software, or caches unless requested.
 
