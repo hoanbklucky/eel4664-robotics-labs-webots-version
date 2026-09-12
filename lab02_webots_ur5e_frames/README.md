@@ -313,13 +313,32 @@ Use the class formula to decide which products of sine, cosine, and `d` belong i
 python -c "import numpy as np; from lab02_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; T=forward_kinematics(np.zeros(6)); print(T); print('orthogonality=',np.linalg.norm(T[:3,:3].T@T[:3,:3]-np.eye(3))); print('det=',np.linalg.det(T[:3,:3]))"
 ```
 
+This command performs a quick FK check without opening Webots:
+
+- `python -c "..."` asks Python to execute the code between the quotation marks directly from the terminal.
+- `import numpy as np` loads NumPy, and the next import loads your `forward_kinematics` function.
+- `np.zeros(6)` creates `q = [0, 0, 0, 0, 0, 0]` rad, the zero-joint test configuration.
+- `T = forward_kinematics(...)` evaluates your six-link transform chain and stores the resulting 4-by-4 matrix.
+- `print(T)` displays the complete transform.
+- `T[:3, :3]` extracts its 3-by-3 rotation matrix `R`.
+- `norm(R.T @ R - I)` measures how closely `R` satisfies `R^T R = I`. A proper rotation should give a value very close to zero.
+- `det(R)` checks whether `R` is a proper rotation rather than a reflection. Its determinant should be close to `+1`.
+
 Pass conditions:
 
 - `T` is 4-by-4 with last row `[0, 0, 0, 1]`;
 - rotation orthogonality error is below `1e-8`; and
 - the rotation determinant is within `1e-8` of 1.
 
-Repeat once with `q = [0.20, -0.80, 1.00, -1.10, -0.70, 0.30]`. Webots must not be used to calculate FK.
+Now repeat the calculation with a nonsymmetric configuration. In the command above, replace `np.zeros(6)` with:
+
+```python
+np.array([0.20, -0.80, 1.00, -1.10, -0.70, 0.30])
+```
+
+Why run a second configuration? At `q = 0`, many sine terms are zero and cosine terms are one. A missing sign, misplaced term, or incorrect joint variable can therefore be hidden by the unusually simple zero configuration. The second vector gives every joint a different nonzero angle, so more terms in the DH matrices become active and mistakes are more likely to produce an obviously different result.
+
+Both runs must satisfy the pass conditions, and you should record both matrices and checks in `answers.md`. These checks show that the result has the structure of a rigid transform, but they do not by themselves prove that it is the correct UR5e transform. The later comparison with Webots provides the experimental check of the FK model. Webots must not be used to calculate FK.
 
 ### Step 6 - Determine the fixed tool transform once
 
