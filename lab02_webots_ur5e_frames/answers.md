@@ -27,27 +27,37 @@ Paste the 4-by-4 FK matrix, orthogonality error, and determinant:
 
 ```
 
-## Step 5 - Pre-run Predictions
+## Step 5 - Predictions Before Webots
 
-Record these before running `fk_experiment`.
+Record these outputs from `predict_fk_poses.py` before running `fk_experiment`.
 
-| Pose | Predicted tool position [m] |
-|---|---|
-| A | |
-| B | |
-| C | |
+| Pose | Predicted tool position [m] | Predicted tool RPY [rad] |
+|---|---|---|
+| A | | |
+| B | | |
+| C | | |
 
-## Step 6 - FK and Webots Comparison
+## Step 6 - Webots Motion and FK Comparison
 
-| Pose | Measured `q` [rad] | Predicted position [m] | Webots position [m] | Position error [mm] | Orientation error [deg] |
-|---|---|---|---|---:|---:|
-| A | | | | | |
-| B | | | | | |
-| C | | | | | |
+### Joint tracking check
+
+| Pose | Target $\mathbf q_{goal}$ [rad] | Measured $\mathbf q$ [rad] | Maximum joint error [rad] |
+|---|---|---|---:|
+| A | `[0.0, -1.20, 1.20, -1.50, -1.57, 0.0]` | | |
+| B | `[0.20, -0.80, 1.00, -1.10, -0.70, 0.30]` | | |
+| C | `[-0.30, -0.90, 1.10, -1.40, -1.20, -0.20]` | | |
+
+### Tool-pose comparison
+
+| Pose | FK position [m] | Webots position [m] | Position error [mm] | FK RPY [rad] | Webots RPY [rad] | Orientation error [deg] |
+|---|---|---|---:|---|---|---:|
+| A | | | | | | |
+| B | | | | | | |
+| C | | | | | | |
 
 - Mean position error [mm]:
 - Maximum position error [mm]:
 - Mean orientation error [deg]:
 - Maximum orientation error [deg]:
 
-Interpret the errors in two or three sentences:
+Interpret the tracking and tool-pose errors in two or three sentences:
