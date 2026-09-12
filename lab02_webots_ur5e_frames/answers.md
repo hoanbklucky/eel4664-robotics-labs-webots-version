@@ -1,38 +1,53 @@
 # Lab 2 Answers
 
-## Step 2 - Quick Diagnostics
+## Step 2 - Diagnostics
 
-Record whether `diagnostic_minimal` and `diagnostic_devices` passed. List any missing required device.
+- `diagnostic_minimal`:
+- `diagnostic_devices`:
+- Missing required devices, if any:
 
-## Step 3 - One-Joint Motion and Alignment Data
+## Step 4 - Modified-DH Entries and Offline Tests
 
-- Final measured `q_align` [rad]:
-- Measured tool position [m]:
-- Measured tool `[roll, pitch, yaw]` [rad]:
-- Measured tool-test-point position [m]:
+- `row_2_column_1 =`
+- `row_3_column_4 =`
 
-## Step 5 - FK Convention and Offline Test
+### Zero configuration
 
-Record the two modified-DH matrix entries you completed. Include the zero and nonsymmetric FK test output, rotation orthogonality error, and determinant.
+Paste the 4-by-4 FK matrix, orthogonality error, and determinant:
 
-## Step 6 - Fixed Tool Transform
+```text
 
-Record the one 4-by-4 `T_6_tool` calculated from the Step 3 alignment data. Explain what it maps and why it must remain fixed.
+```
 
-## Steps 7-8 - FK Prediction Challenge
+### Nonsymmetric configuration
 
-Before running Webots, record the commanded-angle tool-position prediction for Poses A-C and your qualitative prediction of the motion along A -> B -> C -> A.
+Paste the 4-by-4 FK matrix, orthogonality error, and determinant:
 
-After the run, complete one table with the alignment pose and held-out Poses A-C. Include measured `q`, predicted/measured tool position, position error, and orientation error. Clearly mark the alignment row and do not include it in held-out statistics.
+```text
 
-For Pose C, include the predicted and measured world position of `p_tool = [0, 0.13, 0]` m and its Euclidean error.
+```
 
-State whether the air-drawn segments appeared straight or curved, and explain the observation using joint-space interpolation.
+## Step 5 - Pre-run Predictions
 
-## Quantitative Summary
+Record these before running `fk_experiment`.
 
-Report mean/maximum position error, mean/maximum orientation error, the required error plot, and a short interpretation of the residuals.
+| Pose | Predicted tool position [m] |
+|---|---|
+| A | |
+| B | |
+| C | |
 
-## Engineering Questions
+## Step 6 - FK and Webots Comparison
 
-Answer the five Engineering Questions in the Lab 2 README.
+| Pose | Measured `q` [rad] | Predicted position [m] | Webots position [m] | Position error [mm] | Orientation error [deg] |
+|---|---|---|---|---:|---:|
+| A | | | | | |
+| B | | | | | |
+| C | | | | | |
+
+- Mean position error [mm]:
+- Maximum position error [mm]:
+- Mean orientation error [deg]:
+- Maximum orientation error [deg]:
+
+Interpret the errors in two or three sentences:

@@ -52,7 +52,7 @@ List every explicit solver failure guard and explain why success requires both t
 
 ## Step 5 - Target, Seed, and Failure Results
 
-Record the one fixed `T_6_tool` reused from Lab 2 and confirm that `fk_tool(q) = forward_kinematics(q) @ T_6_tool` was used without recalibration.
+Record the one fixed `T_6_TOOL` reused from Lab 2 and confirm that `fk_tool(q) = forward_kinematics(q) @ T_6_TOOL` was used without recalibration.
 
 | Target | Seed | Converged? | Reason | Iterations | Position residual | Orientation residual | Final `q` | Distance from seed | Accepted? |
 |---|---|---|---|---:|---:|---:|---|---:|---|

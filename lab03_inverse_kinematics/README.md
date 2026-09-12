@@ -60,7 +60,7 @@ You are finished when:
 
 ## Prerequisites
 
-Complete [Lab 2 - UR5e Frames and Forward Kinematics](../lab02_webots_ur5e_frames/README.md). Reuse its tested `forward_kinematics(q)`, fixed `T_6_tool`, device adapter, and smooth joint interpolation. Do not copy or reimplement FK.
+Complete [Lab 2 - UR5e Frames and Forward Kinematics](../lab02_webots_ur5e_frames/README.md). Reuse its tested `forward_kinematics(q)`, fixed `T_6_TOOL`, device adapter, and smooth joint interpolation. Do not copy or reimplement FK.
 
 Complete the Python/NumPy prerequisites in [Lab 00](../lab00_setup/README.md).
 
@@ -130,14 +130,20 @@ Because the process begins with a guess, different initial guesses can lead to d
 
 ### 4. Use the same tool frame everywhere
 
-Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool. Use the fixed Lab 2 alignment:
+Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool. Import and use the course-provided Lab 2 transform:
+
+```python
+from lab02_webots_ur5e_frames.src.ur5e_fk_starter import (
+    T_6_TOOL, forward_kinematics,
+)
+```
 
 ```python
 def fk_tool(q):
-    return forward_kinematics(q) @ T_6_tool
+    return forward_kinematics(q) @ T_6_TOOL
 ```
 
-Use `fk_tool` for the current pose and target pose so they match the Webots tool frame. Never recalculate `T_6_tool` for a new target.
+Use `fk_tool` for the current pose and target pose so they match the Webots tool frame. Never recalculate `T_6_TOOL` for a new target.
 
 The tool-frame origin is at the stylus mount. The visible orange tip is the fixed point
 
@@ -413,7 +419,7 @@ Reject invalid inputs, NaN/Inf, limit violations, and iteration-limit exits. Cha
 
 ### Step 5 - Test reachable targets, seeds, and failure
 
-Create `fk_tool` with the fixed `T_6_tool`, then generate known-reachable targets:
+Create `fk_tool` with the fixed `T_6_TOOL`, then generate known-reachable targets:
 
 ```python
 q_reference_a = np.array([0.20, -0.80, 1.00, -1.10, -0.70, 0.30])

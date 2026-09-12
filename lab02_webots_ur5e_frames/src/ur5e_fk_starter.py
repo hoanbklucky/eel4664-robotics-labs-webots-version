@@ -8,11 +8,23 @@ import numpy as np
 UR5E_MDH = (
     (0.0,          0.0,       0.1625, 0.0),
     (np.pi / 2.0,  0.0,       0.0,    0.0),
-    (0.0,         -0.4250,    0.0,    0.0),
-    (0.0,         -0.3922,    0.1333, 0.0),
+    (0.0,          0.4250,    0.0,    0.0),
+    (0.0,          0.3922,   -0.1333, 0.0),
     (np.pi / 2.0,  0.0,       0.0997, 0.0),
-    (-np.pi / 2.0, 0.0,       0.0996, 0.0),
+    (-np.pi / 2.0, 0.0,      -0.0996, 0.0),
 )
+
+
+# Webots encoder directions mapped to Craig modified-DH theta directions.
+WEBOTS_TO_MDH_SIGN = np.array([1.0, -1.0, -1.0, -1.0, 1.0, -1.0])
+# Fixed rotation from the Webots tool frame to Craig frame {6}.
+# It is part of the supplied model convention, not a quantity students fit.
+T_6_TOOL = np.array([
+    [-1.0,  0.0,  0.0, 0.0],
+    [ 0.0,  0.0, -1.0, 0.0],
+    [ 0.0, -1.0,  0.0, 0.0],
+    [ 0.0,  0.0,  0.0, 1.0],
+])
 
 
 def dh_transform(alpha_previous, a_previous, d, theta):
@@ -47,6 +59,8 @@ def forward_kinematics(q):
     # from the current link frame to the next link frame. After all six
     # iterations, T = T_0_1 @ T_1_2 @ ... @ T_5_6 = T_0_6.
     T = np.eye(4)
-    for qi, (alpha_previous, a_previous, d, offset) in zip(q, UR5E_MDH):
-        T = T @ dh_transform(alpha_previous, a_previous, d, qi + offset)
+    for qi, direction, (alpha_previous, a_previous, d, offset) in zip(
+            q, WEBOTS_TO_MDH_SIGN, UR5E_MDH):
+        theta = direction * qi + offset
+        T = T @ dh_transform(alpha_previous, a_previous, d, theta)
     return T

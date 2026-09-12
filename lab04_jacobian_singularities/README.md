@@ -107,8 +107,10 @@ For each row of the Lab 2 table:
 
 1. begin with the transform accumulated through the previous link;
 2. apply the fixed $R_x(\alpha_{i-1})T_x(a_{i-1})$ part;
-3. record that intermediate frame's origin $\mathbf p_i$ and z-axis $\mathbf z_i$; and
+3. record that intermediate frame's origin $\mathbf p_i$ and map its z-axis through the supplied Webots-to-MDH direction sign; and
 4. apply the complete modified-DH transform to continue the chain.
+
+Because Lab 2 uses $\theta_i=s_iq_i$ with $s_i\in\{+1,-1\}$, the axis derivative with respect to the Webots reading $q_i$ is $s_i\mathbf z_i$. The supplied `WEBOTS_TO_MDH_SIGN` array provides $s_i$; omitting it reverses four Jacobian columns.
 
 The supplied `modified_dh_joint_axes` function performs these frame bookkeeping steps. Students complete only the two geometric relationships in `analytic_jacobian`.
 

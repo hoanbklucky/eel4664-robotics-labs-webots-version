@@ -4,6 +4,7 @@ import numpy as np
 
 from lab02_webots_ur5e_frames.src.ur5e_fk_starter import (
     UR5E_MDH,
+    WEBOTS_TO_MDH_SIGN,
     dh_transform,
     forward_kinematics,
 )
@@ -54,7 +55,8 @@ def modified_dh_joint_axes(q):
     origins = []
     axes = []
 
-    for qi, (alpha_previous, a_previous, d, offset) in zip(q, UR5E_MDH):
+    for qi, direction, (alpha_previous, a_previous, d, offset) in zip(
+            q, WEBOTS_TO_MDH_SIGN, UR5E_MDH):
         # Modified DH applies the fixed Rx(alpha_{i-1}) and Tx(a_{i-1})
         # before the variable rotation Rz(theta_i). Joint i therefore rotates
         # about the z-axis of this intermediate joint frame.
@@ -68,9 +70,9 @@ def modified_dh_joint_axes(q):
         ])
         T_world_joint = T @ T_fixed
         origins.append(T_world_joint[:3, 3].copy())
-        axes.append(T_world_joint[:3, 2].copy())
+        axes.append(direction * T_world_joint[:3, 2].copy())
 
-        T = T @ dh_transform(alpha_previous, a_previous, d, qi + offset)
+        T = T @ dh_transform(alpha_previous, a_previous, d, direction * qi + offset)
 
     return np.asarray(origins), np.asarray(axes), T
 
