@@ -130,27 +130,21 @@ Because the process begins with a guess, different initial guesses can lead to d
 
 ### 4. Use the same tool frame everywhere
 
-Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool. Import and use the course-provided Lab 2 transform:
+Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool. Use the course-provided fixed transform from Lab 2 so that
 
-```python
-from lab02_webots_ur5e_frames.src.ur5e_fk_starter import (
-    T_6_TOOL, forward_kinematics,
-)
-```
+$$
+T_{tool}(\mathbf q)=T_6(\mathbf q)\,{}^6T_{tool}.
+$$
 
-```python
-def fk_tool(q):
-    return forward_kinematics(q) @ T_6_TOOL
-```
+In the implementation steps below, `fk_tool(q)` is the short wrapper that evaluates this equation using the supplied `forward_kinematics` and `T_6_TOOL`. Use the same wrapper for the current and target poses so both refer to the Webots tool frame. Never recalculate `T_6_TOOL` for a new target.
 
-Use `fk_tool` for the current pose and target pose so they match the Webots tool frame. Never recalculate `T_6_TOOL` for a new target.
+The tool-frame origin is at the stylus mount. In tool coordinates, the visible orange tip is the fixed point
 
-The tool-frame origin is at the stylus mount. The visible orange tip is the fixed point
+$$
+{}^{tool}\mathbf p_{tip}=\begin{bmatrix}0 & 0.13 & 0\end{bmatrix}^{T}\ \text{m}.
+$$
 
-```python
-p_tool = np.array([0.0, 0.13, 0.0])
-p_world_tip = transform_point(fk_tool(q), p_tool)
-```
+Its world position is found by transforming this point with $T_{tool}(\mathbf q)$.
 
 The stylus has no mass or collision geometry. It makes pose changes visible without changing the robot dynamics.
 
@@ -284,38 +278,25 @@ $$
 - `alpha` controls how much of the proposed correction is applied.
 - `max_joint_step` prevents any joint from changing too much in one iteration.
 
-Do not form the inverse explicitly. Solve the linear system:
+Do not form the inverse explicitly. First solve the linear system
 
-```python
-y = np.linalg.solve(J @ J.T + damping**2 * np.eye(6), error)
-delta_q = alpha * (J.T @ y)
-delta_q = np.clip(delta_q, -max_joint_step, max_joint_step)
-q_next = q + delta_q
-```
+$$
+(\mathbf J\mathbf J^T+\lambda^2\mathbf I)\mathbf y=\mathbf e,
+$$
 
-Too little damping may produce large updates; too much damping may make convergence slow.
+then calculate $\Delta\mathbf q=\alpha\mathbf J^T\mathbf y$. Limit each component of $\Delta\mathbf q$ to the allowed maximum joint step before updating $\mathbf q$. Too little damping may produce large updates; too much damping may make convergence slow.
 
 ### 8. Put the numerical IK loop together
 
-The complete idea is:
+The complete algorithm is listed below as a reading guide, not as code to copy:
 
-```python
-q = q_seed.copy()
-
-for iteration in range(max_iterations):
-    T_current = fk_tool(q)
-    error = pose_error(T_current, T_target)
-
-    if position_error_passes and orientation_error_passes:
-        return IKResult(q=q, converged=True, ...)
-
-    J = finite_difference_jacobian(fk_tool, q, h)
-    delta_q = alpha * damped_least_squares_step(J, error, damping)
-    delta_q = limit_each_joint_step(delta_q)
-    q = enforce_joint_limits(q + delta_q)
-
-return IKResult(q=q, converged=False, reason="iteration limit", ...)
-```
+1. Start from a copy of the seed $\mathbf q$.
+2. Use FK to calculate the current tool pose.
+3. Calculate the position and orientation errors.
+4. If both errors satisfy their tolerances, return a successful result.
+5. Otherwise estimate the Jacobian, calculate a damped joint correction, limit the step, and enforce the joint limits.
+6. Repeat from Step 2 until convergence or the iteration limit.
+7. If convergence was not reached, return a failed result with a clear reason.
 
 An illustrative residual history might look like this:
 
@@ -351,6 +332,8 @@ For example, a tiny solver error but a large Webots error suggests that the nume
 
 ## Part 1 - Setup / Validation
 
+> **Why this part matters:** Verifying Lab 2 FK, the starter world, Python, devices, and one-joint motion isolates environment problems before they can be mistaken for IK failures.
+
 ### Step 1 - Open, copy, and validate
 
 1. From the repository root, verify the Lab 2 dependency:
@@ -378,6 +361,8 @@ Record pass/fail in `answers.md`. Stop at the first failure.
 **Never overwrite `lab03_starter.wbt`.** Discard a damaged working copy and recreate it from the starter.
 
 ## Part 2 - Core Implementation
+
+> **Why this part matters:** This part builds numerical IK from understandable pieces—reachability, pose error, a finite-difference Jacobian, and guarded updates—so the solver remains your own explicit robotics implementation.
 
 ### Step 2 - Solve the planar warm-up
 
@@ -443,6 +428,8 @@ Select one solution per reachable target. Reject nonconverged, nonfinite, limit-
 
 ## Part 3 - Robot Experiment
 
+> **Why this part matters:** Executing only validated solutions tests whether the mathematical target becomes a safe physical motion and whether the simulated tool actually reaches the requested pose.
+
 ### Step 6 - Connect the solver to Webots safely
 
 1. Close Webots. If `controllers/lab03_controller` does not exist, run this cross-platform command from the repository root:
@@ -481,6 +468,8 @@ For each target:
 Never command the unreachable target or a failed result. Execute multiple branches only if assigned and both paths pass safety checks.
 
 ## Part 4 - Quantitative Analysis
+
+> **Why this part matters:** Separating solver, tracking, and model errors shows why a motion succeeded or failed instead of relying on an animation that merely looks correct.
 
 ### Step 8 - Separate and interpret the errors
 

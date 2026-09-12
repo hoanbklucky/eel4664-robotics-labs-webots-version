@@ -79,6 +79,8 @@ Unlike Labs 1-6, the Lab 7 starter intentionally does not include the course sty
 
 ## Part 1 - Setup / Validation
 
+> **Why this part matters:** Recording frames, geometry, limits, devices, and seeds before integration creates a reproducible foundation for debugging a multi-stage autonomous mission.
+
 1. **World:** open `worlds/lab07_starter.wbt` paused; verify `MANIPULATION_TABLE`, `PICK_OBJECT`, `TRANSPORT_OBSTACLE`, and `DESTINATION_BIN`; then immediately use **File -> Save World As...** to create `worlds/lab07_work.wbt`.
 2. **Minimal controller:** run `diagnostic_minimal`.
 3. **Devices:** run `diagnostic_devices` and confirm all devices required by the final controller.
@@ -88,6 +90,8 @@ Unlike Labs 1-6, the Lab 7 starter intentionally does not include the course sty
 Record frames, home configuration, object/goal poses, obstacle geometry, limits, tolerances, and random seeds before integration.
 
 ## Part 2 - Core Implementation
+
+> **Why this part matters:** Collision checking, planning, state transitions, kinematics, trajectories, and control must work through explicit interfaces so one failure does not become an unexplained system failure.
 
 1. Complete configuration and edge collision checks using link geometry derived from your FK.
 2. Inflate obstacles or explicitly include a safety margin; check interpolated edges, not endpoints alone.
@@ -99,6 +103,8 @@ Record frames, home configuration, object/goal poses, obstacle geometry, limits,
 Do not use Webots, MoveIt, or another package to provide the submitted kinematics, trajectory, collision, or planning solution.
 
 ## Part 3 - Robot Experiment
+
+> **Why this part matters:** A complete pick-transport-place run demonstrates that the separate course algorithms can cooperate safely, recoverably, and autonomously around an obstacle.
 
 Execute the autonomous sequence:
 
@@ -112,6 +118,8 @@ Execute the autonomous sequence:
 First demonstrate that the assigned direct transport path collides or enters the forbidden region, then execute your planned alternative. Reset and repeat the full mission. Run one controlled variation—target pose, obstacle pose, payload/model condition, or planner seed—and preserve one informative failure.
 
 ## Part 4 - Quantitative Analysis
+
+> **Why this part matters:** Success rate, placement error, clearance, path length, tracking, and timing provide evidence of reliable manipulation rather than one fortunate demonstration.
 
 Report:
 

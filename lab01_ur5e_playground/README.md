@@ -71,6 +71,8 @@ Complete [Lab 00 - Software Setup and Webots Basics](../lab00_setup/README.md), 
 
 ## Part 1 - Open the Playground
 
+> **Why this part matters:** Opening a protected starter, saving a working copy, and validating it incrementally establishes the safe workflow used in every later robot experiment.
+
 1. Prepare the UR5e model used by this course. The starter world refers to a verified local copy of the official Webots R2025a UR5e model. This command downloads that copy the first time it is needed; rerunning it is safe.
 
    In VS Code, select **Terminal -> New Terminal**. If you opened the `eel4664-robotics-labs` folder in VS Code as instructed in Lab 00, the terminal normally starts in the repository root. This is the folder containing `README.md`, `lab00_setup`, and `lab01_ur5e_playground`.
@@ -105,6 +107,8 @@ Complete [Lab 00 - Software Setup and Webots Basics](../lab00_setup/README.md), 
 Never overwrite `lab01_starter.wbt`. If the working world becomes damaged, discard it and make a fresh copy from the starter.
 
 ## Part 2 - Meet the Six Joints
+
+> **Why this part matters:** Moving one joint at a time builds physical intuition for joint order, positive rotation, and which links move—knowledge needed to debug frame, FK, IK, and Jacobian calculations.
 
 ### Read how the keyboard controller works
 
@@ -173,6 +177,8 @@ Try one joint from two different robot configurations. Notice that the same join
 
 ## Part 3 - Target-Bubble Challenge
 
+> **Why this part matters:** Reaching a visible target by manual joint motion reveals that coordinated multi-joint positioning is difficult and motivates systematic kinematics rather than trial and error.
+
 Use trial and error to bring the orange stylus tip near the colored target bubbles. The Console reports when the tip enters a target's 10 cm success region. The bubbles are visual only; they have no collision geometry and cannot damage or push the robot.
 
 The following example shows the stylus tip inside the blue target. The Console confirms success with `[TARGET REACHED] BLUE!`.
@@ -195,6 +201,8 @@ Optional challenges:
 This is not an accuracy competition. A target attempt that teaches you something about the robot is useful even if it misses.
 
 ## Part 4 - Why Do We Need Forward Kinematics?
+
+> **Why this part matters:** Comparing joint configurations with measured tool locations establishes the central course question: how robot geometry maps joint angles to end-effector pose.
 
 Complete this short prediction exercise:
 

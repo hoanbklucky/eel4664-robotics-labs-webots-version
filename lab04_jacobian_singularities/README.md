@@ -144,6 +144,8 @@ The `CARTESIAN_DIRECTION_REFERENCE` triad shows world +x (red), +y (green), and 
 
 ## Part 1 - Setup / Validation
 
+> **Why this part matters:** A trustworthy FK model and verified device path are prerequisites for interpreting Jacobian discrepancies or singular behavior correctly.
+
 1. **World:** create `lab04_work.wbt`; verify the grid, stylus, and `CARTESIAN_DIRECTION_REFERENCE`, and confirm controller `void`.
 2. **Minimal controller:** run `diagnostic_minimal`.
 3. **Devices:** run `diagnostic_devices` and confirm ordered joint sensing.
@@ -153,6 +155,8 @@ The `CARTESIAN_DIRECTION_REFERENCE` triad shows world +x (red), +y (green), and 
 Import your Lab 2 FK rather than duplicating it. Establish conservative joint-rate, joint-limit, and condition-number stop thresholds before motion.
 
 ## Part 2 - Core Implementation
+
+> **Why this part matters:** Deriving the geometric Jacobian and checking it with finite differences connects joint motion to Cartesian motion while exposing frame and sign mistakes.
 
 1. Run all commands from the repository root so `jacobian_starter.py` can import the tested Lab 2 FK module.
 2. Read `modified_dh_joint_axes`. For one configuration, print the six recorded origins and axes and explain why joint 2's axis is not obtained by blindly reusing the completed frame `{1}` z-axis.
@@ -175,6 +179,8 @@ python -c "import numpy as np; from lab02_webots_ur5e_frames.src.ur5e_fk_starter
 Stop and correct the frame convention if the error is not small before proceeding to inverse differential motion.
 ## Part 3 - Robot Experiment
 
+> **Why this part matters:** Moving the robot makes the local velocity prediction visible and shows physically why Cartesian motion becomes difficult near a singularity.
+
 1. Select a well-conditioned starting pose.
 2. Command a small tool displacement or velocity along the assigned Cartesian direction.
 3. Log requested, predicted, and measured motion.
@@ -186,6 +192,8 @@ Stop and correct the frame convention if the error is not small before proceedin
 The final robotic outcome is a visible Cartesian-direction motion whose degradation near singularity is predicted by your metrics.
 
 ## Part 4 - Quantitative Analysis
+
+> **Why this part matters:** Singular values, condition number, tracking error, and joint-rate amplification distinguish a real loss of mobility from an implementation or visualization problem.
 
 - Plot finite-difference Jacobian error versus perturbation size.
 - Plot `sigma_min` and condition number versus time or approach parameter.

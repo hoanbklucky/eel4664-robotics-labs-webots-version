@@ -87,6 +87,8 @@ The green `BASELINE_CONDITION_PAD` and orange `PAYLOAD_CONDITION_PAD` distinguis
 
 ## Part 1 - Setup / Validation
 
+> **Why this part matters:** Conservative staged checks and identical reset conditions are essential because dynamics and controller comparisons are meaningful only when the experiment is safe and repeatable.
+
 1. **World:** open `worlds/lab06_starter.wbt` paused; verify the stylus, grid, `BASELINE_CONDITION_PAD`, and `PAYLOAD_CONDITION_PAD`; then immediately use **File -> Save World As...** to create `worlds/lab06_work.wbt`.
 2. **Minimal controller:** run `diagnostic_minimal`.
 3. **Devices:** run `diagnostic_devices` and verify the selected motor and sensor.
@@ -96,6 +98,8 @@ The green `BASELINE_CONDITION_PAD` and orange `PAYLOAD_CONDITION_PAD` distinguis
 Complete the offline dynamics/controller sanity checks first. Reset to identical initial conditions for every matched trial.
 
 ## Part 2 - Core Implementation
+
+> **Why this part matters:** Implementing the plant approximation, feedback controller, velocity estimator, and least-squares identification separately makes each source of behavior testable and understandable.
 
 1. Complete the simplified dynamics model and independent P/PD/PID simulation.
 2. Implement raw finite differences and a stated causal filter for velocity.
@@ -108,6 +112,8 @@ Do not use a simulator or identification API to compute the model/controller qua
 
 ## Part 3 - Robot Experiment
 
+> **Why this part matters:** Matched baseline and changed-payload trials reveal how dynamics, gain selection, saturation, and estimation affect actual closed-loop tracking.
+
 Track the identical assigned reference under:
 
 - Condition A: the instructor-approved baseline; and
@@ -116,6 +122,8 @@ Track the identical assigned reference under:
 If a safe payload-changing world is unavailable, use the instructor-provided paired dataset for the identification portion while still completing the baseline Webots tracking run. Log `q_des`, measured `q`, error, raw/filtered velocity estimate, command/effort, gains, condition, and simulation time. Use at least three gain sets during tuning, then apply one justified final set to both matched conditions.
 
 ## Part 4 - Quantitative Analysis
+
+> **Why this part matters:** Time-domain metrics and held-out parameter validation determine whether the controller and identified model generalize beyond one visually successful run.
 
 1. Compare raw and filtered velocity against an analytic trajectory derivative or reserved simulator measurement.
 2. For both conditions report rise time, percent overshoot, settling time, steady-state error, RMSE, maximum error, and control magnitude.

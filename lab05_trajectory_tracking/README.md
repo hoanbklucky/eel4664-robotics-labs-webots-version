@@ -87,6 +87,8 @@ The `TRAJECTORY_REFERENCE_BOARD` shows a green straight segment, an orange curve
 
 ## Part 1 - Setup / Validation
 
+> **Why this part matters:** Testing the world, devices, one joint, and polynomial boundary conditions first prevents setup or interpolation errors from contaminating a full trajectory experiment.
+
 1. **World:** open `worlds/lab05_starter.wbt` paused; verify the grid, stylus, and `TRAJECTORY_REFERENCE_BOARD`; then immediately use **File -> Save World As...** to create `worlds/lab05_work.wbt`.
 2. **Minimal controller:** assign and run `diagnostic_minimal`.
 3. **Devices:** assign `diagnostic_devices` and confirm all six motors and sensors.
@@ -96,6 +98,8 @@ The `TRAJECTORY_REFERENCE_BOARD` shows a green straight segment, an orange curve
 Unit-test polynomial boundary conditions outside Webots before commanding the robot. Select instructor-approved start/end configurations and limits.
 
 ## Part 2 - Core Implementation
+
+> **Why this part matters:** Generating MoveJ- and MoveL-style references explicitly teaches how timing, IK continuity, and limits turn endpoints into safe, executable motion.
 
 1. Complete `cubic_coefficients` and `sample_cubic`; add quintic timing if assigned.
 2. Check endpoint position, velocity, and acceleration numerically.
@@ -108,6 +112,8 @@ Do not call a Webots, SciPy, MoveIt, or other library trajectory/IK solver for t
 
 ## Part 3 - Robot Experiment
 
+> **Why this part matters:** Running both motions from the same reset state reveals the difference between a smooth joint-space path and a geometrically straight Cartesian path.
+
 From the same reset state, execute:
 
 1. a MoveJ-style joint-space motion from `q0` to `qf`; and
@@ -116,6 +122,8 @@ From the same reset state, execute:
 Log simulation time, desired/measured joint position, desired joint velocity, and FK end-effector position. Hold the final command safely. If a waypoint fails IK or a limit check, stop before motion rather than skipping it.
 
 ## Part 4 - Quantitative Analysis
+
+> **Why this part matters:** Tracking error, straightness, velocity, and smoothness measurements show the tradeoffs that animation alone cannot establish.
 
 For both motions report:
 

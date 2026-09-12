@@ -120,6 +120,8 @@ Avoid OneDrive, iCloud Drive, SharePoint, network drives, and deeply nested path
 
 ## Part 1 - Install Python and Packages
 
+> **Why this part matters:** Webots launches Python controllers through an external interpreter, and later labs use NumPy for robotics calculations. Installing and verifying these first prevents controller failures that can look like simulator crashes.
+
 Webots launches Python controllers using the interpreter selected in **Python command**, so install Python before Webots.
 
 ### Windows
@@ -179,6 +181,8 @@ The reported version must be Python 3.11 or newer and 64-bit.
 
 ## Part 2 - Install and Configure Webots
 
+> **Why this part matters:** Pinning Webots and explicitly selecting the Python interpreter gives every student the same simulator/controller interface and makes course results reproducible.
+
 Follow Cyberbotics' official [Installing Webots](https://cyberbotics.com/doc/guide/installing-webots?version=R2025a) guidance and use the exact stable course release.
 
 1. Open the official [Webots R2025a release](https://github.com/cyberbotics/webots/releases/tag/R2025a).
@@ -230,6 +234,8 @@ Follow Cyberbotics' official [Installing Webots](https://cyberbotics.com/doc/gui
 This follows Cyberbotics' [Using Python](https://cyberbotics.com/doc/guide/using-python?version=R2025a) guidance: Webots may use the Python found on `PATH`, or an explicitly selected interpreter in Preferences.
 
 ## Part 3 - Install Git and Clone the Repository
+
+> **Why this part matters:** Git provides the official lab files, records code history, and gives you a safe way to recover a changed starter file without rebuilding the repository.
 
 ### Windows
 
@@ -297,6 +303,8 @@ Do not clone over an existing course repository.
 
 ## Part 4 - Install Visual Studio Code
 
+> **Why this part matters:** VS Code provides one place to read instructions, edit version-controlled Python files, run terminal commands, and inspect errors throughout the course.
+
 1. Download the installer for your operating system from [code.visualstudio.com](https://code.visualstudio.com/download).
 2. Install VS Code:
    - Windows: keep **Add to PATH** enabled if shown.
@@ -325,6 +333,8 @@ git config --global core.editor "code --wait"
 ```
 
 ## Part 5 - Complete the Required Webots Tutorials
+
+> **Why this part matters:** Tutorials 1 and 4 provide the minimum Webots navigation and controller skills needed before working with the UR5e, without turning the robotics course into a simulator-training course.
 
 Complete these official tutorials using Webots R2025a:
 

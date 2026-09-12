@@ -84,63 +84,58 @@ $$
 \end{bmatrix}.
 $$
 
-Here, `c_x=\cos(x)` and `s_x=\sin(x)`. You do not need to derive this matrix. Compare it with the supplied NumPy matrix and complete only two missing entries.
+The shorthand $c_x$ means $\cos(x)$, and $s_x$ means $\sin(x)$. You do not need to derive this matrix. Compare it with the supplied NumPy matrix and complete only two missing entries.
 
 Use this table in meters and radians:
 
-| Joint `i` | `\alpha_{i-1}` | `a_{i-1}` | `d_i` | `\theta_i` from Webots |
+| Joint $i$ | $\alpha_{i-1}$ | $a_{i-1}$ | $d_i$ | $\theta_i$ from Webots |
 |---:|---:|---:|---:|---:|
-| 1 | `0` | `0` | `0.1625` | `q_1` |
-| 2 | `\pi/2` | `0` | `0` | `-q_2` |
-| 3 | `0` | `0.4250` | `0` | `-q_3` |
-| 4 | `0` | `0.3922` | `-0.1333` | `-q_4` |
-| 5 | `\pi/2` | `0` | `0.0997` | `q_5` |
-| 6 | `-\pi/2` | `0` | `-0.0996` | `-q_6` |
+| 1 | $0$ | $0$ | $0.1625$ | $q_1$ |
+| 2 | $\pi/2$ | $0$ | $0$ | $-q_2$ |
+| 3 | $0$ | $0.4250$ | $0$ | $-q_3$ |
+| 4 | $0$ | $0.3922$ | $-0.1333$ | $-q_4$ |
+| 5 | $\pi/2$ | $0$ | $0.0997$ | $q_5$ |
+| 6 | $-\pi/2$ | $0$ | $-0.0996$ | $-q_6$ |
 
-This is still Craig modified DH. The signs in the last column only map Webots encoder-positive directions to the corresponding `\theta_i` directions. The supplied `WEBOTS_TO_MDH_SIGN` array applies that mapping. The nominal dimensions and the rounded Webots geometry differ slightly, so errors around a millimeter are reasonable.
+This is still Craig modified DH. The signs in the last column only map Webots encoder-positive directions to the corresponding $\theta_i$ directions. The supplied `WEBOTS_TO_MDH_SIGN` array applies that mapping. The nominal dimensions and the rounded Webots geometry differ slightly, so errors around a millimeter are reasonable.
 
 ### Chaining the six transforms
 
-The provided `forward_kinematics(q)` function starts with identity and appends one link transform at a time:
+The provided `forward_kinematics(q)` function is already written. **Read it to understand the sequence; do not copy or rewrite it.**
 
-```python
-T = np.eye(4)
-for qi, direction, parameters in zip(q, WEBOTS_TO_MDH_SIGN, UR5E_MDH):
-    alpha_previous, a_previous, d, offset = parameters
-    theta = direction * qi + offset
-    T = T @ dh_transform(alpha_previous, a_previous, d, theta)
-return T
-```
+It begins with the identity transform, ${}^{0}T_0=I$. For each joint, it reads one row of the modified-DH table, converts the Webots joint reading to the corresponding $\theta_i$, and constructs ${}^{i-1}T_i$. It then appends that link by right multiplication:
 
-After each multiplication, `T` advances one frame:
+$$
+{}^{0}T_i={}^{0}T_{i-1}\,{}^{i-1}T_i.
+$$
 
-```text
-T_0_1
-T_0_1 T_1_2 = T_0_2
-...
-T_0_1 T_1_2 T_2_3 T_3_4 T_4_5 T_5_6 = T_0_6
-```
+For six joints, the complete chain is
 
-Order matters because matrix multiplication is not commutative.
+$$
+{}^{0}T_6={}^{0}T_1\,{}^{1}T_2\,{}^{2}T_3\,{}^{3}T_4\,{}^{4}T_5\,{}^{5}T_6.
+$$
+
+For example, after the second multiplication, the result is ${}^{0}T_2$: the pose of frame `{2}` relative to frame `{0}`. Order matters because matrix multiplication is not commutative.
 
 ### Provided tool transform
 
 Craig frame `{6}` and the Webots tool sensor use different axis directions. The course provides their fixed relationship:
 
-```python
-T_6_TOOL = np.array([
-    [-1.0,  0.0,  0.0, 0.0],
-    [ 0.0,  0.0, -1.0, 0.0],
-    [ 0.0, -1.0,  0.0, 0.0],
-    [ 0.0,  0.0,  0.0, 1.0],
-])
-```
+$$
+{}^{6}T_{tool}=
+\begin{bmatrix}
+-1 & 0 & 0 & 0 \\
+0 & 0 & -1 & 0 \\
+0 & -1 & 0 & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix}.
+$$
 
-It is already defined in `src/ur5e_fk_starter.py`. Do not estimate or modify it. Calculate the predicted Webots tool pose with
+This matrix is already defined as `T_6_TOOL` in `src/ur5e_fk_starter.py`. Read and use the supplied value; do not copy, estimate, or modify it. The predicted Webots tool pose is
 
-```python
-T_world_tool = forward_kinematics(q) @ T_6_TOOL
-```
+$$
+{}^{world}T_{tool}={}^{world}T_6\,{}^6T_{tool}.
+$$
 
 The robot base is at the world origin in this lab, so `T_world_0` is identity.
 
@@ -152,11 +147,14 @@ The robot base is at the world origin in this lab, so `T_world_0` is identity.
 - `controllers/fk_experiment/` - A -> B -> C -> A experiment
 - `src/transforms.py` and `src/transform_point.py` - complete support code; do not modify
 - `src/ur5e_fk_starter.py` - the two-entry FK exercise
+- `src/predict_fk_poses.py` - provided runner for the three pre-experiment FK predictions
 - `answers.md` - response template
 
 ## Student Workflow
 
 ### Step 1 - Prepare and open a working world
+
+> **Why this part matters:** Using the pinned robot assets gives everyone the same model, and preserving the starter world provides a known-good recovery point if a working world becomes corrupted.
 
 1. Open a terminal in the repository.
 2. Close Webots and prepare the pinned R2025a assets:
@@ -177,6 +175,8 @@ The robot base is at the world origin in this lab, so `T_world_0` is identity.
 
 ### Step 2 - Run the two diagnostics
 
+> **Why this part matters:** These checks separate Webots, Python, and device-access problems from FK errors. A later failure is much easier to diagnose once this foundation is known to work.
+
 Select `UR5e "UR5E"` in the Scene Tree, double-click its `controller` field, select a controller, press **Reset**, and then press **Run**.
 
 | Controller | Expected Console result | Movement |
@@ -192,26 +192,23 @@ Stop and use the Troubleshooting section if either diagnostic fails.
 
 ### Step 3 - Confirm one-joint motion
 
+> **Why this part matters:** A small single-joint move verifies the motor command path, encoder feedback, joint name, and positive direction before six joints move together.
+
 If `controllers/lab02_controller` does not exist, close Webots and run:
 
 ```bash
 python -c "from pathlib import Path; import shutil; src=Path('lab02_webots_ur5e_frames/controllers/eel4664_ur5e'); dst=Path('lab02_webots_ur5e_frames/controllers/lab02_controller'); shutil.copytree(src,dst); (dst/'eel4664_ur5e.py').rename(dst/'lab02_controller.py')"
 ```
 
-Assign `lab02_controller` in `lab02_work.wbt`. Before running, note that only the shoulder-pan target changes:
-
-```python
-q_goal = q0.copy()
-q_goal[0] += 0.10
-duration = 4.0
-settle_duration = 1.0
-```
+Assign `lab02_controller` in `lab02_work.wbt`. This supplied controller changes only the shoulder-pan target: $q_{goal,1}=q_{0,1}+0.10$ rad, while the other five targets remain at their initial values. It moves for four seconds and then waits one second before measuring. Read this behavior in the controller; do not copy or edit it for this step.
 
 ![Lab 2 working world with the one-joint controller assigned](images/one_joint_controller_ready.png)
 
 Press **Reset**, then **Run**. The shoulder-pan joint should move smoothly by about `+0.10` rad, hold for one second, and print `[TRACKING PASS]`. Small differences between target and measured angles are normal. No values from this step are required in `answers.md`.
 
 ### Step 4 - Complete and test forward kinematics
+
+> **Why this part matters:** This is the central mathematical task: converting joint angles into a tool pose. The zero and nonsymmetric tests catch different kinds of matrix and sign errors before the robot experiment.
 
 Open `src/ur5e_fk_starter.py`. Fill only:
 
@@ -242,6 +239,8 @@ The zero pose is easy to inspect, but many sine terms vanish there. The nonsymme
 
 ### Step 5 - Predict, then run the robot experiment
 
+> **Why this part matters:** Predicting first keeps the experiment honest—you test the model against observations instead of adjusting the prediction after seeing the answer. The moving stylus connects the matrix calculation to visible robot motion.
+
 The provided controller visits:
 
 | Pose | `q_goal` [rad] |
@@ -250,29 +249,19 @@ The provided controller visits:
 | B | `[0.20, -0.80, 1.00, -1.10, -0.70, 0.30]` |
 | C | `[-0.30, -0.90, 1.10, -1.40, -1.20, -0.20]` |
 
-Before opening the controller, calculate and record the predicted tool position for each pose:
+A prediction program is already provided; do not copy Python code from this README. After completing and testing the two FK entries in Step 4, run this command from the repository root:
 
-```python
-import numpy as np
-from lab02_webots_ur5e_frames.src.ur5e_fk_starter import (
-    T_6_TOOL,
-    forward_kinematics,
-)
-
-targets = {
-    "A": np.array([0.0, -1.20, 1.20, -1.50, -1.57, 0.0]),
-    "B": np.array([0.20, -0.80, 1.00, -1.10, -0.70, 0.30]),
-    "C": np.array([-0.30, -0.90, 1.10, -1.40, -1.20, -0.20]),
-}
-
-for label, q_goal in targets.items():
-    T_predicted = forward_kinematics(q_goal) @ T_6_TOOL
-    print(label, T_predicted[:3, 3])
+```bash
+python lab02_webots_ur5e_frames/src/predict_fk_poses.py
 ```
+
+The program calls **your** `forward_kinematics` function for poses A, B, and C, converts frame `{6}` to the Webots tool frame with the supplied `T_6_TOOL`, and prints the three predicted tool positions. Record those positions in `answers.md`. If it prints `[STOP]`, return to Step 4 and complete the two marked entries.
 
 Now assign `fk_experiment` in `lab02_work.wbt`, press **Reset**, and press **Run**. Watch the stylus move A -> B -> C -> A. Copy the measured `q`, tool position, and tool RPY for A-C from the Console.
 
 ### Step 6 - Compare FK with Webots
+
+> **Why this part matters:** A robot model is useful only if its predictions agree with measurements. This comparison reveals convention, joint-sign, and chaining errors and practices the same validation process that would be used with a physical robot.
 
 For each pose, calculate the prediction again using its **measured** joint angles:
 
