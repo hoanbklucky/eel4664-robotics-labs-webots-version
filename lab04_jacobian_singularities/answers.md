@@ -2,7 +2,7 @@
 
 ## Jacobian validation
 
-State the Jacobian frame/convention and summarize the centered finite-difference study.
+State the Jacobian frame/convention, explain where each modified-DH joint axis is recorded, write the two geometric column expressions, and summarize the centered finite-difference study.
 
 ## Differential motion
 
