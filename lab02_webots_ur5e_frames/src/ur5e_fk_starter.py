@@ -2,20 +2,20 @@
 """Student starter for nominal UR5e modified-DH forward kinematics."""
 import numpy as np
 
-# Each row is (a_{i-1} [m], alpha_{i-1} [rad], d_i [m],
-# theta_offset_i [rad]). These are the nominal UR5e dimensions arranged for
-# the modified-DH matrix used in class.
+# Each row is (alpha_{i-1} [rad], a_{i-1} [m], d_i [m],
+# theta_offset_i [rad]). The column order matches the modified-DH table used
+# in class.
 UR5E_MDH = (
-    (0.0,       0.0,          0.1625, 0.0),
-    (0.0,       np.pi / 2.0,  0.0,    0.0),
-    (-0.4250,   0.0,          0.0,    0.0),
-    (-0.3922,   0.0,          0.1333, 0.0),
-    (0.0,       np.pi / 2.0,  0.0997, 0.0),
-    (0.0,      -np.pi / 2.0,  0.0996, 0.0),
+    (0.0,          0.0,       0.1625, 0.0),
+    (np.pi / 2.0,  0.0,       0.0,    0.0),
+    (0.0,         -0.4250,    0.0,    0.0),
+    (0.0,         -0.3922,    0.1333, 0.0),
+    (np.pi / 2.0,  0.0,       0.0997, 0.0),
+    (-np.pi / 2.0, 0.0,       0.0996, 0.0),
 )
 
 
-def dh_transform(a_previous, alpha_previous, d, theta):
+def dh_transform(alpha_previous, a_previous, d, theta):
     """Return the modified-DH transform from frame {i-1} to frame {i}."""
     c_theta = np.cos(theta)
     s_theta = np.sin(theta)
@@ -44,6 +44,6 @@ def forward_kinematics(q):
     if q.shape != (6,) or not np.all(np.isfinite(q)):
         raise ValueError("q must contain six finite joint angles")
     T = np.eye(4)
-    for qi, (a_previous, alpha_previous, d, offset) in zip(q, UR5E_MDH):
-        T = T @ dh_transform(a_previous, alpha_previous, d, qi + offset)
+    for qi, (alpha_previous, a_previous, d, offset) in zip(q, UR5E_MDH):
+        T = T @ dh_transform(alpha_previous, a_previous, d, qi + offset)
     return T

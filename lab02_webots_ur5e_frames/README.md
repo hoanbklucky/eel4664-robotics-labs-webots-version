@@ -132,16 +132,16 @@ Here, $c_{\theta_i}=\cos(\theta_i)$, $s_{\theta_i}=\sin(\theta_i)$, and similarl
 
 Use this modified-DH table in meters and radians:
 
-| Joint $i$ | $a_{i-1}$ | $\alpha_{i-1}$ | $d_i$ | $\theta_i$ |
+| Joint $i$ | $\alpha_{i-1}$ | $a_{i-1}$ | $d_i$ | $\theta_i$ |
 |---:|---:|---:|---:|---|
 | 1 | 0 | 0 | 0.1625 | $q_1$ |
-| 2 | 0 | $\pi/2$ | 0 | $q_2$ |
-| 3 | -0.4250 | 0 | 0 | $q_3$ |
-| 4 | -0.3922 | 0 | 0.1333 | $q_4$ |
-| 5 | 0 | $\pi/2$ | 0.0997 | $q_5$ |
-| 6 | 0 | $-\pi/2$ | 0.0996 | $q_6$ |
+| 2 | $\pi/2$ | 0 | 0 | $q_2$ |
+| 3 | 0 | -0.4250 | 0 | $q_3$ |
+| 4 | 0 | -0.3922 | 0.1333 | $q_4$ |
+| 5 | $\pi/2$ | 0 | 0.0997 | $q_5$ |
+| 6 | $-\pi/2$ | 0 | 0.0996 | $q_6$ |
 
-The subscripts matter: `a_previous` and `alpha_previous` in the Python code mean $a_{i-1}$ and $\alpha_{i-1}$, while `d` and `theta` mean $d_i$ and $\theta_i$. The values are the nominal UR5e dimensions published by [Universal Robots](https://www.universal-robots.com/articles/ur/application-installation/dh-parameters-for-calculations-of-kinematics-and-dynamics), rearranged for the modified-DH convention used in class. The pinned Webots geometry contains rounded dimensions, so a small residual is expected.
+The subscripts matter: `alpha_previous` and `a_previous` in the Python code follow the same column order and mean $\alpha_{i-1}$ and $a_{i-1}$, while `d` and `theta` mean $d_i$ and $\theta_i$. The values are the nominal UR5e dimensions published by [Universal Robots](https://www.universal-robots.com/articles/ur/application-installation/dh-parameters-for-calculations-of-kinematics-and-dynamics), rearranged for the modified-DH convention used in class. The pinned Webots geometry contains rounded dimensions, so a small residual is expected.
 
 Relate the DH result to the measured tool frame explicitly:
 
