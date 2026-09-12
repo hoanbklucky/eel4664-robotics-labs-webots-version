@@ -1,22 +1,41 @@
 #!/usr/bin/env python3
-"""Student starter for nominal UR5e standard-DH forward kinematics."""
+"""Student starter for nominal UR5e modified-DH forward kinematics."""
 import numpy as np
 
-# Each row is (a_i [m], alpha_i [rad], d_i [m], theta_offset_i [rad]).
-# Nominal UR5e values published by Universal Robots.
-UR5E_DH = (
-    (0.0,       np.pi / 2.0, 0.1625, 0.0),
-    (-0.4250,   0.0,         0.0,    0.0),
-    (-0.3922,   0.0,         0.0,    0.0),
-    (0.0,       np.pi / 2.0, 0.1333, 0.0),
-    (0.0,      -np.pi / 2.0, 0.0997, 0.0),
-    (0.0,       0.0,         0.0996, 0.0),
+# Each row is (a_{i-1} [m], alpha_{i-1} [rad], d_i [m],
+# theta_offset_i [rad]). These are the nominal UR5e dimensions arranged for
+# the modified-DH matrix used in class.
+UR5E_MDH = (
+    (0.0,       0.0,          0.1625, 0.0),
+    (0.0,       np.pi / 2.0,  0.0,    0.0),
+    (-0.4250,   0.0,          0.0,    0.0),
+    (-0.3922,   0.0,          0.1333, 0.0),
+    (0.0,       np.pi / 2.0,  0.0997, 0.0),
+    (0.0,      -np.pi / 2.0,  0.0996, 0.0),
 )
 
 
-def dh_transform(a, alpha, d, theta):
-    """Return Rotz(theta) Transz(d) Transx(a) Rotx(alpha)."""
-    raise NotImplementedError
+def dh_transform(a_previous, alpha_previous, d, theta):
+    """Return the modified-DH transform from frame {i-1} to frame {i}."""
+    c_theta = np.cos(theta)
+    s_theta = np.sin(theta)
+    c_alpha = np.cos(alpha_previous)
+    s_alpha = np.sin(alpha_previous)
+
+    # Compare the entries below with the matrix in the Lab 2 README.
+    # Replace only these two None values with the correct expressions.
+    row_2_column_1 = None  # TODO 1
+    row_3_column_4 = None  # TODO 2
+
+    if row_2_column_1 is None or row_3_column_4 is None:
+        raise NotImplementedError("Complete the two marked modified-DH entries")
+
+    return np.array([
+        [c_theta,            -s_theta,            0.0,      a_previous],
+        [row_2_column_1,      c_theta * c_alpha, -s_alpha, -s_alpha * d],
+        [s_theta * s_alpha,   c_theta * s_alpha,  c_alpha,  row_3_column_4],
+        [0.0,                 0.0,                0.0,      1.0],
+    ], dtype=float)
 
 
 def forward_kinematics(q):
@@ -25,6 +44,6 @@ def forward_kinematics(q):
     if q.shape != (6,) or not np.all(np.isfinite(q)):
         raise ValueError("q must contain six finite joint angles")
     T = np.eye(4)
-    for qi, (a, alpha, d, offset) in zip(q, UR5E_DH):
-        T = T @ dh_transform(a, alpha, d, qi + offset)
+    for qi, (a_previous, alpha_previous, d, offset) in zip(q, UR5E_MDH):
+        T = T @ dh_transform(a_previous, alpha_previous, d, qi + offset)
     return T

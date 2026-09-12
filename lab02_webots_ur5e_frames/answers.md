@@ -27,7 +27,7 @@ Explain why inverse translation is `-R.T @ p` and why points and directions use 
 
 ## Step 5 - FK Convention and Offline Test
 
-State the joint order, standard-DH definition of `A_i`, multiplication order, and frame meanings. Include the zero and nonsymmetric FK test output, rotation orthogonality error, and determinant.
+State the joint order, the two modified-DH matrix entries you completed, the multiplication order, and the frame meanings. Include the zero and nonsymmetric FK test output, rotation orthogonality error, and determinant.
 
 ## Step 6 - Fixed Tool Transform
 

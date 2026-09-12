@@ -110,29 +110,42 @@ Multiplying the translation column by zero removes its effect. Translating a fra
 
 Webots supplies read-only tool sensors to validate your calculation. It does not perform the transformation for you.
 
-For the UR5e, compute:
+For the UR5e, compute the transform from the base frame `{0}` to frame `{6}` as
 
-```text
-T_0_6(q) = A_1(q1) A_2(q2) ... A_6(q6)
-A_i = Rotz(theta_i) Transz(d_i) Transx(a_i) Rotx(alpha_i)
-```
+$$
+{}^{0}T_{6}(\mathbf q)={}^{0}T_{1}(q_1){}^{1}T_{2}(q_2)\cdots{}^{5}T_{6}(q_6).
+$$
 
-Use this standard DH table in meters and radians:
+Use the **modified Denavit-Hartenberg (modified-DH)** matrix given in class:
 
-| Joint | `a_i` | `alpha_i` | `d_i` | `theta_i` |
+$$
+{}^{i-1}T_i=
+\begin{bmatrix}
+ c_{\theta_i} & -s_{\theta_i} & 0 & a_{i-1} \\
+ s_{\theta_i}c_{\alpha_{i-1}} & c_{\theta_i}c_{\alpha_{i-1}} & -s_{\alpha_{i-1}} & -s_{\alpha_{i-1}}d_i \\
+ s_{\theta_i}s_{\alpha_{i-1}} & c_{\theta_i}s_{\alpha_{i-1}} & c_{\alpha_{i-1}} & c_{\alpha_{i-1}}d_i \\
+ 0 & 0 & 0 & 1
+\end{bmatrix}.
+$$
+
+Here, $c_{\theta_i}=\cos(\theta_i)$, $s_{\theta_i}=\sin(\theta_i)$, and similarly for $\alpha_{i-1}$. You do not need to derive this matrix in the lab. Instead, compare it carefully with the supplied NumPy matrix and complete two missing entries.
+
+Use this modified-DH table in meters and radians:
+
+| Joint $i$ | $a_{i-1}$ | $\alpha_{i-1}$ | $d_i$ | $\theta_i$ |
 |---:|---:|---:|---:|---|
-| 1 | 0 | `pi/2` | 0.1625 | `q1` |
-| 2 | -0.4250 | 0 | 0 | `q2` |
-| 3 | -0.3922 | 0 | 0 | `q3` |
-| 4 | 0 | `pi/2` | 0.1333 | `q4` |
-| 5 | 0 | `-pi/2` | 0.0997 | `q5` |
-| 6 | 0 | 0 | 0.0996 | `q6` |
+| 1 | 0 | 0 | 0.1625 | $q_1$ |
+| 2 | 0 | $\pi/2$ | 0 | $q_2$ |
+| 3 | -0.4250 | 0 | 0 | $q_3$ |
+| 4 | -0.3922 | 0 | 0.1333 | $q_4$ |
+| 5 | 0 | $\pi/2$ | 0.0997 | $q_5$ |
+| 6 | 0 | $-\pi/2$ | 0.0996 | $q_6$ |
 
-The values are the nominal UR5e parameters published by [Universal Robots](https://www.universal-robots.com/articles/ur/application-installation/dh-parameters-for-calculations-of-kinematics-and-dynamics). The pinned Webots geometry contains rounded dimensions, so a small residual is expected.
+The subscripts matter: `a_previous` and `alpha_previous` in the Python code mean $a_{i-1}$ and $\alpha_{i-1}$, while `d` and `theta` mean $d_i$ and $\theta_i$. The values are the nominal UR5e dimensions published by [Universal Robots](https://www.universal-robots.com/articles/ur/application-installation/dh-parameters-for-calculations-of-kinematics-and-dynamics), rearranged for the modified-DH convention used in class. The pinned Webots geometry contains rounded dimensions, so a small residual is expected.
 
 Relate the DH result to the measured tool frame explicitly:
 
-```text
+`	ext
 T_world_tool = T_world_0 T_0_6(q) T_6_tool
 ```
 
@@ -288,14 +301,14 @@ Record your predictions and one-sentence explanations in `answers.md`.
 
 ### Step 5 - Implement forward kinematics
 
-The Background section defines the standard-DH convention, parameter table, and multiplication order. In `src/ur5e_fk_starter.py`, complete:
+The Background section gives the modified-DH matrix, parameter table, and frame order. Open `src/ur5e_fk_starter.py`. The matrix and the six-transform multiplication loop are already provided. Complete only these two marked entries:
 
-- `dh_transform(a, alpha, d, theta)`; and
-- `forward_kinematics(q)` as the ordered product `A_1 A_2 ... A_6`.
+- `row_2_column_1`; and
+- `row_3_column_4`.
 
-Write the definition of `A_i` and the frame order in `answers.md`, then run:
+Use the class formula to decide which products of sine, cosine, and `d` belong in those locations. Do not copy a robotics-library FK function. In `answers.md`, write the two expressions you inserted and explain the frame multiplication order. Then run:
 
-```bash
+`ash
 python -c "import numpy as np; from lab02_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; T=forward_kinematics(np.zeros(6)); print(T); print('orthogonality=',np.linalg.norm(T[:3,:3].T@T[:3,:3]-np.eye(3))); print('det=',np.linalg.det(T[:3,:3]))"
 ```
 
