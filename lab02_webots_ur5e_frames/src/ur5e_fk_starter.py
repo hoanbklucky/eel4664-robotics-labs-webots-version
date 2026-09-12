@@ -43,6 +43,9 @@ def forward_kinematics(q):
     q = np.asarray(q, dtype=float)
     if q.shape != (6,) or not np.all(np.isfinite(q)):
         raise ValueError("q must contain six finite joint angles")
+    # Start at frame {0}. Each right multiplication appends the transform
+    # from the current link frame to the next link frame. After all six
+    # iterations, T = T_0_1 @ T_1_2 @ ... @ T_5_6 = T_0_6.
     T = np.eye(4)
     for qi, (alpha_previous, a_previous, d, offset) in zip(q, UR5E_MDH):
         T = T @ dh_transform(alpha_previous, a_previous, d, qi + offset)

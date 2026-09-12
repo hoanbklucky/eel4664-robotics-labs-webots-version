@@ -307,6 +307,23 @@ The Background section gives the modified-DH matrix, parameter table, and frame 
 - `row_2_column_1`; and
 - `row_3_column_4`.
 
+Before editing the two entries, examine the provided `forward_kinematics(q)` function:
+
+```python
+T = np.eye(4)
+for qi, (alpha_previous, a_previous, d, offset) in zip(q, UR5E_MDH):
+    T = T @ dh_transform(alpha_previous, a_previous, d, qi + offset)
+return T
+```
+
+This loop **chains six transformations**. It starts with the identity `T_0_0`. After the first iteration, `T` is `T_0_1`. The second iteration appends `T_1_2` on the right, producing `T_0_2 = T_0_1 T_1_2`. The same process continues until the sixth iteration returns `T_0_6`, the pose of frame `{6}` relative to the base frame `{0}`:
+
+```text
+T_0_6 = T_0_1 T_1_2 T_2_3 T_3_4 T_4_5 T_5_6
+```
+
+The order is essential because matrix multiplication is not commutative. Each transform must connect the current frame to the next physical link. The chaining loop is already complete; students modify only the two marked entries inside `dh_transform()`.
+
 Use the class formula to decide which products of sine, cosine, and `d` belong in those locations. Do not copy a robotics-library FK function. In `answers.md`, write the two expressions you inserted and explain the frame multiplication order. Then run:
 
 ```bash
@@ -330,10 +347,10 @@ Pass conditions:
 - rotation orthogonality error is below `1e-8`; and
 - the rotation determinant is within `1e-8` of 1.
 
-Now repeat the calculation with a nonsymmetric configuration. In the command above, replace `np.zeros(6)` with:
+Now run the complete command for a nonsymmetric configuration:
 
-```python
-np.array([0.20, -0.80, 1.00, -1.10, -0.70, 0.30])
+```bash
+python -c "import numpy as np; from lab02_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; T=forward_kinematics(np.array([0.20,-0.80,1.00,-1.10,-0.70,0.30])); print(T); print('orthogonality=',np.linalg.norm(T[:3,:3].T@T[:3,:3]-np.eye(3))); print('det=',np.linalg.det(T[:3,:3]))"
 ```
 
 Why run a second configuration? At `q = 0`, many sine terms are zero and cosine terms are one. A missing sign, misplaced term, or incorrect joint variable can therefore be hidden by the unusually simple zero configuration. The second vector gives every joint a different nonzero angle, so more terms in the DH matrices become active and mistakes are more likely to produce an obviously different result.
