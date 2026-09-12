@@ -13,7 +13,7 @@ Record whether `diagnostic_minimal` and `diagnostic_devices` passed. List any mi
 
 ## Step 5 - FK Convention and Offline Test
 
-State the joint order, the two modified-DH matrix entries you completed, the multiplication order, and the frame meanings. Include the zero and nonsymmetric FK test output, rotation orthogonality error, and determinant.
+Record the two modified-DH matrix entries you completed. Include the zero and nonsymmetric FK test output, rotation orthogonality error, and determinant.
 
 ## Step 6 - Fixed Tool Transform
 

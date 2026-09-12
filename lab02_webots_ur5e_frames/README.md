@@ -263,6 +263,8 @@ Confirm `lab02_controller.py` contains:
 q_goal = q0.copy()
 q_goal[0] += 0.10
 duration = 4.0
+settle_duration = 1.0
+tracking_tolerance = 1e-3
 ```
 ![Lab 2 working world with lab02_controller assigned and the one-joint command visible](images/one_joint_controller_ready.png)
 
@@ -271,12 +273,14 @@ duration = 4.0
 1. Open `lab02_work.wbt` and assign `lab02_controller`.
 2. Before running, predict which links will move and in which direction.
 3. Press **Reset**, then **Run**.
-4. Confirm the shoulder-pan joint moves smoothly by approximately +0.10 rad while the other joint targets remain at their measured starting values.
-5. Copy these final Console values into `answers.md`:
+4. Confirm the shoulder-pan joint moves smoothly by approximately +0.10 rad over four seconds. The robot then holds still for one second so the joints can settle before any measurements are printed.
+5. Confirm the Console reports `[TRACKING PASS]`, then copy these settled values into `answers.md`:
    - six measured joint angles `q_align` with at least six decimal places;
    - tool position `[x, y, z]`;
    - tool orientation `[roll, pitch, yaw]`; and
    - tool test-point position.
+
+The controller waits because a motor position command is a target, not an instantaneous change in joint angle. It holds `q_goal` for one additional second, reads all joint and tool sensors at the same settled instant, and prints `q_goal - q_final`. Small nonzero differences are normal. `[TRACKING PASS]` means the largest absolute joint error is no more than `0.001` rad.
 
 These synchronized final measurements are the one alignment data set used later. Do not calculate anything yet - first get the robot moving and preserve the measurements.
 
@@ -324,7 +328,7 @@ T_0_6 = T_0_1 T_1_2 T_2_3 T_3_4 T_4_5 T_5_6
 
 The order is essential because matrix multiplication is not commutative. Each transform must connect the current frame to the next physical link. The chaining loop is already complete; students modify only the two marked entries inside `dh_transform()`.
 
-Use the class formula to decide which products of sine, cosine, and `d` belong in those locations. Do not copy a robotics-library FK function. In `answers.md`, write the two expressions you inserted and explain the frame multiplication order. Then run:
+Use the class formula to decide which products of sine, cosine, and `d` belong in those locations. Do not copy a robotics-library FK function. In `answers.md`, record the two expressions you inserted. Then run:
 
 ```bash
 python -c "import numpy as np; from lab02_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; T=forward_kinematics(np.zeros(6)); print(T); print('orthogonality=',np.linalg.norm(T[:3,:3].T@T[:3,:3]-np.eye(3))); print('det=',np.linalg.det(T[:3,:3]))"
@@ -482,7 +486,7 @@ Briefly explain whether the remaining error is more consistent with rounded mode
 ## What to Submit
 
 1. Completed `ur5e_fk_starter.py`.
-2. Completed `answers.md`, containing the DH convention, fixed alignment transform, pre-run predictions, comparison table, required errors and summary, one error plot, and answers to the Engineering Questions.
+2. Completed `answers.md`, containing the two completed modified-DH entries, fixed alignment transform, pre-run predictions, comparison table, required errors and summary, one error plot, and answers to the Engineering Questions.
 
 Do not submit `lab02_work.wbt`, installed software, downloaded vendor assets, or caches unless requested.
 
