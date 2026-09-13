@@ -250,11 +250,36 @@ The provided Webots controller will command these joint vectors:
 | B | `[0.20, -0.80, 1.00, -1.10, -0.70, 0.30]` |
 | C | `[-0.30, -0.90, 1.10, -1.40, -1.20, -0.20]` |
 
-Do **not** run the Webots motion yet. After completing Step 4, run the provided prediction program from the repository root:
+Do **not** run the Webots motion yet. First run the provided prediction program from the **repository root**. The repository root is the main `eel4664-robotics-labs` folder that contains the root `README.md` and folders such as `lab00_setup` and `lab02_webots_ur5e_frames`.
 
-```bash
-python lab02_webots_ur5e_frames/src/predict_fk_poses.py
-```
+To run the program using the VS Code terminal:
+
+1. Start VS Code.
+2. Select **File -> Open Folder...** and open the main `eel4664-robotics-labs` folder. Do not open only the `lab02_webots_ur5e_frames` subfolder.
+3. Select **Terminal -> New Terminal**. The terminal panel opens at the bottom of VS Code.
+4. Run `pwd` in the terminal. The displayed path should end with `eel4664-robotics-labs`.
+5. If the terminal is in a different folder, use `cd` followed by the actual location of your repository. For example:
+
+   **Windows PowerShell**
+
+   ```powershell
+   cd C:\eel4664-robotics-labs
+   ```
+
+   **macOS or Ubuntu**
+
+   ```bash
+   cd ~/eel4664-robotics-labs
+   ```
+
+   Your location may be different from these examples.
+6. From that folder, run:
+
+   ```bash
+   python lab02_webots_ur5e_frames/src/predict_fk_poses.py
+   ```
+
+   On a system where the Python command is `python3`, use `python3` instead of `python`.
 
 For each target joint vector, this program uses **your** `forward_kinematics` function and the supplied `T_6_TOOL` to calculate the predicted Webots tool pose:
 
@@ -267,6 +292,15 @@ Paste the predicted tool position `[x, y, z]` and predicted tool orientation `[r
 ### Step 6 - Move the robot and compare with Webots
 
 > **Why this part matters:** The experiment now tests whether tool poses predicted from commanded joint angles agree with independent measurements from the simulated robot—the same basic validation process used with a physical robot.
+
+#### What Webots measures
+
+The Lab 2 world attaches two simulated sensors to the same tool frame used by the prediction:
+
+- a Webots `GPS` sensor named `tool_position` reports the tool position `[x, y, z]` in the **world frame**, in meters; and
+- a Webots `InertialUnit` sensor named `tool_orientation` reports the tool orientation `[roll, pitch, yaw]` relative to the **world frame**, in radians.
+
+After the robot reaches each pose and holds for one second, the `fk_experiment` controller reads these sensors and prints their values. These are Webots simulation measurements; they are not calculated by the student's `forward_kinematics` function. The Step 5 prediction and Step 6 sensor output describe the same tool frame, so comparing them tests whether the FK model predicts what the simulated robot actually does.
 
 Follow this sequence:
 
