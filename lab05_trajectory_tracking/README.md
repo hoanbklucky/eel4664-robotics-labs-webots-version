@@ -85,6 +85,23 @@ The `TRAJECTORY_REFERENCE_BOARD` shows a green straight segment, an orange curve
 - `src/cartesian_line.py` - straight-line waypoint scaffold
 - `Lab05_Report_Template.docx`
 
+
+
+## Open the Word report template
+
+VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be used to edit it.
+
+1. In the VS Code Explorer on the left, expand the `lab05_trajectory_tracking` folder.
+2. Find `Lab05_Report_Template.docx`.
+3. Right-click the file and choose:
+   - **Reveal in File Explorer** on Windows;
+   - **Reveal in Finder** on macOS; or
+   - **Open Containing Folder** on Ubuntu.
+4. In the folder that opens, double-click `Lab05_Report_Template.docx` to open it in Microsoft Word.
+5. In Word, select **File -> Save As** and save a personal copy such as `LastName_Lab05_Report.docx`. Enter all requested results and screenshots in this personal copy.
+
+Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab05_Report_Template.docx`, paste it into the personal Word copy you created.
+
 ## Part 1 - Setup / Validation
 
 > **Why this part matters:** Testing the world, devices, one joint, and polynomial boundary conditions first prevents setup or interpolation errors from contaminating a full trajectory experiment.

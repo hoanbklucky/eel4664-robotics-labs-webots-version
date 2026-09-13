@@ -69,6 +69,23 @@ Complete [Lab 00 - Software Setup and Webots Basics](../lab00_setup/README.md), 
 - `controllers/ur5e_playground/ur5e_playground.py` - complete keyboard controller with one guided key-mapping change for you to make
 - `Lab01_Report_Template.docx` - short observation and reflection template
 
+
+
+## Open the Word report template
+
+VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be used to edit it.
+
+1. In the VS Code Explorer on the left, expand the `lab01_ur5e_playground` folder.
+2. Find `Lab01_Report_Template.docx`.
+3. Right-click the file and choose:
+   - **Reveal in File Explorer** on Windows;
+   - **Reveal in Finder** on macOS; or
+   - **Open Containing Folder** on Ubuntu.
+4. In the folder that opens, double-click `Lab01_Report_Template.docx` to open it in Microsoft Word.
+5. In Word, select **File -> Save As** and save a personal copy such as `LastName_Lab01_Report.docx`. Enter all requested results and screenshots in this personal copy.
+
+Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab01_Report_Template.docx`, paste it into the personal Word copy you created.
+
 ## Part 1 - Open the Playground
 
 > **Why this part matters:** Opening a protected starter, saving a working copy, and validating it incrementally establishes the safe workflow used in every later robot experiment.
