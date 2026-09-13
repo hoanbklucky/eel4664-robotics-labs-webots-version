@@ -262,7 +262,7 @@ $$
 T_{predicted}=T_6(\mathbf q_{goal})\,{}^6T_{tool}.
 $$
 
-Paste the predicted position and RPY for poses A, B, and C into `Lab02_Report_Template.docx` before continuing. If the program prints `[STOP]`, return to Step 4 and complete the two marked modified-DH entries.
+Paste the predicted tool position `[x, y, z]` and predicted tool orientation `[roll, pitch, yaw]` for poses A, B, and C into `Lab02_Report_Template.docx` before continuing. RPY means **roll, pitch, and yaw**: the three angles used here to describe the tool orientation about the x-, y-, and z-axes. If the program prints `[STOP]`, return to Step 4 and complete the two marked modified-DH entries.
 
 ### Step 6 - Move the robot and compare with Webots
 
@@ -284,14 +284,18 @@ First check that the measured joint angles are close to the commanded target ang
 
 Next, compare the Step 5 prediction with the Step 6 Webots output for each pose. Place the values side by side in `Lab02_Report_Template.docx` and look at the corresponding:
 
-- tool-position values: x, y, and z; and
-- tool-orientation values: roll, pitch, and yaw.
+- the **predicted tool position** `[x, y, z]` from Step 5 with the **Webots-measured tool position** `[x, y, z]` from Step 6; and
+- the **predicted tool orientation** `[roll, pitch, yaw]` from Step 5 with the **Webots-measured tool orientation** `[roll, pitch, yaw]` from Step 6.
 
-No error formula or additional comparison program is required. In the Word report, write 3-5 sentences that answer these questions:
+`RPY` is short for **roll, pitch, and yaw**. These are the three angles used here to describe the tool orientation about the x-, y-, and z-axes, respectively.
 
-- Do the predicted and Webots values agree closely overall?
-- Which pose appears to have the largest difference?
-- If an important difference appears, what might have caused it?
+No error formula or additional comparison program is required. In the Word report, evaluate the poses one at a time:
+
+- **Pose A:** State whether the predicted tool position and tool RPY agree closely with the Webots measurements.
+- **Pose B:** State whether the predicted tool position and tool RPY agree closely with the Webots measurements.
+- **Pose C:** State whether the predicted tool position and tool RPY agree closely with the Webots measurements.
+
+Write one or two sentences for each pose.
 
 Small differences are expected because the simulated joints may not stop at exactly the commanded values and the model dimensions are rounded. If the measured joints closely match their targets but the tool values are clearly different, recheck the modified-DH entries, joint signs, frame conversion, and transformation order.
 
