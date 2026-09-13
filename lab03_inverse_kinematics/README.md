@@ -356,7 +356,7 @@ For example, a tiny solver error but a large Webots error suggests that the nume
    | **One joint:** Lab 2 controller | shoulder pan changes by only +0.05 rad |
    | **Full algorithm:** | wait until Steps 2-6 pass |
 
-Record pass/fail in `Lab03_Report_Template.docx`. Stop at the first failure.
+No report entry is required for these prerequisite checks. Stop at the first failure.
 
 **Never overwrite `lab03_starter.wbt`.** Discard a damaged working copy and recreate it from the starter.
 

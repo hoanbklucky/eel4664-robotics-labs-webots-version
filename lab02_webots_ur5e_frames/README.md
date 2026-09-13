@@ -148,7 +148,6 @@ The robot base is at the world origin in this lab, so `T_world_0` is identity.
 - `src/transforms.py` and `src/transform_point.py` - complete support code; do not modify
 - `src/ur5e_fk_starter.py` - the two-entry FK exercise
 - `src/predict_fk_poses.py` - provided runner for the three pre-experiment FK predictions
-- `src/compare_fk_with_webots.py` - interactive comparison of FK predictions and Webots measurements
 - `Lab02_Report_Template.docx` - editable Word report for pasted results, screenshots, and interpretation
 - `answers.md` - legacy text reference; students do not submit this file
 
@@ -283,29 +282,20 @@ Follow this sequence:
 
 First check that the measured joint angles are close to the commanded target angles. Small differences are normal. If the difference is unexpectedly large, reset and repeat the motion before judging the FK model.
 
-Next run the provided comparison program from the repository root:
+Next, compare the Step 5 prediction with the Step 6 Webots output for each pose. Place the values side by side in `Lab02_Report_Template.docx` and look at the corresponding:
 
-```bash
-python lab02_webots_ur5e_frames/src/compare_fk_with_webots.py
-```
+- tool-position values: x, y, and z; and
+- tool-orientation values: roll, pitch, and yaw.
 
-For each pose, paste the measured joint vector, tool position, and tool RPY from the Webots Console when prompted. The program repeats the Step 5 prediction and reports:
+No error formula or additional comparison program is required. In the Word report, write 3-5 sentences that answer these questions:
 
-- the largest difference between a commanded and measured joint angle;
-- the straight-line distance between the FK-predicted and Webots tool positions, in millimeters;
-- one orientation-difference angle, in degrees, where 0 degrees means the two orientations match; and
-- the mean and maximum errors across all three poses.
+- Do the predicted and Webots values agree closely overall?
+- Which pose appears to have the largest difference?
+- If an important difference appears, what might have caused it?
 
-You do not need to derive or calculate these error measures by hand. Paste the program output into `Lab02_Report_Template.docx` and include a screenshot of the comparison results.
+Small differences are expected because the simulated joints may not stop at exactly the commanded values and the model dimensions are rounded. If the measured joints closely match their targets but the tool values are clearly different, recheck the modified-DH entries, joint signs, frame conversion, and transformation order.
 
-Interpret the result:
-
-- Small joint-tracking error and small tool-pose error support the correctness of the FK implementation.
-- Large joint-tracking error means the robot did not closely reach the joint vector used for prediction; repeat the experiment before evaluating FK.
-- Small joint-tracking error but large or pose-dependent tool error usually indicates an incorrect modified-DH entry, joint sign, frame conversion, or multiplication order.
-- Position errors near 1 mm can result from small differences between nominal UR5e dimensions and the rounded Webots geometry.
-
-Webots supplies the comparison measurements; it does not calculate FK for the submitted work.
+Webots supplies an independent simulated measurement for checking the FK prediction; it does not calculate FK for the submitted work.
 
 ## What to Submit
 
@@ -314,9 +304,9 @@ Webots supplies the comparison measurements; it does not calculate FK for the su
    - the two modified-DH entries;
    - both offline FK test outputs;
    - three pre-run tool-pose predictions;
-   - pasted Webots and comparison-program output;
+   - pasted Webots output;
    - the requested screenshots; and
-   - a short interpretation of the errors.
+   - a short qualitative comparison of the predicted and Webots tool poses.
 
 Do not submit `lab02_work.wbt`, downloaded vendor assets, installed software, or caches unless requested.
 
