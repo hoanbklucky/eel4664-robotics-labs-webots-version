@@ -328,7 +328,7 @@ For example, a tiny solver error but a large Webots error suggests that the nume
 - `src/planar_fk.py` and `src/planar_ik.py`
 - `src/numerical_ik.py` - numerical IK scaffold
 - `src/execute_pose_target.py` - safe execution scaffold
-- `answers.md` - results template
+- `Lab03_Report_Template.docx` - results template
 
 ## Part 1 - Setup / Validation
 
@@ -356,7 +356,7 @@ For example, a tiny solver error but a large Webots error suggests that the nume
    | **One joint:** Lab 2 controller | shoulder pan changes by only +0.05 rad |
    | **Full algorithm:** | wait until Steps 2-6 pass |
 
-Record pass/fail in `answers.md`. Stop at the first failure.
+Record pass/fail in `Lab03_Report_Template.docx`. Stop at the first failure.
 
 **Never overwrite `lab03_starter.wbt`.** Discard a damaged working copy and recreate it from the starter.
 
@@ -504,7 +504,7 @@ Report position in millimeters and orientation in degrees in one table. Identify
 ## What to Submit
 
 - completed four source scaffolds and the Lab 3 controller folder;
-- completed `answers.md`;
+- completed `Lab03_Report_Template.docx`;
 - planar branch/reachability and numerical unit-test evidence;
 - target/seed table and three residual plots, including failure;
 - Webots logs for two targets and repeated trials;

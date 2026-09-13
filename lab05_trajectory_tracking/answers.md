@@ -1,17 +1,5 @@
-# Lab 5 Answers
+# Legacy Markdown Answer File
 
-## Mission outcome
+Students now complete and submit `Lab05_Report_Template.docx` in this folder. Open that file in Microsoft Word, replace its prompt text with your results, insert the requested screenshots or plots, and submit the completed `.docx` file.
 
-State the start/end poses, boundary conditions, timing choice, limits, and whether both motions met the success criteria.
-
-## Quantitative comparison
-
-Compare MoveJ-style and practical MoveL-style duration, tracking error, maximum joint velocity, path length, straightness error, and smoothness.
-
-## Path evidence
-
-Include joint and Cartesian path plots and explain the observed tradeoff.
-
-## Engineering reflection
-
-Answer every Engineering Question in the Lab 5 README.
+Do not complete or submit this Markdown file.

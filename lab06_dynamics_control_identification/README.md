@@ -83,7 +83,7 @@ The green `BASELINE_CONDITION_PAD` and orange `PAYLOAD_CONDITION_PAD` distinguis
 - `src/estimate_velocity.py` - differentiation/filtering starter
 - `src/least_squares_id.py` - parameter-identification starter
 - `src/run_payload_experiment.py` - matched-trial mission scaffold
-- `answers.md`
+- `Lab06_Report_Template.docx`
 
 ## Part 1 - Setup / Validation
 
@@ -148,7 +148,7 @@ If a safe payload-changing world is unavailable, use the instructor-provided pai
 - velocity, tracking, transient, command, and residual plots;
 - metric comparison table;
 - training/validation identification results; and
-- completed `answers.md`.
+- completed `Lab06_Report_Template.docx`.
 
 ## Troubleshooting
 

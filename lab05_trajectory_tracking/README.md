@@ -83,7 +83,7 @@ The `TRAJECTORY_REFERENCE_BOARD` shows a green straight segment, an orange curve
 - `src/cubic_trajectory.py` - coefficient and sampling starter
 - `src/send_trajectory.py` - Webots execution outline
 - `src/cartesian_line.py` - straight-line waypoint scaffold
-- `answers.md`
+- `Lab05_Report_Template.docx`
 
 ## Part 1 - Setup / Validation
 
@@ -152,7 +152,7 @@ Plot joint trajectories and the 3-D or projected end-effector paths on common ax
 - desired/measured CSV logs for both motions;
 - joint and Cartesian path plots;
 - comparison table with all required metrics; and
-- completed `answers.md`.
+- completed `Lab05_Report_Template.docx`.
 
 ## Troubleshooting
 

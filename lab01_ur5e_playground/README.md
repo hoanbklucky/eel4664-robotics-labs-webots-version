@@ -67,7 +67,7 @@ Complete [Lab 00 - Software Setup and Webots Basics](../lab00_setup/README.md), 
 
 - `worlds/lab01_starter.wbt` - UR5e playground with an orange stylus and three visual target bubbles
 - `controllers/ur5e_playground/ur5e_playground.py` - complete keyboard controller with one guided key-mapping change for you to make
-- `answers.md` - short observation and reflection template
+- `Lab01_Report_Template.docx` - short observation and reflection template
 
 ## Part 1 - Open the Playground
 
@@ -127,7 +127,7 @@ Trace two examples from input to action:
 - **Manual motion:** a number key changes `selected`; an arrow key changes `q_command[selected]`; then `motor.setPosition(target)` sends the updated targets to the robot.
 - **Dance:** `D` initially sets `dance_active`; the main loop selects poses from `DANCE_POSES`; then the same `motor.setPosition(target)` loop sends each pose to the robot.
 
-Also find the final loop that compares the measured stylus-tip position with `TARGETS` and prints `[TARGET REACHED]`. No response about the code is required in `answers.md`.
+Also find the final loop that compares the measured stylus-tip position with `TARGETS` and prints `[TARGET REACHED]`. No response about the code is required in `Lab01_Report_Template.docx`.
 
 ### Make one keyboard change
 
@@ -223,7 +223,7 @@ That prediction is **forward kinematics**.
 
 ## What to Submit
 
-Submit one completed `answers.md` containing:
+Submit one completed `Lab01_Report_Template.docx` containing:
 
 1. one screenshot showing the UR5e and a target attempt; and
 2. the target color and complete six-value `q` vector printed by `P` for that attempt.

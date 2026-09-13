@@ -75,7 +75,7 @@ Unlike Labs 1-6, the Lab 7 starter intentionally does not include the course sty
 - `src/COLLISION_PLANNER_NOTES.md` - modeling and reproducibility guidance
 - `src/mission_sequence.py` - manipulation state-machine scaffold
 - `config/`, `results/`, `report/`, and `starter_code/` placeholders
-- `answers.md`
+- `Lab07_Report_Template.docx`
 
 ## Part 1 - Setup / Validation
 
@@ -152,7 +152,7 @@ Compare the direct and planned paths and explain the controlled variation/failur
 - raw logs, plots, and required metrics;
 - repeatability and failure analysis;
 - final technical report; and
-- completed `answers.md`.
+- completed `Lab07_Report_Template.docx`.
 
 ## Troubleshooting
 

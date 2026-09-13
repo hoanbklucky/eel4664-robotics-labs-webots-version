@@ -140,7 +140,7 @@ The `CARTESIAN_DIRECTION_REFERENCE` triad shows world +x (red), +y (green), and 
 - `src/jacobian_starter.py`
 - `src/singularity_scan.py`
 - `src/cartesian_direction_motion.py` - mission integration scaffold
-- `answers.md`
+- `Lab04_Report_Template.docx`
 
 ## Part 1 - Setup / Validation
 
@@ -220,7 +220,7 @@ The final robotic outcome is a visible Cartesian-direction motion whose degradat
 - normal versus near-singular comparison;
 - damped versus undamped result;
 - physical interpretation; and
-- `answers.md`.
+- `Lab04_Report_Template.docx`.
 
 ## Troubleshooting
 

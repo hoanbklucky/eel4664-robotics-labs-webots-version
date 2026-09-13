@@ -1,17 +1,5 @@
-# Lab 6 Answers
+# Legacy Markdown Answer File
 
-## Experimental model and controller
+Students now complete and submit `Lab06_Report_Template.docx` in this folder. Open that file in Microsoft Word, replace its prompt text with your results, insert the requested screenshots or plots, and submit the completed `.docx` file.
 
-State the simplified dynamics, approved payload/model condition pair, common reference, controller law, gains, limits, and initial state.
-
-## Estimation and performance
-
-Compare raw/filtered velocity and report rise time, overshoot, settling time, steady-state error, RMSE, and maximum error.
-
-## Parameter identification
-
-State the regressor, parameter meaning/units, training result, validation result, residuals, and model limitations.
-
-## Reflection
-
-Answer every question in the Lab 6 README.
+Do not complete or submit this Markdown file.

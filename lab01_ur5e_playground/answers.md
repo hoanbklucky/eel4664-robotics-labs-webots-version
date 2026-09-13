@@ -1,12 +1,5 @@
-# Lab 1 Answers - UR5e Playground
+# Legacy Markdown Answer File
 
-## Target Attempt
+Students now complete and submit `Lab01_Report_Template.docx` in this folder. Open that file in Microsoft Word, replace its prompt text with your results, insert the requested screenshots or plots, and submit the completed `.docx` file.
 
-Insert one screenshot showing the UR5e and a target attempt.
-
-Screenshot:
-
-## Numerical Configuration at One Target
-
-- Target color:
-- All six values printed by `P`, in order: `q = [`                         `]` rad
+Do not complete or submit this Markdown file.
