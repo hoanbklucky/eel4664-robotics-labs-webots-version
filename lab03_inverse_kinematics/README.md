@@ -67,6 +67,10 @@ Complete the Python/NumPy prerequisites in [Lab 00](../lab00_setup/README.md).
 
 **Platform note:** The required workflow supports Windows, macOS, and Ubuntu when configured through Lab 00. Terminal examples use `python`; on macOS or Ubuntu, use `python3` instead if `python` is not recognized.
 
+### Optional planar IK warm-up
+
+Use the [Planar Robot FK and IK Simulator Activities](../docs/PLANAR_3R_SIMULATOR_ACTIVITIES.md) to explore elbow-up and elbow-down branches, verify IK by substituting each solution into FK, find unreachable and singular targets, and compare analytical IK with an iterative solver. This external-browser activity is optional unless assigned by the instructor.
+
 ## Background
 
 ### 1. What inverse kinematics does
@@ -249,86 +253,155 @@ Here, $\mathbf e_{\mathrm{pose}}$ is the pose difference calculated by `pose_err
 
 Repeat for all six joints. Large `h` gives a crude approximation; extremely small `h` exposes floating-point roundoff. Lab 4 derives the Jacobian directly.
 
-### 7. Convert pose error into a joint correction
+### 7. From Newton's method to numerical IK
 
-At this point the solver knows two things:
+The numerical IK update is easier to understand if we build it in stages.
 
-- the six-component pose error `e`, which says how the tool still needs to move; and
-- the Jacobian `J`, which predicts how a small movement of each joint will move the tool.
+#### 7.1 Start with Newton's method for one variable
 
-For example, if the position part of `e` begins with `0.02`, the tool still needs to move approximately 2 cm in the frame-`{0}` +x direction. Each column of `J` predicts how one joint can help produce that motion. The solver must combine all six columns to choose six joint corrections.
-
-For sufficiently small changes, the desired correction is approximately
+Newton's method finds a value of `x` that makes a nonlinear function equal to zero:
 
 $$
-\mathbf J\Delta\mathbf q = \mathbf e.
+g(x)=0.
 $$
 
-This equation asks: "Which small joint change ${\Delta\mathbf q}$ will produce the required small tool change ${\mathbf e}$?"
-
-#### Why "least squares"?
-
-The local Jacobian model is only an approximation, and an exact solution may not exist. Least squares chooses the joint correction whose predicted tool motion comes as close as possible to the requested pose correction.
-
-A pseudoinverse can calculate that correction, but it can become unreliable near a singular configuration. Near a singularity, some joints have almost the same effect on the tool, or the robot temporarily cannot move the tool effectively in one direction. A direct inverse may then request very large joint changes for a small tool correction.
-
-#### What damping adds
-
-Damped least squares asks for two things at the same time:
-
-1. reduce the remaining tool-pose error; and
-2. avoid an unnecessarily large joint correction.
-
-In optimization form, it selects the correction that approximately minimizes
+Start from a guess `x_k`. At that point, replace the curved function by its tangent line. Follow the tangent line to where it crosses zero; that crossing becomes the next guess:
 
 $$
-\left\|\mathbf J\Delta\mathbf q-\mathbf e\right\|^2 + \lambda^2\left\|\Delta\mathbf q\right\|^2.
+x_{k+1}=x_k-\frac{g(x_k)}{g'(x_k)}.
 $$
 
-The first term rewards matching the requested tool motion. The second term places a penalty on large joint changes. The damping value ${\lambda}$ controls the strength of that penalty.
+This process repeats until the function value is sufficiently close to zero. Newton's method can converge quickly when the initial guess is good and the slope is well behaved. It can fail when the slope is zero or very small, or when the initial guess is poor.
 
-A useful analogy is steering a shopping cart through a narrow doorway. Without damping, the solver may react to a small alignment error with a large steering change. Damping makes it prefer a smaller, steadier correction, even if several corrections are needed.
+#### 7.2 Turn IK into a root-finding problem
 
-The DLS correction is
-
-$$
-\Delta\mathbf q_{DLS} = \mathbf J^T \left( \mathbf J\mathbf J^T + \lambda^2\mathbf I \right)^{-1} \mathbf e.
-$$
-
-The next estimate uses only a fraction ${\alpha}$ of that proposal:
+For IK, `f(q_k)` is the tool pose predicted by FK at the current joint estimate. The desired pose is `x_d`. The pose error is
 
 $$
-\mathbf q_{next} = \mathbf q + \alpha\Delta\mathbf q_{DLS}.
+\mathbf e_k=\mathbf x_d-\mathbf f(\mathbf q_k).
 $$
 
-The three safeguards have different jobs:
+Here, the code does not subtract two homogeneous matrices directly. The function `pose_error` converts their difference into the six-component error already introduced: three position components and three orientation components.
 
-- `damping` (${\lambda}$) reduces sensitivity to singular or poorly conditioned Jacobians;
-- `alpha` controls how cautiously the solver follows the proposed correction; and
-- `max_joint_step` is a hard limit that prevents any joint from jumping too far in one iteration.
+IK succeeds when this error is approximately zero. Therefore, numerical IK is a multivariable version of the same root-finding problem used by Newton's method.
 
-Too little damping can allow unstable, very large corrections. Too much damping makes each correction conservative and may slow convergence. Likewise, a small `alpha` is cautious but slow, while a large `alpha` moves faster but can overshoot.
+The Jacobian plays the role of the derivative. For a small joint change,
 
-#### How this relates to Newton-Raphson
+$$
+\Delta\mathbf x\approx\mathbf J(\mathbf q_k)\Delta\mathbf q.
+$$
 
-A classical Newton-Raphson step would use ${\Delta\mathbf q=\mathbf J^{-1}\mathbf e}$ when `J` is square and invertible. It can converge quickly near a solution, but ${\mathbf J^{-1}}$ does not exist at a singularity and can become numerically dangerous near one.
+If the Jacobian is square and safely invertible, the direct Newton correction is
 
-DLS uses the same Newton-like idea - linearize the nonlinear FK problem, correct the joints, and repeat - but replaces the direct inverse with a damped, regularized correction. This is why DLS is more appropriate for a beginner lab that will command a robot model.
+$$
+\Delta\mathbf q=\mathbf J^{-1}(\mathbf q_k)\mathbf e_k,\qquad \mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q.
+$$
 
-| Method | Basic idea | Main concern |
-|---|---|---|
-| Jacobian transpose | move generally in a direction that reduces error | simple, but may converge slowly |
-| Newton-Raphson / direct inverse | use `inv(J) @ e` | fast near a good solution, but fragile near singularities |
-| pseudoinverse | use `pinv(J) @ e` | handles more matrix shapes, but may still produce large changes |
-| damped least squares | balance pose accuracy against joint-step size | more stable, but requires choosing a damping value |
+The plus sign appears because the error was defined as desired pose minus current pose.
+
+A direct inverse is not reliable for general robot IK. Some robots have a non-square Jacobian, and even the UR5e's 6-by-6 task Jacobian becomes singular or poorly conditioned at certain configurations. Near those configurations, a small pose error can produce a very large joint correction.
+
+#### 7.3 Replace the inverse with a pseudoinverse
+
+The Moore-Penrose pseudoinverse generalizes the inverse. It is written as `J+` in plain text and with a superscript `+` on `J` in the equation below. The update becomes
+
+$$
+\Delta\mathbf q=\mathbf J^{+}(\mathbf q_k)\mathbf e_k,\qquad \mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q.
+$$
+
+When the task rows are independent, one useful form is
+
+$$
+\mathbf J^{+}=\mathbf J^T\left(\mathbf J\mathbf J^T\right)^{-1}.
+$$
+
+The pseudoinverse chooses a least-squares correction: if no joint change produces the requested tool change exactly, it chooses one whose predicted tool motion is as close as possible. For redundant robots, it also selects a minimum-norm solution.
+
+A basic pseudoinverse IK loop is:
+
+1. Choose an initial joint estimate `q0`, error tolerances, and a maximum iteration count.
+2. Calculate the current pose with FK.
+3. Calculate the six-component pose error.
+4. Stop successfully if both position and orientation errors pass their tolerances.
+5. Calculate the Jacobian.
+6. Calculate a joint correction using the pseudoinverse.
+7. Update the joint estimate.
+8. Repeat, or report failure if the iteration limit is reached.
+
+The pseudoinverse is more general than a direct inverse, but it can still request extremely large joint changes near a singularity.
+
+#### 7.4 Add damping for stability
+
+Damped least squares modifies the pseudoinverse so the solver does not react too aggressively near a singularity:
+
+$$
+\Delta\mathbf q_{DLS}=\mathbf J^T\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)^{-1}\mathbf e_k.
+$$
+
+It balances two goals:
+
+1. make the predicted tool motion match the requested pose correction; and
+2. keep the joint correction reasonably small.
+
+This balance can be written as
+
+$$
+\underset{\Delta\mathbf q}{\operatorname{minimize}}\quad \left\|\mathbf J\Delta\mathbf q-\mathbf e_k\right\|^2+\lambda^2\left\|\Delta\mathbf q\right\|^2.
+$$
+
+The first term penalizes remaining pose error. The second term penalizes a large joint correction. The damping value `lambda` controls how strongly large joint changes are discouraged.
+
+A useful analogy is steering a shopping cart through a narrow doorway. An undamped solver may react to a small alignment error with a large steering change. Damping prefers a smaller, steadier correction, even if several iterations are needed.
+
+This lab also applies only a fraction `alpha` of the DLS proposal:
+
+$$
+\mathbf q_{k+1}=\mathbf q_k+\alpha\Delta\mathbf q_{DLS}.
+$$
+
+The safeguards have different jobs:
+
+- `damping` reduces sensitivity to singular or poorly conditioned Jacobians;
+- `alpha` controls how cautiously the solver follows the proposed correction;
+- `max_joint_step` places a hard limit on each joint's change during one iteration; and
+- the joint limits prevent the estimate from leaving the permitted range.
+
+Too little damping can allow very large or unstable corrections. Too much damping makes the updates conservative and may slow convergence. A small `alpha` is cautious but slow, while a large `alpha` moves faster but can overshoot.
 
 Do not form the inverse in the displayed DLS equation explicitly. First solve
 
 $$
-\left( \mathbf J\mathbf J^T+\lambda^2\mathbf I \right)\mathbf y = \mathbf e,
+\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)\mathbf y=\mathbf e_k,
 $$
 
-then calculate ${\Delta\mathbf q_{DLS}=\mathbf J^T\mathbf y}$. Multiply by `alpha`, limit each joint's applied step to `max_joint_step`, enforce the joint limits, and update `q`.
+then calculate
+
+$$
+\Delta\mathbf q_{DLS}=\mathbf J^T\mathbf y.
+$$
+
+After that, multiply by `alpha`, limit the applied joint step, enforce the joint limits, and update `q`.
+
+#### 7.5 Another option: Jacobian transpose
+
+A simpler method replaces the inverse with the Jacobian transpose:
+
+$$
+\mathbf q_{k+1}=\mathbf q_k+\alpha\mathbf J^T(\mathbf q_k)\mathbf e_k.
+$$
+
+The transpose points generally in a direction that reduces the pose error. It is inexpensive because it does not solve a matrix equation. However, its convergence depends strongly on the step size `alpha` and is often slower than pseudoinverse or DLS IK.
+
+#### 7.6 Compare the four updates
+
+| Method | Joint correction | Main advantage | Main limitation |
+|---|---|---|---|
+| Newton / direct inverse | `inv(J) @ e` | fast near a well-behaved solution | requires a square, nonsingular Jacobian |
+| pseudoinverse | `pinv(J) @ e` | handles non-square systems and least-squares solutions | may produce very large changes near singularities |
+| damped least squares | damped pseudoinverse | stable near difficult configurations | requires choosing a damping value |
+| Jacobian transpose | `alpha * J.T @ e` | inexpensive and simple | often slower and sensitive to step size |
+
+All four methods follow the same overall idea: calculate FK, measure the pose error, use the Jacobian to choose a joint correction, and repeat. This lab uses **damped least squares** because it retains the Newton-style update while behaving more safely near singular or poorly conditioned configurations.
 
 ### 8. Put the numerical IK loop together
 

@@ -52,6 +52,10 @@ Complete [Lab 1 - UR5e Playground](../lab01_ur5e_playground/README.md) and confi
 
 The workflow supports Windows, macOS, and Ubuntu. Commands use `python`; use `python3` if required on macOS or Ubuntu.
 
+### Optional planar warm-up
+
+Before starting the UR5e calculation, use the [Planar Robot FK and IK Simulator Activities](../docs/PLANAR_3R_SIMULATOR_ACTIVITIES.md) to visualize cumulative joint angles, verify 3R planar FK, and connect the arm drawing to a DH transform. This external-browser activity is optional unless assigned by the instructor.
+
 ## Core Background
 
 ### What forward kinematics calculates

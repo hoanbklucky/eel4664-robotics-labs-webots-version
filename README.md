@@ -74,6 +74,10 @@ These simulator-enrichment tutorials are available but are **not prerequisites, 
 
 Lab 1 directly teaches the small set of UR5e and world-interaction skills required by the course.
 
+## Optional Planar FK and IK Activities
+
+The [Planar Robot FK and IK Simulator Activities](docs/PLANAR_3R_SIMULATOR_ACTIVITIES.md) use two external browser simulators for guided practice with 3R forward kinematics, DH transforms, elbow-up/elbow-down solutions, FK verification of IK, reachability, singularities, and iterative IK. They are optional lecture or pre-lab activities and are not required submissions unless assigned by the instructor.
+
 ## Required safe workflow
 
 Every required lab provides one tracked `*_starter.wbt`. Labs 2-7 also provide the `diagnostic_minimal` and `diagnostic_devices` controllers for technical experiments.
