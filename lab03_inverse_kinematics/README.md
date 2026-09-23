@@ -130,13 +130,33 @@ Because the process begins with a guess, different initial guesses can lead to d
 
 ### 4. Use the same tool frame everywhere
 
-Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool. Use the course-provided fixed transform from Lab 2 so that
+Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool frame. This lab follows Craig's frame notation:
 
 $$
-T_{tool}(\mathbf q)=T_6(\mathbf q)\,{}^6T_{tool}.
+{}^{A}_{B}T
 $$
 
-In the implementation steps below, `fk_tool(q)` is the short wrapper that evaluates this equation using the supplied `forward_kinematics` and `T_6_TOOL`. Use the same wrapper for the current and target poses so both refer to the Webots tool frame. Never recalculate `T_6_TOOL` for a new target.
+means "the pose of frame `{B}` expressed relative to frame `{A}`." The same matrix converts coordinates written in frame `{B}` into coordinates written in frame `{A}`.
+
+The robot base is placed at the Webots world origin, so DH frame `{0}` and the Webots world frame coincide in this course world. Therefore:
+
+- ${}^{0}_{6}T(\mathbf q)$ is the pose of DH frame `{6}` relative to frame `{0}`, calculated by Lab 2 FK;
+- ${}^{6}_{tool}T$ is the fixed pose of the tool frame relative to frame `{6}`; and
+- ${}^{0}_{tool}T(\mathbf q)$ is the resulting tool pose relative to frame `{0}`.
+
+Chain the two transforms in this order:
+
+$$
+{}^{0}_{tool}T(\mathbf q)
+=
+{}^{0}_{6}T(\mathbf q)
+\cdot
+{}^{6}_{tool}T.
+$$
+
+Read the chain from right to left when transforming a point: first go from the tool frame to frame `{6}`, and then from frame `{6}` to frame `{0}`. Transformation order matters; reversing the two matrices describes a different frame relationship.
+
+In the code, `forward_kinematics(q)` returns ${}^{0}_{6}T(\mathbf q)$, the supplied `T_6_TOOL` stores ${}^{6}_{tool}T$, and `fk_tool(q)` returns ${}^{0}_{tool}T(\mathbf q)$. Use this same wrapper for the current and target poses. Never recalculate `T_6_TOOL` for a new target.
 
 The tool-frame origin is at the stylus mount. In tool coordinates, the visible orange tip is the fixed point
 
@@ -144,7 +164,7 @@ $$
 {}^{tool}\mathbf p_{tip}=\begin{bmatrix}0 & 0.13 & 0\end{bmatrix}^{T}\ \text{m}.
 $$
 
-Its world position is found by transforming this point with $T_{tool}(\mathbf q)$.
+Its frame-`{0}` position is found by transforming this point with ${}^{0}_{tool}T(\mathbf q)$.
 
 The stylus has no mass or collision geometry. It makes pose changes visible without changing the robot dynamics.
 
@@ -219,7 +239,7 @@ $$
 be the resulting small tool-pose change. The task Jacobian gives the local linear approximation
 
 $$
-\boxed{\Delta \mathbf x \approx \mathbf J(\mathbf q)\,\Delta \mathbf q}.
+\boxed{\Delta \mathbf x \approx \mathbf J(\mathbf q)\Delta \mathbf q}.
 $$
 
 `J` is 6-by-6. Column `j` answers: "If only joint `j` changes by one small radian, how does the tool position and orientation change?"
@@ -234,12 +254,17 @@ $$
 
 $$
 \mathbf J[:,j] \approx
-\frac{\mathbf e_{\mathrm{pose}}(T^-,T^+)}{2h},
+\frac{
+\mathbf e_{\mathrm{pose}}
+\left({}^{0}_{tool}T^{-},{}^{0}_{tool}T^{+}\right)
+}{2h},
 \qquad
-T^\pm = T_{\mathrm{tool}}(\mathbf q^\pm).
+{}^{0}_{tool}T^{\pm}
+=
+{}^{0}_{tool}T(\mathbf q^{\pm}).
 $$
 
-Here, $\mathbf e_{\mathrm{pose}}$ is the pose difference calculated by `pose_error`, and $T_{\mathrm{tool}}(\mathbf q)$ is the transform returned by `fk_tool(q)`. The symbol `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the positive and negative evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
+Here, $\mathbf e_{\mathrm{pose}}$ is the pose difference calculated by `pose_error`, and ${}^{0}_{tool}T(\mathbf q)$ is the frame-`{0}` tool transform returned by `fk_tool(q)`. The symbol `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the positive and negative evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
 
 ```text
 0.0008 / (2 * 0.001) = 0.4 m/rad
@@ -249,42 +274,100 @@ Repeat for all six joints. Large `h` gives a crude approximation; extremely smal
 
 ### 7. Convert pose error into a joint correction
 
-If the linear model were exact, we would solve
+At this point the solver knows two things:
+
+- the six-component pose error `e`, which says how the tool still needs to move; and
+- the Jacobian `J`, which predicts how a small movement of each joint will move the tool.
+
+For example, if the position part of `e` begins with `0.02`, the tool still needs to move approximately 2 cm in the frame-`{0}` +x direction. Each column of `J` predicts how one joint can help produce that motion. The solver must combine all six columns to choose six joint corrections.
+
+For sufficiently small changes, the desired correction is approximately
 
 $$
-\mathbf J\,\Delta\mathbf q = \mathbf e.
+\mathbf J\Delta\mathbf q = \mathbf e.
 $$
 
-Three common numerical choices are:
+This equation asks: "Which small joint change ${\Delta\mathbf q}$ will produce the required small tool change ${\mathbf e}$?"
 
-| Method | Basic idea | Limitation |
+#### Why "least squares"?
+
+The local Jacobian model is only an approximation, and an exact solution may not exist. Least squares chooses the joint correction whose predicted tool motion, ${\mathbf J\Delta\mathbf q}$, comes as close as possible to the requested error ${\mathbf e}$.
+
+A pseudoinverse can calculate that correction, but it can become unreliable near a singular configuration. Near a singularity, some joints have almost the same effect on the tool, or the robot temporarily cannot move the tool effectively in one direction. A direct inverse may then request very large joint changes for a small tool correction.
+
+#### What damping adds
+
+Damped least squares asks for two things at the same time:
+
+1. reduce the remaining tool-pose error; and
+2. avoid an unnecessarily large joint correction.
+
+In optimization form, it selects the correction that approximately minimizes
+
+$$
+\left\|\mathbf J\Delta\mathbf q-\mathbf e\right\|^2
++
+\lambda^2\left\|\Delta\mathbf q\right\|^2.
+$$
+
+The first term rewards matching the requested tool motion. The second term places a penalty on large joint changes. The damping value ${\lambda}$ controls the strength of that penalty.
+
+A useful analogy is steering a shopping cart through a narrow doorway. Without damping, the solver may react to a small alignment error with a large steering change. Damping makes it prefer a smaller, steadier correction, even if several corrections are needed.
+
+The DLS correction is
+
+$$
+\Delta\mathbf q_{DLS}
+=
+\mathbf J^T
+\left(
+\mathbf J\mathbf J^T + \lambda^2\mathbf I
+\right)^{-1}
+\mathbf e.
+$$
+
+The next estimate uses only a fraction ${\alpha}$ of that proposal:
+
+$$
+\mathbf q_{next}
+=
+\mathbf q
++
+\alpha\Delta\mathbf q_{DLS}.
+$$
+
+The three safeguards have different jobs:
+
+- `damping` (${\lambda}$) reduces sensitivity to singular or poorly conditioned Jacobians;
+- `alpha` controls how cautiously the solver follows the proposed correction; and
+- `max_joint_step` is a hard limit that prevents any joint from jumping too far in one iteration.
+
+Too little damping can allow unstable, very large corrections. Too much damping makes each correction conservative and may slow convergence. Likewise, a small `alpha` is cautious but slow, while a large `alpha` moves faster but can overshoot.
+
+#### How this relates to Newton-Raphson
+
+A classical Newton-Raphson step would use ${\Delta\mathbf q=\mathbf J^{-1}\mathbf e}$ when `J` is square and invertible. It can converge quickly near a solution, but ${\mathbf J^{-1}}$ does not exist at a singularity and can become numerically dangerous near one.
+
+DLS uses the same Newton-like idea - linearize the nonlinear FK problem, correct the joints, and repeat - but replaces the direct inverse with a damped, regularized correction. This is why DLS is more appropriate for a beginner lab that will command a robot model.
+
+| Method | Basic idea | Main concern |
 |---|---|---|
-| Jacobian transpose | move along `J.T @ e` | simple but may converge slowly |
-| pseudoinverse | use `pinv(J) @ e` | can create large changes near singularities |
-| damped least squares | regularize the pseudoinverse | more stable; requires a damping value |
+| Jacobian transpose | move generally in a direction that reduces error | simple, but may converge slowly |
+| Newton-Raphson / direct inverse | use `inv(J) @ e` | fast near a good solution, but fragile near singularities |
+| pseudoinverse | use `pinv(J) @ e` | handles more matrix shapes, but may still produce large changes |
+| damped least squares | balance pose accuracy against joint-step size | more stable, but requires choosing a damping value |
 
-This lab uses damped least squares:
-
-$$
-\Delta\mathbf q =
-\mathbf J^T\left(\mathbf J\mathbf J^T + \lambda^2\mathbf I\right)^{-1}\mathbf e,
-$$
+Do not form the inverse in the displayed DLS equation explicitly. First solve
 
 $$
-\mathbf q_{next}=\mathbf q+\alpha\,\Delta\mathbf q.
+\left(
+\mathbf J\mathbf J^T+\lambda^2\mathbf I
+\right)\mathbf y
+=
+\mathbf e,
 $$
 
-- `lambda` (`damping`) stabilizes difficult configurations.
-- `alpha` controls how much of the proposed correction is applied.
-- `max_joint_step` prevents any joint from changing too much in one iteration.
-
-Do not form the inverse explicitly. First solve the linear system
-
-$$
-(\mathbf J\mathbf J^T+\lambda^2\mathbf I)\mathbf y=\mathbf e,
-$$
-
-then calculate $\Delta\mathbf q=\alpha\mathbf J^T\mathbf y$. Limit each component of $\Delta\mathbf q$ to the allowed maximum joint step before updating $\mathbf q$. Too little damping may produce large updates; too much damping may make convergence slow.
+then calculate ${\Delta\mathbf q_{DLS}=\mathbf J^T\mathbf y}$. Multiply by `alpha`, limit each joint's applied step to `max_joint_step`, enforce the joint limits, and update `q`.
 
 ### 8. Put the numerical IK loop together
 
