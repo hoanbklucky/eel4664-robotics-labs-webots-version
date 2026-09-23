@@ -268,7 +268,7 @@ This equation asks: "Which small joint change ${\Delta\mathbf q}$ will produce t
 
 #### Why "least squares"?
 
-The local Jacobian model is only an approximation, and an exact solution may not exist. Least squares chooses the joint correction whose predicted tool motion, ${\mathbf J\Delta\mathbf q}$, comes as close as possible to the requested error ${\mathbf e}$.
+The local Jacobian model is only an approximation, and an exact solution may not exist. Least squares chooses the joint correction whose predicted tool motion comes as close as possible to the requested pose correction.
 
 A pseudoinverse can calculate that correction, but it can become unreliable near a singular configuration. Near a singularity, some joints have almost the same effect on the tool, or the robot temporarily cannot move the tool effectively in one direction. A direct inverse may then request very large joint changes for a small tool correction.
 
