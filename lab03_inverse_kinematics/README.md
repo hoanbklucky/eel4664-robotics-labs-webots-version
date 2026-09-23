@@ -147,11 +147,7 @@ The robot base is placed at the Webots world origin, so DH frame `{0}` and the W
 Chain the two transforms in this order:
 
 $$
-{}^{0}_{tool}T(\mathbf q)
-=
-{}^{0}_{6}T(\mathbf q)
-\cdot
-{}^{6}_{tool}T.
+{}^{0}_{tool}T(\mathbf q) = {}^{0}_{6}T(\mathbf q) \cdot {}^{6}_{tool}T.
 $$
 
 Read the chain from right to left when transforming a point: first go from the tool frame to frame `{6}`, and then from frame `{6}` to frame `{0}`. Transformation order matters; reversing the two matrices describes a different frame relationship.
@@ -196,8 +192,7 @@ The tool must move 2 cm in world +x, 2 cm in world -y, and 1 cm in world +z.
 Position alone is insufficient: the stylus may reach the correct point while pointing the wrong way. Use the small base-frame orientation error
 
 $$
-\mathbf e_R = \frac{1}{2}\sum_{i=1}^{3}
-\left(\mathbf R_{current}[:,i] \times \mathbf R_{target}[:,i]\right).
+\mathbf e_R = \frac{1}{2}\sum_{i=1}^{3} \left(\mathbf R_{current}[:,i] \times \mathbf R_{target}[:,i]\right).
 $$
 
 Each rotation-matrix column is one tool axis expressed in the base frame. If the target is rotated approximately 2 degrees about world +z from the current orientation, then
@@ -209,12 +204,7 @@ e_R approximately equals [0, 0, 0.0349] rad
 because 2 degrees is 0.0349 rad. Stack position and orientation vertically:
 
 $$
-\mathbf e =
-\begin{bmatrix}
-\mathbf e_p \\
-\mathbf e_R
-\end{bmatrix}
-\in \mathbb R^6.
+\mathbf e = \begin{bmatrix} \mathbf e_p \\ \mathbf e_R \end{bmatrix} \in \mathbb R^6.
 $$
 
 Thus, `e[0:3]` describes translation and `e[3:6]` describes rotation. `pose_error` and the Jacobian must use the same frame and sign convention.
@@ -224,16 +214,13 @@ Thus, `e[0:3]` describes translation and `e[3:6]` describes rotation. `pose_erro
 Let
 
 $$
-\Delta \mathbf q =
-[\Delta q_1,\ldots,\Delta q_6]^T
+\Delta \mathbf q = [\Delta q_1,\ldots,\Delta q_6]^T
 $$
 
 be a small change in the six joints. Let
 
 $$
-\Delta \mathbf x =
-[\Delta p_x,\Delta p_y,\Delta p_z,
- \Delta \theta_x,\Delta \theta_y,\Delta \theta_z]^T
+\Delta \mathbf x = [\Delta p_x,\Delta p_y,\Delta p_z, \Delta \theta_x,\Delta \theta_y,\Delta \theta_z]^T
 $$
 
 be the resulting small tool-pose change. The task Jacobian gives the local linear approximation
@@ -247,21 +234,11 @@ $$
 Estimate that column by nudging joint `j` in both directions:
 
 $$
-\mathbf q^+ = \mathbf q + h\mathbf u_j,
-\qquad
-\mathbf q^- = \mathbf q - h\mathbf u_j,
+\mathbf q^+ = \mathbf q + h\mathbf u_j, \qquad \mathbf q^- = \mathbf q - h\mathbf u_j,
 $$
 
 $$
-\mathbf J[:,j] \approx
-\frac{
-\mathbf e_{\mathrm{pose}}
-\left({}^{0}_{tool}T^{-},{}^{0}_{tool}T^{+}\right)
-}{2h},
-\qquad
-{}^{0}_{tool}T^{\pm}
-=
-{}^{0}_{tool}T(\mathbf q^{\pm}).
+\mathbf J[:,j] \approx \frac{ \mathbf e_{\mathrm{pose}} \left({}^{0}_{tool}T^{-},{}^{0}_{tool}T^{+}\right) }{2h}, \qquad {}^{0}_{tool}T^{\pm} = {}^{0}_{tool}T(\mathbf q^{\pm}).
 $$
 
 Here, $\mathbf e_{\mathrm{pose}}$ is the pose difference calculated by `pose_error`, and ${}^{0}_{tool}T(\mathbf q)$ is the frame-`{0}` tool transform returned by `fk_tool(q)`. The symbol `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the positive and negative evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
@@ -305,9 +282,7 @@ Damped least squares asks for two things at the same time:
 In optimization form, it selects the correction that approximately minimizes
 
 $$
-\left\|\mathbf J\Delta\mathbf q-\mathbf e\right\|^2
-+
-\lambda^2\left\|\Delta\mathbf q\right\|^2.
+\left\|\mathbf J\Delta\mathbf q-\mathbf e\right\|^2 + \lambda^2\left\|\Delta\mathbf q\right\|^2.
 $$
 
 The first term rewards matching the requested tool motion. The second term places a penalty on large joint changes. The damping value ${\lambda}$ controls the strength of that penalty.
@@ -317,23 +292,13 @@ A useful analogy is steering a shopping cart through a narrow doorway. Without d
 The DLS correction is
 
 $$
-\Delta\mathbf q_{DLS}
-=
-\mathbf J^T
-\left(
-\mathbf J\mathbf J^T + \lambda^2\mathbf I
-\right)^{-1}
-\mathbf e.
+\Delta\mathbf q_{DLS} = \mathbf J^T \left( \mathbf J\mathbf J^T + \lambda^2\mathbf I \right)^{-1} \mathbf e.
 $$
 
 The next estimate uses only a fraction ${\alpha}$ of that proposal:
 
 $$
-\mathbf q_{next}
-=
-\mathbf q
-+
-\alpha\Delta\mathbf q_{DLS}.
+\mathbf q_{next} = \mathbf q + \alpha\Delta\mathbf q_{DLS}.
 $$
 
 The three safeguards have different jobs:
@@ -360,11 +325,7 @@ DLS uses the same Newton-like idea - linearize the nonlinear FK problem, correct
 Do not form the inverse in the displayed DLS equation explicitly. First solve
 
 $$
-\left(
-\mathbf J\mathbf J^T+\lambda^2\mathbf I
-\right)\mathbf y
-=
-\mathbf e,
+\left( \mathbf J\mathbf J^T+\lambda^2\mathbf I \right)\mathbf y = \mathbf e,
 $$
 
 then calculate ${\Delta\mathbf q_{DLS}=\mathbf J^T\mathbf y}$. Multiply by `alpha`, limit each joint's applied step to `max_joint_step`, enforce the joint limits, and update `q`.
