@@ -152,7 +152,7 @@ $$
 
 Read the chain from right to left when transforming a point: first go from the tool frame to frame `{6}`, and then from frame `{6}` to frame `{0}`. Transformation order matters; reversing the two matrices describes a different frame relationship.
 
-In the code, `forward_kinematics(q)` returns ${}^{0}_{6}T(\mathbf q)$, the supplied `T_6_TOOL` stores ${}^{6}_{tool}T$, and `fk_tool(q)` returns ${}^{0}_{tool}T(\mathbf q)$. Use this same wrapper for the current and target poses. Never recalculate `T_6_TOOL` for a new target.
+In the code, `forward_kinematics(q)` returns the first transform on the right side of the equation above. The supplied `T_6_TOOL` stores the second, fixed transform. The wrapper `fk_tool(q)` multiplies them and returns the tool pose on the left side. Use this same wrapper for the current and target poses. Never recalculate `T_6_TOOL` for a new target.
 
 The tool-frame origin is at the stylus mount. In tool coordinates, the visible orange tip is the fixed point
 
