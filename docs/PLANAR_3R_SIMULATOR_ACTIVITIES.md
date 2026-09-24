@@ -5,24 +5,26 @@ These browser activities build intuition before the UR5e forward- and inverse-ki
 Use:
 
 - [SiliconWit Inverse Kinematics Simulator](https://siliconwit.com/product-development/inverse-kinematics-simulator/) as the primary IK simulator. It accepts a target position and lets you compare geometric IK, the Jacobian pseudoinverse, damped least squares (DLS), cyclic coordinate descent (CCD), and FABRIK.
-- [Robot Arm Kinematics Web Simulator](https://zawhlainghtet.github.io/RobotKinematics/) for entering joint angles, checking 2-D FK, viewing DH transforms, and independently verifying an IK result.
+- [Robot Arm Kinematics Web Simulator](https://zawhlainghtet.github.io/RobotKinematics/) for entering joint angles, checking 2-D FK, and independently verifying an IK result.
 
 These are external teaching tools and may change independently of this course. Do not purchase downloads or enter personal information for these activities. If a site is unavailable, the instructor may demonstrate the same observations using screenshots or another simulator.
 
 > **RobotKinematics link-length limit:** every link is forced into the range
 >
-> $
+> $$
 > 10 \le L_i \le 240.
-> $
+> $$
 >
 > This site displays link lengths in pixels. Enter values within this range; the simulator clamps values outside it.
+
+> **Convention warning:** Do not use RobotKinematics' **DH mode** for course calculations. It uses standard DH, while Lab 2 uses Craig's modified DH. The frame assignment, parameter indexing, and transform order differ, so its standard-DH table cannot be copied into the Lab 2 implementation.
+
 ## Learning goals
 
 After completing the activities, you should be able to:
 
 - calculate a planar end-effector pose from link lengths and joint angles;
 - explain why link orientations use cumulative joint angles;
-- verify a DH transform using a graphical arm;
 - distinguish FK inputs from IK inputs;
 - identify elbow-up and elbow-down IK branches;
 - verify an IK solution by substituting its joint angles into FK;
@@ -81,29 +83,7 @@ $$
 2. Which change has the larger positional effect: changing `q1` or changing `q3`? Why?
 3. Does the simulator use degrees or radians at the interface? Which unit must your Python trigonometric functions use?
 
-## Activity 2 - Connect the picture to DH transformations
-
-Continue in the first simulator.
-
-1. Open **DH** mode.
-2. Choose three revolute joints.
-3. Use the planar standard-DH parameters:
-   - `d_i = 0`
-   - `alpha_i = 0`
-   - `a_i = L_i`
-   - `theta_i = q_i`
-4. Enter the link lengths and configuration B from Activity 1.
-5. Inspect the displayed end-effector transform.
-6. Compare its translation entries with the FK position from Activity 1.
-7. Compare its rotation with the predicted orientation `phi`.
-
-### Questions
-
-1. Which two entries of the homogeneous transform contain the end-effector position?
-2. Why do all three planar links use `d_i = 0` and `alpha_i = 0`?
-3. What information does the transform contain that an `(x, y)` coordinate alone does not?
-
-## Activity 3 - See multiple IK solutions
+## Activity 2 - See multiple IK solutions
 
 Open the [SiliconWit Inverse Kinematics Simulator](https://siliconwit.com/product-development/inverse-kinematics-simulator/).
 
@@ -136,9 +116,9 @@ Open the [SiliconWit Inverse Kinematics Simulator](https://siliconwit.com/produc
 2. Why can a 3R position-only problem have more solutions than a 2R problem?
 3. Did the two 3R runs reach nearly the same position with different joint angles?
 
-## Activity 4 - Verify an IK result with FK
+## Activity 3 - Verify an IK result with FK
 
-Use one 3R result from Activity 3 Part B.
+Use one 3R result from Activity 2 Part B.
 
 1. Return to RobotKinematics and select **FK 2D** with **3 Links**.
 2. Enter L1 = 120, L2 = 100, and L3 = 80.
@@ -155,7 +135,7 @@ Report whether the IK result is verified. Small differences caused by displayed-
 2. Did SiliconWit prescribe phi, or did the numerical solver choose it indirectly?
 3. Why might another valid 3R result reach the same point with a different phi?
 
-## Activity 5 - Compare numerical IK methods
+## Activity 4 - Compare numerical IK methods
 
 Continue in SiliconWit with the 3R arm.
 
@@ -199,8 +179,7 @@ Answer in a few sentences each:
 A concise lecture sequence is:
 
 1. Activity 1 configuration B to introduce cumulative angles.
-2. Activity 2 to connect the picture to a homogeneous transform.
-3. Activity 3 Part A to show two analytical IK branches.
-4. Activity 3 Part B to introduce redundant position-only IK.
-5. Activity 4 to demonstrate the FK-after-IK verification loop.
-6. Activity 5 to compare numerical methods and motivate damping near singularities.
+2. Activity 2 Part A to show two analytical IK branches.
+3. Activity 2 Part B to introduce redundant position-only IK.
+4. Activity 3 to demonstrate the FK-after-IK verification loop.
+5. Activity 4 to compare numerical methods and motivate damping near singularities.
