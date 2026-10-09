@@ -42,7 +42,7 @@ A small target-to-measurement error supports the conclusion that the complete IK
 
 You are finished when:
 
-- the two marked IK equations are complete;
+- the three marked IK equations are complete;
 - the provided offline program converges for Targets A and B and rejects an unreachable target;
 - the provided controller executes both accepted solutions in Webots; and
 - the report compares the predicted and measured tool poses.
@@ -436,7 +436,7 @@ For example, a tiny solver error but a large Webots error suggests that the nume
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
 - `controllers/lab03_controller/` - complete controller for Targets A and B
 - `src/planar_fk.py` and `src/planar_ik.py` - complete analytical examples for reading
-- `src/numerical_ik.py` - complete solver framework with exactly two student lines
+- `src/numerical_ik.py` - complete solver framework with exactly three student lines
 - `src/run_ik_experiments.py` - complete offline test program
 - `src/execute_pose_target.py` - complete validation and execution helpers
 - `Lab03_Report_Template.docx` - results template
@@ -492,13 +492,13 @@ No report entry is required for these prerequisite checks. Stop at the first fai
 </details>
 ## Part 2 - Core IK Activity
 
-> **Why this part matters:** You will enter the two equations that make numerical IK move from a pose error to a new joint estimate. The supporting programming is provided so you can focus on the robotics idea.
+> **Why this part matters:** You will enter the three equations that carry numerical IK from the current pose to a new joint estimate: calculate the position error, calculate a damped joint correction, and update the joints. The supporting programming is provided so you can focus on this robotics sequence.
 
 ### Step 2 - Read the provided loop
 
 Open `src/numerical_ik.py`. Do not rewrite the file. The following pieces are already complete:
 
-- position and orientation pose error;
+- the orientation-error calculation and assembly of the six-component pose error;
 - the finite-difference Jacobian;
 - input checks, joint limits, and maximum joint-step limits;
 - the iteration loop and convergence test; and
@@ -506,11 +506,25 @@ Open `src/numerical_ik.py`. Do not rewrite the file. The following pieces are al
 
 Follow one pass through the loop: FK calculates the current tool pose, `pose_error` calculates the remaining correction, the Jacobian relates small joint changes to small tool motion, and the solver updates the joint estimate.
 
-### Step 3 - Complete only the two marked lines
+### Step 3 - Complete only the three marked lines
 
-Search for `TODO 1` and `TODO 2` in `src/numerical_ik.py`. These are the only lines you edit in this lab.
+Search for `TODO 1`, `TODO 2`, and `TODO 3` in `src/numerical_ik.py`. These are the only lines you edit in this lab.
 
-For `TODO 1`, enter the damped-least-squares correction:
+For `TODO 1`, enter the position-error equation:
+
+```python
+position = target[:3, 3] - current[:3, 3]
+```
+
+This implements desired position minus current position:
+
+```math
+\mathbf e_p=\mathbf p_{target}-\mathbf p_{current}.
+```
+
+The sign matters: the error vector points from the current tool position toward the desired tool position. The provided code calculates the orientation part and joins it with this position error.
+
+For `TODO 2`, enter the damped-least-squares correction:
 
 ```python
 step = jacobian.T @ np.linalg.solve(system, error)
@@ -530,7 +544,7 @@ Therefore your line calculates
 
 `np.linalg.solve` solves the matrix equation without explicitly calculating an inverse.
 
-For `TODO 2`, enter the joint update:
+For `TODO 3`, enter the joint update:
 
 ```python
 q_proposed = q + alpha * delta_q
@@ -543,7 +557,6 @@ This implements
 ```
 
 The provided code then limits the size of the change and enforces the joint limits.
-
 ### Step 4 - Run the provided offline experiment
 
 Open the VS Code Terminal with **Terminal -> New Terminal**. Make sure the prompt is at the repository root, the folder containing `lab03_inverse_kinematics`. Then run:
@@ -556,7 +569,7 @@ On macOS or Ubuntu, use `python3` if `python` is not recognized.
 
 The program runs Target A, Target B, and one unreachable target. Copy the full output into the Word report. Targets A and B should report `converged: True`. The unreachable target should report `converged: False`; failure is the correct and safe result for that case.
 
-If the program stops at `TODO 1` or `TODO 2`, return to the corresponding marked line. Do not change the supplied Jacobian, loop, limits, or tolerances.
+If the program stops at `TODO 1`, `TODO 2`, or `TODO 3`, return to the corresponding marked line. Do not change the supplied Jacobian, loop, limits, or tolerances.
 
 ## Part 3 - Webots Experiment
 
@@ -570,7 +583,7 @@ If the program stops at `TODO 1` or `TODO 2`, return to the corresponding marked
 4. Reset the world, run the simulation, and wait for the motion to finish.
 5. Copy the controller output into the report and take one screenshot showing the final robot pose and Target A.
 
-The controller uses your two completed equations, but all device access, validation, interpolation, and safety checks are provided. It prints:
+The controller uses your three completed equations, but all device access, validation, interpolation, and safety checks are provided. It prints:
 
 - the IK convergence result and final joint vector;
 - the **predicted tool position and predicted tool roll-pitch-yaw (RPY)** calculated with FK; and
@@ -608,7 +621,7 @@ Answer each in 1-2 sentences.
 
 ## What to Submit
 
-1. Completed `src/numerical_ik.py` containing your two equation lines.
+1. Completed `src/numerical_ik.py` containing your three equation lines.
 2. Completed `Lab03_Report_Template.docx` containing:
    - the complete offline output for Targets A, B, and the unreachable target;
    - the Target A and Target B Webots outputs and screenshots;
@@ -621,8 +634,9 @@ Do not submit `lab03_work.wbt`, provided helper code, vendor assets, or caches u
 
 | Problem | Check |
 |---|---|
-| Program stops at `TODO 1` | Enter the DLS equation exactly on the marked line. |
-| Program stops at `TODO 2` | Enter the joint-update equation exactly on the marked line. |
+| Program stops at `TODO 1` | Enter desired position minus current position on the marked line. |
+| Program stops at `TODO 2` | Enter the DLS equation exactly on the marked line. |
+| Program stops at `TODO 3` | Enter the joint-update equation exactly on the marked line. |
 | Lab 2 import or FK fails | Complete and test Lab 2 before continuing. |
 | Reachable target does not converge | Check that matrix multiplication uses `@` and that both signs are `+`. |
 | Controller does not appear in Webots | Close and reopen the world after updating the repository. |

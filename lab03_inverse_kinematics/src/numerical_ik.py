@@ -59,7 +59,10 @@ def _transform(value, name):
 
 def pose_error(current, target):
     current, target = _transform(current, "current"), _transform(target, "target")
-    position = target[:3, 3] - current[:3, 3]
+    # TODO 1: Replace None with desired position minus current position.
+    position = None
+    if position is None:
+        raise NotImplementedError("Complete TODO 1: the position-error equation")
     rotation = 0.5 * sum(np.cross(current[:3, i], target[:3, i]) for i in range(3))
     return np.r_[position, rotation]
 
@@ -81,10 +84,10 @@ def damped_least_squares_step(jacobian, error, damping):
     if jacobian.ndim != 2 or error.shape != (jacobian.shape[0],) or damping < 0:
         raise ValueError("incompatible Jacobian/error or negative damping")
     system = jacobian @ jacobian.T + damping**2*np.eye(jacobian.shape[0])
-    # TODO 1: Replace None with the DLS equation shown in the README.
+    # TODO 2: Replace None with the DLS equation shown in the README.
     step = None
     if step is None:
-        raise NotImplementedError("Complete TODO 1: the damped-least-squares step")
+        raise NotImplementedError("Complete TODO 2: the damped-least-squares step")
     return step
 
 
@@ -115,10 +118,10 @@ def numerical_ik(fk_fn, q0, target, *, alpha=0.3, damping=0.02,
             break
         jacobian = finite_difference_jacobian(fk_fn, q, finite_difference_step)
         delta_q = damped_least_squares_step(jacobian, error, damping)
-        # TODO 2: Replace None with q + alpha times the DLS correction.
+        # TODO 3: Replace None with q + alpha times the DLS correction.
         q_proposed = None
         if q_proposed is None:
-            raise NotImplementedError("Complete TODO 2: the joint update")
+            raise NotImplementedError("Complete TODO 3: the joint update")
         q_next = np.clip(q + np.clip(q_proposed-q, -max_joint_step, max_joint_step), lower, upper)
         if np.allclose(q_next, q, atol=1e-14, rtol=0):
             return IKResult(q, False, iteration, p_error, r_error, history, "blocked by joint limits")
