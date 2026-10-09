@@ -275,103 +275,125 @@ This process repeats until the function value is sufficiently close to zero. New
 
 #### 7.2 Turn IK into a root-finding problem
 
-For IK, `f(q_k)` is the tool pose predicted by FK at the current joint estimate. The desired pose is `x_d`. The pose error is
+Start with Newton's method for one variable. To find a value $x$ satisfying
 
 $$
-\mathbf e_k=\mathbf x_d-\mathbf f(\mathbf q_k).
+g(x)=0,
 $$
 
-Here, the code does not subtract two homogeneous matrices directly. The function `pose_error` converts their difference into the six-component error already introduced: three position components and three orientation components.
-
-IK succeeds when this error is approximately zero. Therefore, numerical IK is a multivariable version of the same root-finding problem used by Newton's method.
-
-The statement that the Jacobian "plays the role of the derivative" comes from a first-order approximation. Begin with a scalar function of one variable. Near the current estimate \(q_k\),
+Newton's method calculates the correction
 
 $$
-f(q_k+\Delta q)\approx f(q_k)+f'(q_k)\Delta q.
+\Delta x=-\frac{g(x_k)}{g'(x_k)}
 $$
 
-The derivative \(f'(q_k)\) converts a small input change \(\Delta q\) into the corresponding approximate output change.
-
-For a robot, both the input and output have several components. The joint vector \(\mathbf q\) contains the joint angles, and the forward-kinematics function \(\mathbf f(\mathbf q)\) returns the tool pose. The single derivative is therefore replaced by the Jacobian matrix,
+and updates the estimate:
 
 $$
-J_{ij}(\mathbf q)=\frac{\partial f_i}{\partial q_j}.
+x_{k+1}=x_k+\Delta x.
 $$
 
-Column \(j\) describes how a small change in joint \(j\) changes the tool motion. For the UR5e task in this lab, \(\Delta\mathbf q\) has six joint components, \(\Delta\mathbf x\) has three position and three orientation components, and \(\mathbf J\) is 6-by-6.
+The numerator tells us how far the function is from zero. The derivative predicts how strongly the function changes when $x$ changes.
 
-The multivariable first-order approximation is
-
-$$
-\mathbf f(\mathbf q_k+\Delta\mathbf q)\approx\mathbf f(\mathbf q_k)+\mathbf J(\mathbf q_k)\Delta\mathbf q.
-$$
-
-Define the small change in tool pose caused by \(\Delta\mathbf q\) as
+Inverse kinematics can be written in the same form. Let $\mathbf f(\mathbf q)$ be the tool pose calculated by forward kinematics, and let $\mathbf x_d$ be the desired tool pose. Define the IK root function as the pose error:
 
 $$
-\Delta\mathbf x=\mathbf f(\mathbf q_k+\Delta\mathbf q)-\mathbf f(\mathbf q_k).
+\mathbf g(\mathbf q)=\mathbf e(\mathbf q)=\mathbf x_d-\mathbf f(\mathbf q).
 $$
 
-Subtracting \(\mathbf f(\mathbf q_k)\) from the first-order approximation gives
+The code does not subtract two homogeneous matrices directly. The **pose_error** function constructs a six-component local error:
 
 $$
-\Delta\mathbf x\approx\mathbf J(\mathbf q_k)\Delta\mathbf q.
+\mathbf e(\mathbf q)=\begin{bmatrix}\mathbf p_d-\mathbf p(\mathbf q)\\\mathbf e_R(\mathbf q)\end{bmatrix},
 $$
 
-This relationship is approximate because the Jacobian describes the robot only locally, near \(\mathbf q_k\). It becomes less accurate when the joint change is large.
+with three position-error components and three orientation-error components.
 
-Now connect \(\Delta\mathbf x\) to the IK error. At iteration \(k\), the current pose is
-
-$$
-\mathbf x_k=\mathbf f(\mathbf q_k).
-$$
-
-The change we want the tool to make is "desired pose minus current pose":
+An IK solution $\mathbf q^*$ places the tool at the desired pose, which means
 
 $$
-\Delta\mathbf x_{\mathrm{desired}}=\mathbf x_d-\mathbf x_k.
+\mathbf e(\mathbf q^*)=\mathbf 0.
 $$
 
-For orientation, the code does not literally subtract rotation matrices. As explained above, the **pose_error** function builds the six-component local pose error
+Therefore, IK is a root-finding problem: find the joint vector that makes the pose-error function zero.
+
+Now identify the derivative required by Newton's method. The forward-kinematics Jacobian is
 
 $$
-\mathbf e_k=\begin{bmatrix}\mathbf p_d-\mathbf p_k\\\mathbf e_R\end{bmatrix}.
+\mathbf J(\mathbf q)=\frac{\partial\mathbf f}{\partial\mathbf q}.
 $$
 
-Thus, in the local pose-vector description used by the solver,
+It plays the role of the derivative of forward kinematics. Each entry describes how one tool-motion component changes with one joint angle, and column $j$ describes the tool motion caused by a small change in joint $j$.
+
+However, Newton's method needs the derivative of the error function, not the derivative of forward kinematics. The position part follows exactly from differentiating desired position minus current position. The orientation error uses a local small-angle description, so near the current estimate the error derivative is approximated by
 
 $$
-\Delta\mathbf x_{\mathrm{desired}}=\mathbf e_k.
+\frac{\partial\mathbf e}{\partial\mathbf q}\approx-\mathbf J(\mathbf q).
 $$
 
-We want the joint correction \(\Delta\mathbf q\) to produce this desired tool correction. Substitute \(\mathbf e_k\) for the desired \(\Delta\mathbf x\) in the Jacobian relationship:
+The vector version of Newton's correction is
 
 $$
-\mathbf e_k\approx\mathbf J(\mathbf q_k)\Delta\mathbf q.
+\Delta\mathbf q=-\left[\frac{\partial\mathbf e}{\partial\mathbf q}\right]^{-1}\mathbf e_k,
 $$
 
-If the Jacobian is square and safely invertible, multiply both sides by \(\mathbf J^{-1}(\mathbf q_k)\):
+where $\mathbf e_k=\mathbf e(\mathbf q_k)$. Substitute the error derivative $-\mathbf J(\mathbf q_k)$:
 
 $$
-\mathbf J^{-1}(\mathbf q_k)\mathbf e_k\approx\mathbf J^{-1}(\mathbf q_k)\mathbf J(\mathbf q_k)\Delta\mathbf q=\Delta\mathbf q.
+\Delta\mathbf q=-\left[-\mathbf J(\mathbf q_k)\right]^{-1}\mathbf e_k.
 $$
 
-Therefore, the direct Newton correction is
+Since $\left(-\mathbf J\right)^{-1}=-\mathbf J^{-1}$, the two minus signs cancel:
 
 $$
 \Delta\mathbf q\approx\mathbf J^{-1}(\mathbf q_k)\mathbf e_k.
 $$
 
-Apply that correction to obtain the next joint estimate:
+Then update the joint estimate:
 
 $$
 \mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q.
 $$
 
-The plus sign appears because \(\mathbf e_k\) was defined as desired pose minus current pose. With the opposite error definition, the update sign would also have to change.
+This explains why the IK equation has a plus sign even though the familiar one-variable Newton equation contains a minus sign. The error was defined as desired pose minus current pose, so its derivative already contains the other minus sign.
 
-One correction usually does not reach the target exactly because the Jacobian equation is only a local approximation. Newton IK therefore repeats the same cycle: evaluate FK, calculate the remaining pose error, calculate the Jacobian, solve for another joint correction, and update the joint estimate.
+The correspondence is:
+
+| One-variable Newton method | Robot inverse kinematics |
+|---|---|
+| current estimate $x_k$ | current joint estimate $\mathbf q_k$ |
+| root function $g(x_k)$ | pose error $\mathbf e_k$ |
+| derivative $g'(x_k)$ | local error derivative $\approx-\mathbf J(\mathbf q_k)$ |
+| correction $-g(x_k)/g'(x_k)$ | correction $\approx\mathbf J^{-1}(\mathbf q_k)\mathbf e_k$ |
+| next estimate $x_{k+1}=x_k+\Delta x$ | next estimate $\mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q$ |
+
+The same update also has a physical small-motion interpretation. Near the current joint estimate, a first-order Taylor approximation gives
+
+$$
+\mathbf f(\mathbf q_k+\Delta\mathbf q)\approx\mathbf f(\mathbf q_k)+\mathbf J(\mathbf q_k)\Delta\mathbf q.
+$$
+
+Therefore, a small joint change produces the approximate tool-pose change
+
+$$
+\Delta\mathbf x\approx\mathbf J(\mathbf q_k)\Delta\mathbf q.
+$$
+
+The tool change we want is the remaining pose error, so set
+
+$$
+\Delta\mathbf x_{\mathrm{desired}}=\mathbf e_k.
+$$
+
+Substitution again gives
+
+$$
+\mathbf e_k\approx\mathbf J(\mathbf q_k)\Delta\mathbf q,
+$$
+
+and solving yields the same Newton correction.
+
+This relationship is only a local approximation. One correction usually does not reach the target exactly, so numerical IK repeatedly evaluates FK, calculates the remaining error, calculates the Jacobian, solves for another joint correction, and updates the joint estimate.
 
 A direct inverse is not reliable for general robot IK. Some robots have a non-square Jacobian, and even the UR5e's 6-by-6 task Jacobian becomes singular or poorly conditioned at certain configurations. Near those configurations, a small pose error can produce a very large joint correction.
 
@@ -420,7 +442,7 @@ It balances two goals:
 This balance can be written as
 
 $$
-\underset{\Delta\mathbf q}{\operatorname{minimize}}\quad \left\|\mathbf J\Delta\mathbf q-\mathbf e_k\right\|^2+\lambda^2\left\|\Delta\mathbf q\right\|^2.
+\min_{\Delta\mathbf q}\quad \left\|\mathbf J\Delta\mathbf q-\mathbf e_k\right\|^2+\lambda^2\left\|\Delta\mathbf q\right\|^2.
 $$
 
 The first term penalizes remaining pose error. The second term penalizes a large joint correction. The damping value `lambda` controls how strongly large joint changes are discouraged.
