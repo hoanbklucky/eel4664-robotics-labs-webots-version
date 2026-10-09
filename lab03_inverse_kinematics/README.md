@@ -42,22 +42,16 @@ A small target-to-measurement error supports the conclusion that the complete IK
 
 You are finished when:
 
-- planar IK produces both branches and rejects unreachable points;
-- pose error and the finite-difference Jacobian pass offline tests;
-- guarded damped-least-squares IK converges from multiple seeds;
-- an unreachable target returns an explicit failure;
-- two accepted solutions execute safely in Webots; and
-- solver, tracking, and model errors are reported separately.
-
+- the two marked IK equations are complete;
+- the provided offline program converges for Targets A and B and rejects an unreachable target;
+- the provided controller executes both accepted solutions in Webots; and
+- the report compares the predicted and measured tool poses.
 ## Learning Objectives
 
-- Explain why IK can have zero, one, or multiple solutions.
-- Solve and verify planar analytical IK.
-- Define a consistent position/orientation error.
-- Estimate a task Jacobian using the Lab 2 FK model.
-- Implement damped-least-squares IK with convergence and safety guards.
-- Compare seed-dependent solutions and safely execute accepted results.
-
+- Explain numerical IK as repeated small corrections from the current pose toward a desired pose.
+- Connect the damped-least-squares equation to one joint correction.
+- Explain how the seed, damping, and step size affect convergence.
+- Compare an FK-predicted tool pose with the pose measured in Webots.
 ## Prerequisites
 
 Complete [Lab 2 - UR5e Frames and Forward Kinematics](../lab02_webots_ur5e_frames/README.md). Reuse its tested `forward_kinematics(q)`, fixed `T_6_TOOL`, device adapter, and smooth joint interpolation. Do not copy or reimplement FK.
@@ -70,6 +64,11 @@ Complete the Python/NumPy prerequisites in [Lab 00](../lab00_setup/README.md).
 ### Optional planar IK warm-up
 
 Use the [Planar Robot FK and IK Simulator Activities](../docs/PLANAR_3R_SIMULATOR_ACTIVITIES.md) to explore elbow-up and elbow-down branches, verify IK by substituting each solution into FK, find unreachable and singular targets, and compare analytical IK with an iterative solver. This external-browser activity is optional unless assigned by the instructor.
+
+<details>
+<summary><strong>Optional background: analytical IK, pose error, Jacobians, and numerical methods</strong></summary>
+
+The core activity begins in Part 2. Expand this section when you want the derivations, examples, or more detail about why the provided code works.
 
 ## Background
 
@@ -136,9 +135,7 @@ Because the process begins with a guess, different initial guesses can lead to d
 
 Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool frame. This lab follows Craig's frame notation:
 
-$$
-{}^{A}_{B}T
-$$
+${}^{A}_{B}T$
 
 means "the pose of frame `{B}` expressed relative to frame `{A}`." The same matrix converts coordinates written in frame `{B}` into coordinates written in frame `{A}`.
 
@@ -150,9 +147,7 @@ The robot base is placed at the Webots world origin, so DH frame `{0}` and the W
 
 Chain the two transforms in this order:
 
-$$
-{}^{0}_{tool}T(\mathbf q) = {}^{0}_{6}T(\mathbf q) \cdot {}^{6}_{tool}T.
-$$
+${}^{0}_{tool}T(\mathbf q) = {}^{0}_{6}T(\mathbf q) \cdot {}^{6}_{tool}T.$
 
 Read the chain from right to left when transforming a point: first go from the tool frame to frame `{6}`, and then from frame `{6}` to frame `{0}`. Transformation order matters; reversing the two matrices describes a different frame relationship.
 
@@ -160,9 +155,7 @@ In the code, `forward_kinematics(q)` returns the first transform on the right si
 
 The tool-frame origin is at the stylus mount. In tool coordinates, the visible orange tip is the fixed point
 
-$$
-{}^{tool}\mathbf p_{tip}=\begin{bmatrix}0 & 0.13 & 0\end{bmatrix}^{T}\ \text{m}.
-$$
+${}^{tool}\mathbf p_{tip}=\begin{bmatrix}0 & 0.13 & 0\end{bmatrix}^{T}\ \text{m}.$
 
 Its frame-`{0}` position is found by transforming this point with ${}^{0}_{tool}T(\mathbf q)$.
 
@@ -174,9 +167,7 @@ The starter also contains `TARGET_A` and `TARGET_B`. Each target has short red/g
 
 At each iteration, the solver compares the current tool pose with the target. Position error is
 
-$$
-\mathbf e_p = \mathbf p_{target} - \mathbf p_{current}.
-$$
+$\mathbf e_p = \mathbf p_{target} - \mathbf p_{current}.$
 
 For example, suppose
 
@@ -195,9 +186,7 @@ The tool must move 2 cm in world +x, 2 cm in world -y, and 1 cm in world +z.
 
 Position alone is insufficient: the stylus may reach the correct point while pointing the wrong way. Use the small base-frame orientation error
 
-$$
-\mathbf e_R = \frac{1}{2}\sum_{i=1}^{3} \left(\mathbf R_{current}[:,i] \times \mathbf R_{target}[:,i]\right).
-$$
+$\mathbf e_R = \frac{1}{2}\sum_{i=1}^{3} \left(\mathbf R_{current}[:,i] \times \mathbf R_{target}[:,i]\right).$
 
 Each rotation-matrix column is one tool axis expressed in the base frame. If the target is rotated approximately 2 degrees about world +z from the current orientation, then
 
@@ -207,9 +196,7 @@ e_R approximately equals [0, 0, 0.0349] rad
 
 because 2 degrees is 0.0349 rad. Stack position and orientation vertically:
 
-$$
-\mathbf e = \begin{bmatrix} \mathbf e_p \\ \mathbf e_R \end{bmatrix} \in \mathbb R^6.
-$$
+$\mathbf e = \begin{bmatrix} \mathbf e_p \\ \mathbf e_R \end{bmatrix} \in \mathbb R^6.$
 
 Thus, `e[0:3]` describes translation and `e[3:6]` describes rotation. `pose_error` and the Jacobian must use the same frame and sign convention.
 
@@ -217,33 +204,23 @@ Thus, `e[0:3]` describes translation and `e[3:6]` describes rotation. `pose_erro
 
 Let
 
-$$
-\Delta \mathbf q = [\Delta q_1,\ldots,\Delta q_6]^T
-$$
+$\Delta \mathbf q = [\Delta q_1,\ldots,\Delta q_6]^T$
 
 be a small change in the six joints. Let
 
-$$
-\Delta \mathbf x = [\Delta p_x,\Delta p_y,\Delta p_z, \Delta \theta_x,\Delta \theta_y,\Delta \theta_z]^T
-$$
+$\Delta \mathbf x = [\Delta p_x,\Delta p_y,\Delta p_z, \Delta \theta_x,\Delta \theta_y,\Delta \theta_z]^T$
 
 be the resulting small tool-pose change. The task Jacobian gives the local linear approximation
 
-$$
-\boxed{\Delta \mathbf x \approx \mathbf J(\mathbf q)\Delta \mathbf q}.
-$$
+$\boxed{\Delta \mathbf x \approx \mathbf J(\mathbf q)\Delta \mathbf q}.$
 
 `J` is 6-by-6. Column `j` answers: "If only joint `j` changes by one small radian, how does the tool position and orientation change?"
 
 Estimate that column by nudging joint `j` in both directions:
 
-$$
-\mathbf q^+ = \mathbf q + h\mathbf u_j, \qquad \mathbf q^- = \mathbf q - h\mathbf u_j,
-$$
+$\mathbf q^+ = \mathbf q + h\mathbf u_j, \qquad \mathbf q^- = \mathbf q - h\mathbf u_j,$
 
-$$
-\mathbf J[:,j] \approx \frac{ \mathbf e_{\mathrm{pose}} \left({}^{0}_{tool}T^{-},{}^{0}_{tool}T^{+}\right) }{2h}, \qquad {}^{0}_{tool}T^{\pm} = {}^{0}_{tool}T(\mathbf q^{\pm}).
-$$
+$\mathbf J[:,j] \approx \frac{ \mathbf e_{\mathrm{pose}} \left({}^{0}_{tool}T^{-},{}^{0}_{tool}T^{+}\right) }{2h}, \qquad {}^{0}_{tool}T^{\pm} = {}^{0}_{tool}T(\mathbf q^{\pm}).$
 
 Here, $\mathbf e_{\mathrm{pose}}$ is the pose difference calculated by `pose_error`, and ${}^{0}_{tool}T(\mathbf q)$ is the frame-`{0}` tool transform returned by `fk_tool(q)`. The symbol `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the positive and negative evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
 
@@ -261,63 +238,45 @@ The numerical IK update follows directly from the local relationship between a s
 
 At iteration $k$, the current joint estimate is $\mathbf q_k$, and forward kinematics gives the current tool pose. The **pose_error** function compares that pose with the desired pose and constructs
 
-$$
-\mathbf e_k=\begin{bmatrix}\mathbf p_d-\mathbf p_k\\\mathbf e_R\end{bmatrix},
-$$
+$\mathbf e_k=\begin{bmatrix}\mathbf p_d-\mathbf p_k\\\mathbf e_R\end{bmatrix},$
 
 where the first three entries are position error and the last three entries form a small orientation-error vector.
 
 The IK goal is to find joint angles $\mathbf q^*$ for which
 
-$$
-\mathbf e(\mathbf q^*)=\mathbf 0.
-$$
+$\mathbf e(\mathbf q^*)=\mathbf 0.$
 
 That makes IK a root-finding problem: the function whose root we seek is the pose-error function.
 
 The easiest way to derive the joint update is to ask how a small joint change affects the tool. For a one-variable function, the derivative converts a small input change into an approximate output change:
 
-$$
-\Delta y\approx f'(q_k)\Delta q.
-$$
+$\Delta y\approx f'(q_k)\Delta q.$
 
 A robot has several joint inputs and several tool-motion outputs, so the derivatives are collected in the Jacobian matrix. Near the current joint estimate, a first-order Taylor approximation gives
 
-$$
-\mathbf f(\mathbf q_k+\Delta\mathbf q)\approx\mathbf f(\mathbf q_k)+\mathbf J(\mathbf q_k)\Delta\mathbf q.
-$$
+$\mathbf f(\mathbf q_k+\Delta\mathbf q)\approx\mathbf f(\mathbf q_k)+\mathbf J(\mathbf q_k)\Delta\mathbf q.$
 
 Subtract the current pose $\mathbf f(\mathbf q_k)$. The resulting local tool-pose change is approximately
 
-$$
-\Delta\mathbf x\approx\mathbf J(\mathbf q_k)\Delta\mathbf q.
-$$
+$\Delta\mathbf x\approx\mathbf J(\mathbf q_k)\Delta\mathbf q.$
 
 Here, $\Delta\mathbf x$ is not the subtraction of two homogeneous matrices. It is a six-component local motion: three small position changes and three small orientation changes. Column $j$ of the Jacobian answers: “If joint $j$ changes slightly, how does that six-component tool motion change?”
 
 The tool change we want is exactly the remaining pose correction:
 
-$$
-\Delta\mathbf x_{\mathrm{desired}}=\mathbf e_k.
-$$
+$\Delta\mathbf x_{\mathrm{desired}}=\mathbf e_k.$
 
 Require the joint correction to produce that desired tool change:
 
-$$
-\mathbf J(\mathbf q_k)\Delta\mathbf q\approx\mathbf e_k.
-$$
+$\mathbf J(\mathbf q_k)\Delta\mathbf q\approx\mathbf e_k.$
 
 If the Jacobian is square and safely invertible, solve for the joint correction:
 
-$$
-\Delta\mathbf q\approx\mathbf J^{-1}(\mathbf q_k)\mathbf e_k.
-$$
+$\Delta\mathbf q\approx\mathbf J^{-1}(\mathbf q_k)\mathbf e_k.$
 
 Then update the joint estimate:
 
-$$
-\mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q.
-$$
+$\mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q.$
 
 This local correction is closely related to multivariable Newton's method, but that connection is not required to apply the IK update. The optional reading below explains the relationship.
 
@@ -332,7 +291,11 @@ The scalar correction is $\Delta x=-g(x_k)/g'(x_k)$, followed by $x_{k+1}=x_k+\D
 
 For IK, define the root function as the pose error: $\mathbf g(\mathbf q)=\mathbf e(\mathbf q)=\mathbf x_d-\mathbf f(\mathbf q)$. An IK solution is a root because it satisfies $\mathbf e(\mathbf q^*)=\mathbf 0$.
 
-Because the desired pose is constant, the local derivative of the error has the opposite sign from the forward-kinematics Jacobian: $\partial\mathbf e/\partial\mathbf q\approx-\mathbf J(\mathbf q)$.
+The minus sign comes from the definition of the error. Differentiate $\mathbf e(\mathbf q)=\mathbf x_d-\mathbf f(\mathbf q)$ with respect to $\mathbf q$: $\partial\mathbf e/\partial\mathbf q=\partial\mathbf x_d/\partial\mathbf q-\partial\mathbf f/\partial\mathbf q$.
+
+The desired pose does not change when the joint estimate changes, so $\partial\mathbf x_d/\partial\mathbf q=\mathbf 0$. The derivative of forward kinematics is the Jacobian, $\partial\mathbf f/\partial\mathbf q=\mathbf J(\mathbf q)$. Therefore, $\partial\mathbf e/\partial\mathbf q\approx-\mathbf J(\mathbf q)$.
+
+For the position error, this negative sign is exact: moving the current tool position toward the target decreases the remaining position error by the same amount. For orientation, the lab represents the difference between two rotations with the small vector $\mathbf e_R$. A small current-tool rotation $\Delta\boldsymbol\phi\approx\mathbf J_\omega\Delta\mathbf q$ changes the remaining orientation error in the opposite direction, so $\Delta\mathbf e_R\approx-\mathbf J_\omega\Delta\mathbf q$. This local small-angle step is why the combined six-component relation uses approximately equal rather than exactly equal.
 
 The vector Newton correction is $\Delta\mathbf q=-[\partial\mathbf e/\partial\mathbf q]^{-1}\mathbf e_k$. Substituting the local error derivative gives $\Delta\mathbf q\approx-[-\mathbf J(\mathbf q_k)]^{-1}\mathbf e_k$.
 
@@ -348,15 +311,11 @@ A direct inverse is not reliable for general robot IK. Some robots have a non-sq
 
 The Moore-Penrose pseudoinverse generalizes the inverse. It is written as `J+` in plain text and with a superscript `+` on `J` in the equation below. The update becomes
 
-$$
-\Delta\mathbf q=\mathbf J^{+}(\mathbf q_k)\mathbf e_k,\qquad \mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q.
-$$
+$\Delta\mathbf q=\mathbf J^{+}(\mathbf q_k)\mathbf e_k,\qquad \mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q.$
 
 When the task rows are independent, one useful form is
 
-$$
-\mathbf J^{+}=\mathbf J^T\left(\mathbf J\mathbf J^T\right)^{-1}.
-$$
+$\mathbf J^{+}=\mathbf J^T\left(\mathbf J\mathbf J^T\right)^{-1}.$
 
 The pseudoinverse chooses a least-squares correction: if no joint change produces the requested tool change exactly, it chooses one whose predicted tool motion is as close as possible. For redundant robots, it also selects a minimum-norm solution.
 
@@ -377,9 +336,7 @@ The pseudoinverse is more general than a direct inverse, but it can still reques
 
 Damped least squares modifies the pseudoinverse so the solver does not react too aggressively near a singularity:
 
-$$
-\Delta\mathbf q_{DLS}=\mathbf J^T\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)^{-1}\mathbf e_k.
-$$
+$\Delta\mathbf q_{DLS}=\mathbf J^T\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)^{-1}\mathbf e_k.$
 
 It balances two goals:
 
@@ -388,9 +345,7 @@ It balances two goals:
 
 This balance can be written as
 
-$$
-\min_{\Delta\mathbf q}\quad \left\|\mathbf J\Delta\mathbf q-\mathbf e_k\right\|^2+\lambda^2\left\|\Delta\mathbf q\right\|^2.
-$$
+$\min_{\Delta\mathbf q}\quad \left\|\mathbf J\Delta\mathbf q-\mathbf e_k\right\|^2+\lambda^2\left\|\Delta\mathbf q\right\|^2.$
 
 The first term penalizes remaining pose error. The second term penalizes a large joint correction. The damping value `lambda` controls how strongly large joint changes are discouraged.
 
@@ -398,9 +353,7 @@ A useful analogy is steering a shopping cart through a narrow doorway. An undamp
 
 This lab also applies only a fraction `alpha` of the DLS proposal:
 
-$$
-\mathbf q_{k+1}=\mathbf q_k+\alpha\Delta\mathbf q_{DLS}.
-$$
+$\mathbf q_{k+1}=\mathbf q_k+\alpha\Delta\mathbf q_{DLS}.$
 
 The safeguards have different jobs:
 
@@ -413,15 +366,11 @@ Too little damping can allow very large or unstable corrections. Too much dampin
 
 Do not form the inverse in the displayed DLS equation explicitly. First solve
 
-$$
-\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)\mathbf y=\mathbf e_k,
-$$
+$\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)\mathbf y=\mathbf e_k,$
 
 then calculate
 
-$$
-\Delta\mathbf q_{DLS}=\mathbf J^T\mathbf y.
-$$
+$\Delta\mathbf q_{DLS}=\mathbf J^T\mathbf y.$
 
 After that, multiply by `alpha`, limit the applied joint step, enforce the joint limits, and update `q`.
 
@@ -429,9 +378,7 @@ After that, multiply by `alpha`, limit the applied joint step, enforce the joint
 
 A simpler method replaces the inverse with the Jacobian transpose:
 
-$$
-\mathbf q_{k+1}=\mathbf q_k+\alpha\mathbf J^T(\mathbf q_k)\mathbf e_k.
-$$
+$\mathbf q_{k+1}=\mathbf q_k+\alpha\mathbf J^T(\mathbf q_k)\mathbf e_k.$
 
 The transpose points generally in a direction that reduces the pose error. It is inexpensive because it does not solve a matrix equation. However, its convergence depends strongly on the step size `alpha` and is often slower than pseudoinverse or DLS IK.
 
@@ -481,17 +428,18 @@ After execution, separate:
 
 For example, a tiny solver error but a large Webots error suggests that the numerical IK converged and the remaining problem lies in tracking, frame alignment, or model mismatch. Webots may measure and visualize the result, but it may not solve FK or IK for you.
 
+
+</details>
 ## Provided Files
 
-- `worlds/lab03_starter.wbt` - protected UR5e world with stylus and two compact visual pose targets
+- `worlds/lab03_starter.wbt` - protected UR5e world with two visual pose targets
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
-- `src/planar_fk.py` and `src/planar_ik.py`
-- `src/numerical_ik.py` - numerical IK scaffold
-- `src/execute_pose_target.py` - safe execution scaffold
+- `controllers/lab03_controller/` - complete controller for Targets A and B
+- `src/planar_fk.py` and `src/planar_ik.py` - complete analytical examples for reading
+- `src/numerical_ik.py` - complete solver framework with exactly two student lines
+- `src/run_ik_experiments.py` - complete offline test program
+- `src/execute_pose_target.py` - complete validation and execution helpers
 - `Lab03_Report_Template.docx` - results template
-
-
-
 ## Open the Word report template
 
 VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be used to edit it.
@@ -507,7 +455,10 @@ VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be 
 
 Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab03_Report_Template.docx`, paste it into the personal Word copy you created.
 
-## Part 1 - Setup / Validation
+<details>
+<summary><strong>Part 1 - Required setup and validation</strong></summary>
+
+Expand and complete this section once before starting the IK activity.
 
 > **Why this part matters:** Verifying Lab 2 FK, the starter world, Python, devices, and one-joint motion isolates environment problems before they can be mistaken for IK failures.
 
@@ -537,171 +488,144 @@ No report entry is required for these prerequisite checks. Stop at the first fai
 
 **Never overwrite `lab03_starter.wbt`.** Discard a damaged working copy and recreate it from the starter.
 
-## Part 2 - Core Implementation
 
-> **Why this part matters:** This part builds numerical IK from understandable pieces—reachability, pose error, a finite-difference Jacobian, and guarded updates—so the solver remains your own explicit robotics implementation.
+</details>
+## Part 2 - Core IK Activity
 
-### Step 2 - Solve the planar warm-up
+> **Why this part matters:** You will enter the two equations that make numerical IK move from a pose error to a new joint estimate. The supporting programming is provided so you can focus on the robotics idea.
 
-Implement `planar_2r_fk` and `planar_2r_ik` using the Background equations. Test:
+### Step 2 - Read the provided loop
 
-- one interior point, including both branches and FK reconstruction error;
-- one workspace-boundary point; and
-- one unreachable point that raises `ValueError`.
+Open `src/numerical_ik.py`. Do not rewrite the file. The following pieces are already complete:
 
-### Step 3 - Implement pose error and the task Jacobian
+- position and orientation pose error;
+- the finite-difference Jacobian;
+- input checks, joint limits, and maximum joint-step limits;
+- the iteration loop and convergence test; and
+- clear success or failure results.
 
-In `src/numerical_ik.py`:
+Follow one pass through the loop: FK calculates the current tool pose, `pose_error` calculates the remaining correction, the Jacobian relates small joint changes to small tool motion, and the solver updates the joint estimate.
 
-1. Implement `pose_error(T_current, T_target)` and validate input shapes and finite values.
-2. Test identical poses, a +0.01 m target-x change, and a small positive target-z rotation.
-3. Implement a centered-difference `finite_difference_jacobian(fk_fn, q, h)`.
-4. Confirm a finite `(6, 6)` result at a nonsymmetric `q`.
-5. Compare `h = 1e-3, 1e-4, 1e-5, 1e-6` rad and justify one selection.
+### Step 3 - Complete only the two marked lines
 
-Use the same base-frame orientation convention in both functions.
+Search for `TODO 1` and `TODO 2` in `src/numerical_ik.py`. These are the only lines you edit in this lab.
 
-### Step 4 - Implement guarded numerical IK
-
-Complete `damped_least_squares_step` and `numerical_ik`. Each iteration must calculate `fk_fn(q)`, save position/orientation residuals, test both tolerances, calculate a damped update, limit the joint step, and enforce joint limits. Return an `IKResult` for success and every failure condition.
-
-Use these starting values:
-
-| Parameter | Initial value |
-|---|---:|
-| `alpha` | 0.3 |
-| damping | 0.02 |
-| finite-difference `h` | `1e-5` rad |
-| maximum `|delta_q_i|` | 0.10 rad |
-| position tolerance | 0.001 m |
-| orientation tolerance | 0.5 degrees |
-| maximum iterations | 500 |
-
-Reject invalid inputs, NaN/Inf, limit violations, and iteration-limit exits. Change only one tuning parameter at a time.
-
-### Step 5 - Test reachable targets, seeds, and failure
-
-Create `fk_tool` with the fixed `T_6_TOOL`, then generate known-reachable targets:
+For `TODO 1`, enter the damped-least-squares correction:
 
 ```python
-q_reference_a = np.array([0.20, -0.80, 1.00, -1.10, -0.70, 0.30])
-q_reference_b = np.array([-0.30, -0.90, 1.10, -1.40, -1.20, -0.20])
-T_target_a = fk_tool(q_reference_a)
-T_target_b = fk_tool(q_reference_b)
+step = jacobian.T @ np.linalg.solve(system, error)
 ```
 
-The displayed `TARGET_A` and `TARGET_B` frames correspond to these two known-reachable configurations. They let you see whether the stylus reaches the requested pose, but they are not solver inputs. The solver receives only a target and seed; it must not use `q_reference` internally. Solve each target from the measured Reset configuration, all zeros, and one nonsymmetric seed.
+The provided line immediately above has already formed
 
-Test failure with:
+```math
+\mathbf{system}=\mathbf J\mathbf J^T+\lambda^2\mathbf I.
+```
+
+Therefore your line calculates
+
+```math
+\Delta\mathbf q=\mathbf J^T(\mathbf J\mathbf J^T+\lambda^2\mathbf I)^{-1}\mathbf e_k.
+```
+
+`np.linalg.solve` solves the matrix equation without explicitly calculating an inverse.
+
+For `TODO 2`, enter the joint update:
 
 ```python
-T_unreachable = T_target_a.copy()
-T_unreachable[:3, 3] += np.array([1.5, 0.0, 0.0])
+q_proposed = q + alpha * delta_q
 ```
 
-Save convergence, reason, iterations, residuals, final `q`, and residual history. Plot a fast run, a slower/different-seed run, and the unreachable run.
+This implements
 
-Select one solution per reachable target. Reject nonconverged, nonfinite, limit-violating, discontinuous, or path-unsafe candidates. Prefer a valid solution near measured `q0`. Do not use Webots, SciPy, MoveIt, or another library to solve FK/IK.
-
-## Part 3 - Robot Experiment
-
-> **Why this part matters:** Executing only validated solutions tests whether the mathematical target becomes a safe physical motion and whether the simulated tool actually reaches the requested pose.
-
-### Step 6 - Connect the solver to Webots safely
-
-1. Close Webots. If `controllers/lab03_controller` does not exist, run this cross-platform command from the repository root:
-
-   ```bash
-   python -c "from pathlib import Path; import shutil; src=Path('lab02_webots_ur5e_frames/controllers/eel4664_ur5e'); dst=Path('lab03_inverse_kinematics/controllers/lab03_controller'); shutil.copytree(src,dst); (dst/'eel4664_ur5e.py').rename(dst/'lab03_controller.py')"
-   ```
-
-2. Add the repository root to `lab03_controller.py`:
-
-   ```python
-   from pathlib import Path
-   import sys
-
-   REPO_ROOT = Path(__file__).resolve().parents[3]
-   sys.path.insert(0, str(REPO_ROOT))
-   ```
-
-3. Import Lab 2 FK/interpolation and the Lab 3 mission functions; do not copy the FK source.
-4. Complete `prepare_pose_mission` so it accepts only converged, finite, limit-safe solutions and verifies the endpoint with `fk_tool`.
-5. Complete `execute_pose_mission` so it interpolates from measured `q0`, commands all joints, holds the goal, and logs joints/tool pose.
-6. First set `q_goal = q0`; confirm a finite pose prints and the robot does not move.
-
-### Step 7 - Execute Target A and Target B
-
-For each target:
-
-1. Open `lab03_work.wbt` paused, assign `lab03_controller`, and **Reset**.
-2. Read measured `q0` and select a validated solution near it.
-3. Print convergence, `q_goal`, predicted endpoint, joint-limit check, and sampled-path check.
-4. Stop without motion if any check fails.
-5. Otherwise execute a smooth move lasting at least eight seconds and hold the goal.
-6. Confirm visually that the orange stylus tip enters the corresponding translucent target sphere and its orientation aligns with the target axes; then record measured final joints and Webots tool pose.
-7. Reset and repeat once for reproducibility.
-
-Never command the unreachable target or a failed result. Execute multiple branches only if assigned and both paths pass safety checks.
-
-## Part 4 - Quantitative Analysis
-
-> **Why this part matters:** Separating solver, tracking, and model errors shows why a motion succeeded or failed instead of relying on an animation that merely looks correct.
-
-### Step 8 - Separate and interpret the errors
-
-For both targets and repeated trials, calculate:
-
-```text
-solver error:         T_target versus fk_tool(q_goal)
-measured-joint error: T_target versus fk_tool(q_measured)
-Webots error:         T_target versus T_webots_measured
+```math
+\mathbf q_{k+1}=\mathbf q_k+\alpha\Delta\mathbf q.
 ```
 
-For each comparison use
+The provided code then limits the size of the change and enforces the joint limits.
 
-```text
-position_error = ||p_target - p_achieved||
-R_error = R_target^T R_achieved
-orientation_error = acos(clamp((trace(R_error) - 1) / 2, -1, 1))
+### Step 4 - Run the provided offline experiment
+
+Open the VS Code Terminal with **Terminal -> New Terminal**. Make sure the prompt is at the repository root, the folder containing `lab03_inverse_kinematics`. Then run:
+
+```bash
+python lab03_inverse_kinematics/src/run_ik_experiments.py
 ```
 
-Report position in millimeters and orientation in degrees in one table. Identify the dominant error layer. Also state whether different seeds found the same joint vector or different branches and which accepted solution required less joint travel.
+On macOS or Ubuntu, use `python3` if `python` is not recognized.
+
+The program runs Target A, Target B, and one unreachable target. Copy the full output into the Word report. Targets A and B should report `converged: True`. The unreachable target should report `converged: False`; failure is the correct and safe result for that case.
+
+If the program stops at `TODO 1` or `TODO 2`, return to the corresponding marked line. Do not change the supplied Jacobian, loop, limits, or tolerances.
+
+## Part 3 - Webots Experiment
+
+> **Why this part matters:** The offline solver predicts joint angles. Webots checks whether commanding those angles makes the simulated tool reach the predicted position and orientation.
+
+### Step 5 - Run the provided controller for Target A
+
+1. Open your `lab03_work.wbt` copy in Webots and keep the simulation paused.
+2. Select the UR5e robot. Set its controller to `lab03_controller`.
+3. Open `controllers/lab03_controller/lab03_controller.py` and confirm `TARGET_LABEL = "A"`.
+4. Reset the world, run the simulation, and wait for the motion to finish.
+5. Copy the controller output into the report and take one screenshot showing the final robot pose and Target A.
+
+The controller uses your two completed equations, but all device access, validation, interpolation, and safety checks are provided. It prints:
+
+- the IK convergence result and final joint vector;
+- the **predicted tool position and predicted tool roll-pitch-yaw (RPY)** calculated with FK; and
+- the **Webots-measured tool position and tool RPY** after the motion settles.
+
+RPY means roll, pitch, and yaw: rotations about the x, y, and z axes, reported in radians.
+
+### Step 6 - Repeat for Target B
+
+1. Stop and reset Webots.
+2. Change only `TARGET_LABEL = "A"` to `TARGET_LABEL = "B"`.
+3. Run the simulation again.
+4. Copy the output and take one screenshot showing the final robot pose and Target B.
+
+Do not command the unreachable target. The provided controller stops without moving if IK fails or returns invalid joint values.
+
+## Part 4 - Short Analysis
+
+> **Why this part matters:** Comparing prediction with measurement checks the complete chain from the IK equations through FK and robot motion.
+
+For each pose separately, compare:
+
+- the FK-predicted **tool position** with the Webots-measured **tool position**; and
+- the FK-predicted **tool RPY** with the Webots-measured **tool RPY**.
+
+Write 1-2 sentences for Target A and 1-2 sentences for Target B. State whether each predicted and measured tool pose agrees closely. Small differences can result from finite solver tolerance and joint tracking. You are not required to calculate a single combined pose-error formula or decide which pose has the largest error.
 
 ## Engineering Questions
 
-1. Why must IK reuse an already validated FK model?
-2. Why can different seeds produce different joint vectors for one pose?
-3. How do `alpha`, damping, and maximum joint step affect convergence?
-4. Why are position and orientation tolerances checked separately?
-5. Why does endpoint convergence not guarantee safe execution?
-6. How does an unreachable-target residual history differ from convergence?
-7. How do the three error layers locate a problem?
+Answer each in 1-2 sentences.
+
+1. In one iteration, how does the pose-error vector influence the joint correction?
+2. Why is damping useful when the Jacobian is near a singular configuration?
+3. Why can two different initial joint seeds lead to different joint-angle solutions for the same tool pose?
 
 ## What to Submit
 
-- completed four source scaffolds and the Lab 3 controller folder;
-- completed `Lab03_Report_Template.docx`;
-- planar branch/reachability and numerical unit-test evidence;
-- target/seed table and three residual plots, including failure;
-- Webots logs for two targets and repeated trials;
-- three-layer error table; and
-- Engineering Question answers.
+1. Completed `src/numerical_ik.py` containing your two equation lines.
+2. Completed `Lab03_Report_Template.docx` containing:
+   - the complete offline output for Targets A, B, and the unreachable target;
+   - the Target A and Target B Webots outputs and screenshots;
+   - a short pose-by-pose comparison of predicted and measured tool position and RPY; and
+   - answers to the three Engineering Questions.
 
-Do not submit `lab03_work.wbt`, vendor assets, or caches unless requested.
+Do not submit `lab03_work.wbt`, provided helper code, vendor assets, or caches unless requested.
 
 ## Troubleshooting
 
-| Last passing stage | First failing stage | Likely problem |
-|---|---|---|
-| Lab 2 tests | import | path or incomplete Lab 2 work |
-| planar IK | pose error | transform direction, sign, or frame |
-| pose error | Jacobian | perturbation, joint order, or rotation convention |
-| Jacobian | convergence | seed, damping, step, limits, or target |
-| offline solver | stationary controller | import boundary |
-| stationary controller | motion | safety rejection, adapter, interpolation, or units |
-| FK at measured joints | Webots pose | fixed tool transform or model discrepancy |
+| Problem | Check |
+|---|---|
+| Program stops at `TODO 1` | Enter the DLS equation exactly on the marked line. |
+| Program stops at `TODO 2` | Enter the joint-update equation exactly on the marked line. |
+| Lab 2 import or FK fails | Complete and test Lab 2 before continuing. |
+| Reachable target does not converge | Check that matrix multiplication uses `@` and that both signs are `+`. |
+| Controller does not appear in Webots | Close and reopen the world after updating the repository. |
+| Controller reports failure | Do not move the robot; save the output and inspect the offline run first. |
 
-If IK diverges, inspect one residual history and one Jacobian column, then change one parameter at a time.
-
-For Webots recovery, reopen the protected starter, create a fresh working copy, repeat `void -> minimal -> devices -> one joint`, and run the stationary import test before full motion. See [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md) for repeated crashes.
+For Webots recovery, reopen the protected starter, create a fresh working copy, and repeat the Part 1 checks. See [Troubleshooting Webots](../docs/TROUBLESHOOTING_WEBOTS.md) for repeated crashes.
