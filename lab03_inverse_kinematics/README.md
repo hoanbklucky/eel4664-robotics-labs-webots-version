@@ -253,27 +253,11 @@ Here, $\mathbf e_{\mathrm{pose}}$ is the pose difference calculated by `pose_err
 
 Repeat for all six joints. Large `h` gives a crude approximation; extremely small `h` exposes floating-point roundoff. Lab 4 derives the Jacobian directly.
 
-### 7. From Newton's method to numerical IK
+### 7. From local tool motion to numerical IK
 
-The numerical IK update is easier to understand if we build it in stages.
+The numerical IK update follows directly from the local relationship between a small joint change and the resulting small tool motion. No prior knowledge of Newton's method is required.
 
-#### 7.1 Start with Newton's method for one variable
-
-Newton's method finds a value of `x` that makes a nonlinear function equal to zero:
-
-$$
-g(x)=0.
-$$
-
-Start from a guess `x_k`. At that point, replace the curved function by its tangent line. Follow the tangent line to where it crosses zero; that crossing becomes the next guess:
-
-$$
-x_{k+1}=x_k-\frac{g(x_k)}{g'(x_k)}.
-$$
-
-This process repeats until the function value is sufficiently close to zero. Newton's method can converge quickly when the initial guess is good and the slope is well behaved. It can fail when the slope is zero or very small, or when the initial guess is poor.
-
-#### 7.2 Turn IK into a root-finding problem
+#### 7.1 Use small motions to reduce the pose error
 
 At iteration $k$, the current joint estimate is $\mathbf q_k$, and forward kinematics gives the current tool pose. The **pose_error** function compares that pose with the desired pose and constructs
 
@@ -335,56 +319,32 @@ $$
 \mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q.
 $$
 
-This is the multivariable version of Newton's method. Newton's method uses a local derivative to choose an input correction that moves a function toward zero. Numerical IK uses the Jacobian to choose a joint correction that moves the pose error toward zero.
+This local correction is closely related to multivariable Newton's method, but that connection is not required to apply the IK update. The optional reading below explains the relationship.
 
 The approximation is accurate only for small changes near $\mathbf q_k$. One correction usually does not reach the target exactly. The solver therefore repeats the cycle: evaluate FK, calculate the remaining pose error, calculate the Jacobian, solve for another joint correction, and update the joint estimate.
 
 <details>
-<summary><strong>Optional reading: Why the signs match Newton's formula</strong></summary>
+<summary><strong>Optional reading: Connection to Newton's root-finding method</strong></summary>
 
-For one variable, Newton's method finds a root of $g(x)=0$ using
+For one variable, Newton's method seeks a value $x$ that makes $g(x)=0$. Starting from $x_k$, it replaces the curved function locally by its tangent line and uses the tangent's zero crossing as the next estimate.
 
-$$
-\Delta x=-\frac{g(x_k)}{g'(x_k)},\qquad x_{k+1}=x_k+\Delta x.
-$$
+The scalar correction is $\Delta x=-g(x_k)/g'(x_k)$, followed by $x_{k+1}=x_k+\Delta x$. The numerator measures how far the function is from zero, and the derivative predicts how strongly the function changes when $x$ changes.
 
-For IK, define the root function as the pose error:
+For IK, define the root function as the pose error: $\mathbf g(\mathbf q)=\mathbf e(\mathbf q)=\mathbf x_d-\mathbf f(\mathbf q)$. An IK solution is a root because it satisfies $\mathbf e(\mathbf q^*)=\mathbf 0$.
 
-$$
-\mathbf g(\mathbf q)=\mathbf e(\mathbf q)=\mathbf x_d-\mathbf f(\mathbf q).
-$$
+Because the desired pose is constant, the local derivative of the error has the opposite sign from the forward-kinematics Jacobian: $\partial\mathbf e/\partial\mathbf q\approx-\mathbf J(\mathbf q)$.
 
-Because the desired pose is constant, the local derivative of the error has the opposite sign from the forward-kinematics Jacobian:
+The vector Newton correction is $\Delta\mathbf q=-[\partial\mathbf e/\partial\mathbf q]^{-1}\mathbf e_k$. Substituting the local error derivative gives $\Delta\mathbf q\approx-[-\mathbf J(\mathbf q_k)]^{-1}\mathbf e_k$.
 
-$$
-\frac{\partial\mathbf e}{\partial\mathbf q}\approx-\mathbf J(\mathbf q).
-$$
+Since $(-\mathbf J)^{-1}=-\mathbf J^{-1}$, the two minus signs cancel, leaving $\Delta\mathbf q\approx\mathbf J^{-1}(\mathbf q_k)\mathbf e_k$.
 
-The vector Newton correction is
-
-$$
-\Delta\mathbf q=-\left[\frac{\partial\mathbf e}{\partial\mathbf q}\right]^{-1}\mathbf e_k.
-$$
-
-Substitute the local error derivative:
-
-$$
-\Delta\mathbf q\approx-\left[-\mathbf J(\mathbf q_k)\right]^{-1}\mathbf e_k.
-$$
-
-Since $\left(-\mathbf J\right)^{-1}=-\mathbf J^{-1}$, the two minus signs cancel:
-
-$$
-\Delta\mathbf q\approx\mathbf J^{-1}(\mathbf q_k)\mathbf e_k.
-$$
-
-Thus, $\mathbf e_k$ corresponds to $g(x_k)$, while $\mathbf J^{-1}$ includes the sign that comes from $-1/g'(x_k)$.
+Thus, $\mathbf e_k$ corresponds to $g(x_k)$, while $\mathbf J^{-1}$ includes the sign that comes from $-1/g'(x_k)$. Newton's method can converge quickly from a good initial guess, but it can fail when the derivative or Jacobian is singular, poorly conditioned, or evaluated too far from the solution.
 
 </details>
 
 A direct inverse is not reliable for general robot IK. Some robots have a non-square Jacobian, and even the UR5e's 6-by-6 task Jacobian becomes singular or poorly conditioned at certain configurations. Near those configurations, a small pose error can produce a very large joint correction.
 
-#### 7.3 Replace the inverse with a pseudoinverse
+#### 7.2 Replace the inverse with a pseudoinverse
 
 The Moore-Penrose pseudoinverse generalizes the inverse. It is written as `J+` in plain text and with a superscript `+` on `J` in the equation below. The update becomes
 
@@ -413,7 +373,7 @@ A basic pseudoinverse IK loop is:
 
 The pseudoinverse is more general than a direct inverse, but it can still request extremely large joint changes near a singularity.
 
-#### 7.4 Add damping for stability
+#### 7.3 Add damping for stability
 
 Damped least squares modifies the pseudoinverse so the solver does not react too aggressively near a singularity:
 
@@ -465,7 +425,7 @@ $$
 
 After that, multiply by `alpha`, limit the applied joint step, enforce the joint limits, and update `q`.
 
-#### 7.5 Another option: Jacobian transpose
+#### 7.4 Another option: Jacobian transpose
 
 A simpler method replaces the inverse with the Jacobian transpose:
 
@@ -475,7 +435,7 @@ $$
 
 The transpose points generally in a direction that reduces the pose error. It is inexpensive because it does not solve a matrix equation. However, its convergence depends strongly on the step size `alpha` and is often slower than pseudoinverse or DLS IK.
 
-#### 7.6 Compare the four updates
+#### 7.5 Compare the four updates
 
 | Method | Joint correction | Main advantage | Main limitation |
 |---|---|---|---|
