@@ -508,13 +508,15 @@ Follow one pass through the loop: FK calculates the current tool pose, `pose_err
 
 Search for `TODO 1`, `TODO 2`, and `TODO 3` in `src/numerical_ik.py`. These are the only lines you edit in this lab.
 
-For `TODO 1`, enter the position-error equation:
+Use the equations and variable descriptions below to complete the blanks. Try each line yourself before opening the answer at the end of this step.
+
+For `TODO 1`, calculate desired position minus current position. In a 4-by-4 transform, `[:3, 3]` selects the position vector.
 
 ```python
-position = target[:3, 3] - current[:3, 3]
+position = __________ - __________
 ```
 
-This implements desired position minus current position:
+This implements
 
 ```math
 \mathbf e_p=\mathbf p_{target}-\mathbf p_{current}.
@@ -522,10 +524,10 @@ This implements desired position minus current position:
 
 The sign matters: the error vector points from the current tool position toward the desired tool position. The provided code calculates the orientation part and joins it with this position error.
 
-For `TODO 2`, enter the damped-least-squares correction:
+For `TODO 2`, use the `system` matrix and `error` vector that are already available. `np.linalg.solve(A, b)` solves the matrix equation `Ax = b`. Complete the two arguments:
 
 ```python
-step = jacobian.T @ np.linalg.solve(system, error)
+step = jacobian.T @ np.linalg.solve(__________, __________)
 ```
 
 The provided line immediately above has already formed
@@ -534,18 +536,16 @@ The provided line immediately above has already formed
 \mathbf{system}=\mathbf J\mathbf J^T+\lambda^2\mathbf I.
 ```
 
-Therefore your line calculates
+Your completed line should calculate
 
 ```math
 \Delta\mathbf q=\mathbf J^T(\mathbf J\mathbf J^T+\lambda^2\mathbf I)^{-1}\mathbf e_k.
 ```
 
-`np.linalg.solve` solves the matrix equation without explicitly calculating an inverse.
-
-For `TODO 3`, enter the joint update:
+For `TODO 3`, combine the current joint vector `q`, step size `alpha`, and joint correction `delta_q`:
 
 ```python
-q_proposed = q + alpha * delta_q
+q_proposed = __________ + __________ * __________
 ```
 
 This implements
@@ -555,6 +555,21 @@ This implements
 ```
 
 The provided code then limits the size of the change and enforces the joint limits.
+
+<details>
+<summary><strong>Stuck? Show the three completed lines</strong></summary>
+
+Try filling the blanks first. Open this only if Python syntax is preventing you from continuing.
+
+```python
+position = target[:3, 3] - current[:3, 3]
+step = jacobian.T @ np.linalg.solve(system, error)
+q_proposed = q + alpha * delta_q
+```
+
+Check each completed line against the equation above it before running the program.
+
+</details>
 
 ### Step 3 - Run the provided offline experiment
 
@@ -659,9 +674,9 @@ Write 1-2 sentences for Target A and 1-2 sentences for Target B. State whether e
 
 ## Engineering Question
 
-Answer in 2-3 sentences.
+Answer in 1-2 sentences.
 
-In one numerical IK iteration, explain how the pose-error vector, the damped Jacobian correction, and the joint update work together to move the tool toward the desired pose.
+During one IK iteration, what does the solver calculate by comparing the desired and current tool poses, and how does it use that result to update the joint angles?
 
 ## What to Submit
 
