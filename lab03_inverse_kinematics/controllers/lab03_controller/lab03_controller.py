@@ -56,6 +56,8 @@ result = numerical_ik(
 )
 
 print("Target:", TARGET_LABEL)
+print("Desired tool position [m]:", np.array2string(target[:3, 3], precision=6))
+print("Desired tool RPY [rad]:", np.array2string(rotation_to_rpy(target[:3, :3]), precision=6))
 print("Joint order:", ", ".join(JOINT_NAMES))
 print("Initial q [rad]:", np.array2string(q0, precision=6))
 print("Converged:", result.converged, "Reason:", result.reason)
@@ -73,7 +75,7 @@ if np.any(q_goal < -limits) or np.any(q_goal > limits):
     raise SystemExit
 
 predicted = fk_tool(q_goal)
-print("Goal q [rad]:", np.array2string(q_goal, precision=6))
+print("IK solution q [rad]:", np.array2string(q_goal, precision=6))
 print("Predicted tool position [m]:", np.array2string(predicted[:3, 3], precision=6))
 print("Predicted tool RPY [rad]:", np.array2string(rotation_to_rpy(predicted[:3, :3]), precision=6))
 
@@ -92,7 +94,7 @@ while robot.step(arm.time_step) != -1:
     if robot.getTime() - settle_start >= 1.0:
         measured_q = arm.positions()
         position, rpy = arm.measured_tool_pose()
-        print("Measured q [rad]:", np.array2string(measured_q, precision=6))
+        print("Webots measured q [rad]:", np.array2string(measured_q, precision=6))
         if position is not None:
             print("Webots tool position [m]:", np.array2string(position, precision=6))
             print("Webots tool RPY [rad]:", np.array2string(rpy, precision=6))

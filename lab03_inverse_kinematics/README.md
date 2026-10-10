@@ -430,6 +430,7 @@ For example, a tiny solver error but a large Webots error suggests that the nume
 
 
 </details>
+
 ## Provided Files
 
 - `worlds/lab03_starter.wbt` - protected UR5e world with two visual pose targets
@@ -455,10 +456,8 @@ VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be 
 
 Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab03_Report_Template.docx`, paste it into the personal Word copy you created.
 
-<details>
-<summary><strong>Part 1 - Required setup and validation</strong></summary>
+## Part 1 - Required Setup and Validation
 
-Expand and complete this section once before starting the IK activity.
 
 > **Why this part matters:** Verifying Lab 2 FK, the starter world, Python, devices, and one-joint motion isolates environment problems before they can be mistaken for IK failures.
 
@@ -482,19 +481,18 @@ Expand and complete this section once before starting the IK activity.
    | `diagnostic_minimal` | 10 completed steps; no movement |
    | `diagnostic_devices` | six motors, six sensors, and tool sensors; no movement |
    | **One joint:** Lab 2 controller | shoulder pan changes by only +0.05 rad |
-   | **Full algorithm:** | wait until Steps 2-6 pass |
+   | **Full algorithm:** | wait until Parts 2 and 3 are complete |
 
 No report entry is required for these prerequisite checks. Stop at the first failure.
 
 **Never overwrite `lab03_starter.wbt`.** Discard a damaged working copy and recreate it from the starter.
 
 
-</details>
 ## Part 2 - Core IK Activity
 
 > **Why this part matters:** You will enter the three equations that carry numerical IK from the current pose to a new joint estimate: calculate the position error, calculate a damped joint correction, and update the joints. The supporting programming is provided so you can focus on this robotics sequence.
 
-### Step 2 - Read the provided loop
+### Step 1 - Read the provided loop
 
 Open `src/numerical_ik.py`. Do not rewrite the file. The following pieces are already complete:
 
@@ -506,7 +504,7 @@ Open `src/numerical_ik.py`. Do not rewrite the file. The following pieces are al
 
 Follow one pass through the loop: FK calculates the current tool pose, `pose_error` calculates the remaining correction, the Jacobian relates small joint changes to small tool motion, and the solver updates the joint estimate.
 
-### Step 3 - Complete only the three marked lines
+### Step 2 - Complete only the three marked lines
 
 Search for `TODO 1`, `TODO 2`, and `TODO 3` in `src/numerical_ik.py`. These are the only lines you edit in this lab.
 
@@ -557,7 +555,8 @@ This implements
 ```
 
 The provided code then limits the size of the change and enforces the joint limits.
-### Step 4 - Run the provided offline experiment
+
+### Step 3 - Run the provided offline experiment
 
 Open the VS Code Terminal with **Terminal -> New Terminal**. Make sure the prompt is at the repository root, the folder containing `lab03_inverse_kinematics`. Then run:
 
@@ -567,7 +566,7 @@ python lab03_inverse_kinematics/src/run_ik_experiments.py
 
 On macOS or Ubuntu, use `python3` if `python` is not recognized.
 
-The program runs Target A, Target B, and one unreachable target. Copy the full output into the Word report. Targets A and B should report `converged: True`. The unreachable target should report `converged: False`; failure is the correct and safe result for that case.
+The program runs Target A, Target B, and one unreachable target. Targets A and B should report `converged: True`; copy those two result sections into the Word report. The unreachable target should report `converged: False`. Confirm that it does, but you do not need to paste or explain that result in the report. This final case demonstrates that the solver can reject a target instead of returning unsafe joint commands.
 
 If the program stops at `TODO 1`, `TODO 2`, or `TODO 3`, return to the corresponding marked line. Do not change the supplied Jacobian, loop, limits, or tolerances.
 
@@ -575,7 +574,18 @@ If the program stops at `TODO 1`, `TODO 2`, or `TODO 3`, return to the correspon
 
 > **Why this part matters:** The offline solver predicts joint angles. Webots checks whether commanding those angles makes the simulated tool reach the predicted position and orientation.
 
-### Step 5 - Run the provided controller for Target A
+### Step 1 - Run the provided controller for Target A
+
+Before running the simulation, spend a few minutes reading `controllers/lab03_controller/lab03_controller.py`. You are not expected to rewrite it. Follow the data from the selected target to the final measurement:
+
+1. `TARGET_LABEL` selects A or B. The corresponding vector in `TARGET_JOINTS` is passed through FK only to create a reachable **desired tool pose**.
+2. `UR5eDevices` connects the controller to the six joint motors, joint sensors, and tool-pose sensors. The controller reads the initial joint vector as `q0`.
+3. `numerical_ik(fk_tool, q0, target, ...)` receives the desired tool pose and the initial guess. It does **not** receive the target joint vector as its answer.
+4. If IK fails, returns invalid values, or violates a joint limit, the controller exits without commanding motion.
+5. If the result is valid, the controller gradually changes the motor commands from `q0` to the IK solution over eight seconds. The cubic blend avoids an abrupt jump in the commanded joint angles.
+6. After one second of settling time, the controller reads the measured joint angles and the Webots tool-position and orientation sensors. It prints those measurements so you can compare them with the FK prediction.
+
+This file shows the complete robotics sequence: choose a tool pose, solve IK, check the solution, command the motors, measure the result, and compare prediction with measurement. Only `TARGET_LABEL` needs to be changed when you repeat the experiment for Target B.
 
 1. Open your `lab03_work.wbt` copy in Webots and keep the simulation paused.
 2. Select the UR5e robot. Set its controller to `lab03_controller`.
@@ -585,18 +595,54 @@ If the program stops at `TODO 1`, `TODO 2`, or `TODO 3`, return to the correspon
 
 The controller uses your three completed equations, but all device access, validation, interpolation, and safety checks are provided. It prints:
 
-- the IK convergence result and final joint vector;
-- the **predicted tool position and predicted tool roll-pitch-yaw (RPY)** calculated with FK; and
-- the **Webots-measured tool position and tool RPY** after the motion settles.
+- the desired target tool position and target roll-pitch-yaw (RPY);
+- the IK convergence result and **IK solution joint vector**;
+- the **predicted tool position and predicted tool RPY** calculated by applying FK to the IK solution; and
+- the **Webots-measured joint vector, tool position, and tool RPY** after the motion settles.
 
 RPY means roll, pitch, and yaw: rotations about the x, y, and z axes, reported in radians.
 
-### Step 6 - Repeat for Target B
+### Step 2 - Change the controller to Target B
 
-1. Stop and reset Webots.
-2. Change only `TARGET_LABEL = "A"` to `TARGET_LABEL = "B"`.
-3. Run the simulation again.
-4. Copy the output and take one screenshot showing the final robot pose and Target B.
+Use VS Code to change the target selection in the provided controller:
+
+1. In Webots, click **Stop** so the simulation is not running.
+2. Return to VS Code. In the Explorer on the left, expand these folders in order:
+
+   ```text
+   lab03_inverse_kinematics
+     controllers
+       lab03_controller
+   ```
+
+3. Click `lab03_controller.py` to open it.
+
+   If you cannot find the file in the Explorer, press **Ctrl+P** on Windows or Ubuntu, or **Command+P** on macOS. Type:
+
+   ```text
+   lab03_inverse_kinematics/controllers/lab03_controller/lab03_controller.py
+   ```
+
+   Then press **Enter**.
+
+4. Near the top of the file, find this line:
+
+   ```python
+   TARGET_LABEL = "A"
+   ```
+
+5. Change only the letter `A` to `B`:
+
+   ```python
+   TARGET_LABEL = "B"
+   ```
+
+   Keep the quotation marks and do not change `TARGET_JOINTS` or any other code.
+
+6. Save the file with **Ctrl+S** on Windows or Ubuntu, or **Command+S** on macOS.
+7. Return to Webots and click **Reset** so the controller restarts from the initial robot configuration.
+8. Click **Run**. Confirm that the Console begins with `Target: B`.
+9. After the motion finishes, copy the output and take one screenshot showing the final robot pose and Target B.
 
 Do not command the unreachable target. The provided controller stops without moving if IK fails or returns invalid joint values.
 
@@ -611,22 +657,20 @@ For each pose separately, compare:
 
 Write 1-2 sentences for Target A and 1-2 sentences for Target B. State whether each predicted and measured tool pose agrees closely. Small differences can result from finite solver tolerance and joint tracking. You are not required to calculate a single combined pose-error formula or decide which pose has the largest error.
 
-## Engineering Questions
+## Engineering Question
 
-Answer each in 1-2 sentences.
+Answer in 2-3 sentences.
 
-1. In one iteration, how does the pose-error vector influence the joint correction?
-2. Why is damping useful when the Jacobian is near a singular configuration?
-3. Why can two different initial joint seeds lead to different joint-angle solutions for the same tool pose?
+In one numerical IK iteration, explain how the pose-error vector, the damped Jacobian correction, and the joint update work together to move the tool toward the desired pose.
 
 ## What to Submit
 
 1. Completed `src/numerical_ik.py` containing your three equation lines.
 2. Completed `Lab03_Report_Template.docx` containing:
-   - the complete offline output for Targets A, B, and the unreachable target;
+   - the complete offline output for Targets A and B;
    - the Target A and Target B Webots outputs and screenshots;
    - a short pose-by-pose comparison of predicted and measured tool position and RPY; and
-   - answers to the three Engineering Questions.
+   - your answer to the Engineering Question.
 
 Do not submit `lab03_work.wbt`, provided helper code, vendor assets, or caches unless requested.
 
