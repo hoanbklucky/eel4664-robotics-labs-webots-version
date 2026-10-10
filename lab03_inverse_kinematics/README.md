@@ -66,7 +66,7 @@ Complete the Python/NumPy prerequisites in [Lab 00](../lab00_setup/README.md).
 Use the [Planar Robot FK and IK Simulator Activities](../docs/PLANAR_3R_SIMULATOR_ACTIVITIES.md) to explore elbow-up and elbow-down branches, verify IK by substituting each solution into FK, find unreachable and singular targets, and compare analytical IK with an iterative solver. This external-browser activity is optional unless assigned by the instructor.
 
 <details>
-<summary><strong>Optional background: analytical IK, pose error, Jacobians, and numerical methods</strong></summary>
+<summary><h3>Optional background: analytical IK, pose error, Jacobians, and numerical methods</h3></summary>
 
 The core activity begins in Part 2. Expand this section when you want the derivations, examples, or more detail about why the provided code works.
 
@@ -260,7 +260,7 @@ Subtract the current pose $\mathbf f(\mathbf q_k)$. The resulting local tool-pos
 
 $\Delta\mathbf x\approx\mathbf J(\mathbf q_k)\Delta\mathbf q.$
 
-Here, $\Delta\mathbf x$ is not the subtraction of two homogeneous matrices. It is a six-component local motion: three small position changes and three small orientation changes. Column $j$ of the Jacobian answers: “If joint $j$ changes slightly, how does that six-component tool motion change?”
+Here, $\Delta\mathbf x$ is not the subtraction of two homogeneous matrices. It is a six-component local motion: three small position changes and three small orientation changes. Column $j$ of the Jacobian answers: â€œIf joint $j$ changes slightly, how does that six-component tool motion change?â€
 
 The tool change we want is exactly the remaining pose correction:
 
