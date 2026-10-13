@@ -220,9 +220,9 @@ Estimate that column by nudging joint `j` in both directions:
 
 > $\mathbf q^+ = \mathbf q + h\mathbf u_j, \qquad \mathbf q^- = \mathbf q - h\mathbf u_j$
 
-> $\mathbf J[:,j] \approx \frac{ \mathbf e_{\mathrm{pose}} \left({}^{0}_{tool}T^{-},{}^{0}_{tool}T^{+}\right) }{2h}, \qquad {}^{0}_{tool}T^{\pm} = {}^{0}_{tool}T(\mathbf q^{\pm})$
+> $\mathbf J_j \approx \mathbf e_{pose}(T^-,T^+)/(2h)$
 
-Here, $\mathbf e_{\mathrm{pose}}$ is the pose difference calculated by `pose_error`, and ${}^{0}_{tool}T(\mathbf q)$ is the frame-`{0}` tool transform returned by `fk_tool(q)`. The symbol `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the positive and negative evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
+Here, $\mathbf J_j$ means column `j` of the Jacobian. Calculate `T_minus = fk_tool(q_minus)` and `T_plus = fk_tool(q_plus)`, then use `pose_error(T_minus, T_plus)` for $\mathbf e_{pose}(T^-,T^+)$. The symbol `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the positive and negative evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
 
 ```text
 0.0008 / (2 * 0.001) = 0.4 m/rad
