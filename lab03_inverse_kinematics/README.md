@@ -155,7 +155,7 @@ In the code, `forward_kinematics(q)` returns the first transform on the right si
 
 The tool-frame origin is at the stylus mount. In tool coordinates, the visible orange tip is the fixed point
 
-> ${}^{tool}\mathbf p_{tip}=\begin{bmatrix}0 & 0.13 & 0\end{bmatrix}^{T}\ \text{m}$
+> ${}^{tool}\mathbf p_{tip}=[0,\ 0.13,\ 0]^T\ \text{m}$
 
 Its frame-`{0}` position is found by transforming this point with ${}^{0}_{tool}T(\mathbf q)$.
 
@@ -196,7 +196,7 @@ e_R approximately equals [0, 0, 0.0349] rad
 
 because 2 degrees is 0.0349 rad. Stack position and orientation vertically:
 
-> $\mathbf e = \begin{bmatrix} \mathbf e_p \\ \mathbf e_R \end{bmatrix} \in \mathbb R^6$
+> $\mathbf e=[\mathbf e_p^T,\ \mathbf e_R^T]^T\in\mathbb R^6$
 
 Thus, `e[0:3]` describes translation and `e[3:6]` describes rotation. `pose_error` and the Jacobian must use the same frame and sign convention.
 
@@ -238,7 +238,7 @@ The numerical IK update follows directly from the local relationship between a s
 
 At iteration $k$, the current joint estimate is $\mathbf q_k$, and forward kinematics gives the current tool pose. The **pose_error** function compares that pose with the desired pose and constructs
 
-> $\mathbf e_k=\begin{bmatrix}\mathbf p_d-\mathbf p_k\\\mathbf e_R\end{bmatrix}$
+> $\mathbf e_k=[(\mathbf p_d-\mathbf p_k)^T,\ \mathbf e_R^T]^T$
 
 where the first three entries are position error and the last three entries form a small orientation-error vector.
 
