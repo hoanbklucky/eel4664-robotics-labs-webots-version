@@ -135,9 +135,7 @@ Because the process begins with a guess, different initial guesses can lead to d
 
 Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool frame. This lab follows Craig's frame notation:
 
-$$
-{}^{A}_{B}T
-$$
+> ${}^{A}_{B}T$
 
 means "the pose of frame `{B}` expressed relative to frame `{A}`." The same matrix converts coordinates written in frame `{B}` into coordinates written in frame `{A}`.
 
@@ -149,9 +147,7 @@ The robot base is placed at the Webots world origin, so DH frame `{0}` and the W
 
 Chain the two transforms in this order:
 
-$$
-{}^{0}_{tool}T(\mathbf q) = {}^{0}_{6}T(\mathbf q) \cdot {}^{6}_{tool}T
-$$
+> ${}^{0}_{tool}T(\mathbf q) = {}^{0}_{6}T(\mathbf q) \cdot {}^{6}_{tool}T$
 
 Read the chain from right to left when transforming a point: first go from the tool frame to frame `{6}`, and then from frame `{6}` to frame `{0}`. Transformation order matters; reversing the two matrices describes a different frame relationship.
 
@@ -159,9 +155,7 @@ In the code, `forward_kinematics(q)` returns the first transform on the right si
 
 The tool-frame origin is at the stylus mount. In tool coordinates, the visible orange tip is the fixed point
 
-$$
-{}^{tool}\mathbf p_{tip}=\begin{bmatrix}0 & 0.13 & 0\end{bmatrix}^{T}\ \text{m}
-$$
+> ${}^{tool}\mathbf p_{tip}=\begin{bmatrix}0 & 0.13 & 0\end{bmatrix}^{T}\ \text{m}$
 
 Its frame-`{0}` position is found by transforming this point with ${}^{0}_{tool}T(\mathbf q)$.
 
@@ -173,9 +167,7 @@ The starter also contains `TARGET_A` and `TARGET_B`. Each target has short red/g
 
 At each iteration, the solver compares the current tool pose with the target. Position error is
 
-$$
-\mathbf e_p = \mathbf p_{target} - \mathbf p_{current}
-$$
+> $\mathbf e_p = \mathbf p_{target} - \mathbf p_{current}$
 
 For example, suppose
 
@@ -194,9 +186,7 @@ The tool must move 2 cm in world +x, 2 cm in world -y, and 1 cm in world +z.
 
 Position alone is insufficient: the stylus may reach the correct point while pointing the wrong way. Use the small base-frame orientation error
 
-$$
-\mathbf e_R = \frac{1}{2}\sum_{i=1}^{3} \left(\mathbf R_{current}[:,i] \times \mathbf R_{target}[:,i]\right)
-$$
+> $\mathbf e_R = \frac{1}{2}\sum_{i=1}^{3} \left(\mathbf R_{current}[:,i] \times \mathbf R_{target}[:,i]\right)$
 
 Each rotation-matrix column is one tool axis expressed in the base frame. If the target is rotated approximately 2 degrees about world +z from the current orientation, then
 
@@ -206,9 +196,7 @@ e_R approximately equals [0, 0, 0.0349] rad
 
 because 2 degrees is 0.0349 rad. Stack position and orientation vertically:
 
-$$
-\mathbf e = \begin{bmatrix} \mathbf e_p \\ \mathbf e_R \end{bmatrix} \in \mathbb R^6
-$$
+> $\mathbf e = \begin{bmatrix} \mathbf e_p \\ \mathbf e_R \end{bmatrix} \in \mathbb R^6$
 
 Thus, `e[0:3]` describes translation and `e[3:6]` describes rotation. `pose_error` and the Jacobian must use the same frame and sign convention.
 
@@ -216,33 +204,23 @@ Thus, `e[0:3]` describes translation and `e[3:6]` describes rotation. `pose_erro
 
 Let
 
-$$
-\Delta \mathbf q = [\Delta q_1,\ldots,\Delta q_6]^T
-$$
+> $\Delta \mathbf q = [\Delta q_1,\ldots,\Delta q_6]^T$
 
 be a small change in the six joints. Let
 
-$$
-\Delta \mathbf x = [\Delta p_x,\Delta p_y,\Delta p_z, \Delta \theta_x,\Delta \theta_y,\Delta \theta_z]^T
-$$
+> $\Delta \mathbf x = [\Delta p_x,\Delta p_y,\Delta p_z, \Delta \theta_x,\Delta \theta_y,\Delta \theta_z]^T$
 
 be the resulting small tool-pose change. The task Jacobian gives the local linear approximation
 
-$$
-\boxed{\Delta \mathbf x \approx \mathbf J(\mathbf q)\Delta \mathbf q}
-$$
+> $\boxed{\Delta \mathbf x \approx \mathbf J(\mathbf q)\Delta \mathbf q}$
 
 `J` is 6-by-6. Column `j` answers: "If only joint `j` changes by one small radian, how does the tool position and orientation change?"
 
 Estimate that column by nudging joint `j` in both directions:
 
-$$
-\mathbf q^+ = \mathbf q + h\mathbf u_j, \qquad \mathbf q^- = \mathbf q - h\mathbf u_j
-$$
+> $\mathbf q^+ = \mathbf q + h\mathbf u_j, \qquad \mathbf q^- = \mathbf q - h\mathbf u_j$
 
-$$
-\mathbf J[:,j] \approx \frac{ \mathbf e_{\mathrm{pose}} \left({}^{0}_{tool}T^{-},{}^{0}_{tool}T^{+}\right) }{2h}, \qquad {}^{0}_{tool}T^{\pm} = {}^{0}_{tool}T(\mathbf q^{\pm})
-$$
+> $\mathbf J[:,j] \approx \frac{ \mathbf e_{\mathrm{pose}} \left({}^{0}_{tool}T^{-},{}^{0}_{tool}T^{+}\right) }{2h}, \qquad {}^{0}_{tool}T^{\pm} = {}^{0}_{tool}T(\mathbf q^{\pm})$
 
 Here, $\mathbf e_{\mathrm{pose}}$ is the pose difference calculated by `pose_error`, and ${}^{0}_{tool}T(\mathbf q)$ is the frame-`{0}` tool transform returned by `fk_tool(q)`. The symbol `u_j` is zero except for a 1 at joint `j`. For example, if `h = 0.001` rad and the positive and negative evaluations differ by `0.0008` m in tool x, then that Jacobian entry is
 
@@ -260,63 +238,45 @@ The numerical IK update follows directly from the local relationship between a s
 
 At iteration $k$, the current joint estimate is $\mathbf q_k$, and forward kinematics gives the current tool pose. The **pose_error** function compares that pose with the desired pose and constructs
 
-$$
-\mathbf e_k=\begin{bmatrix}\mathbf p_d-\mathbf p_k\\\mathbf e_R\end{bmatrix}
-$$
+> $\mathbf e_k=\begin{bmatrix}\mathbf p_d-\mathbf p_k\\\mathbf e_R\end{bmatrix}$
 
 where the first three entries are position error and the last three entries form a small orientation-error vector.
 
 The IK goal is to find joint angles $\mathbf q^*$ for which
 
-$$
-\mathbf e(\mathbf q^*)=\mathbf 0
-$$
+> $\mathbf e(\mathbf q^*)=\mathbf 0$
 
 That makes IK a root-finding problem: the function whose root we seek is the pose-error function.
 
 The easiest way to derive the joint update is to ask how a small joint change affects the tool. For a one-variable function, the derivative converts a small input change into an approximate output change:
 
-$$
-\Delta y\approx f'(q_k)\Delta q
-$$
+> $\Delta y\approx f'(q_k)\Delta q$
 
 A robot has several joint inputs and several tool-motion outputs, so the derivatives are collected in the Jacobian matrix. Near the current joint estimate, a first-order Taylor approximation gives
 
-$$
-\mathbf f(\mathbf q_k+\Delta\mathbf q)\approx\mathbf f(\mathbf q_k)+\mathbf J(\mathbf q_k)\Delta\mathbf q
-$$
+> $\mathbf f(\mathbf q_k+\Delta\mathbf q)\approx\mathbf f(\mathbf q_k)+\mathbf J(\mathbf q_k)\Delta\mathbf q$
 
 Subtract the current pose $\mathbf f(\mathbf q_k)$. The resulting local tool-pose change is approximately
 
-$$
-\Delta\mathbf x\approx\mathbf J(\mathbf q_k)\Delta\mathbf q
-$$
+> $\Delta\mathbf x\approx\mathbf J(\mathbf q_k)\Delta\mathbf q$
 
 Here, $\Delta\mathbf x$ is not the subtraction of two homogeneous matrices. It is a six-component local motion: three small position changes and three small orientation changes. Column $j$ of the Jacobian answers: "If joint $j$ changes slightly, how does that six-component tool motion change?"
 
 The tool change we want is exactly the remaining pose correction:
 
-$$
-\Delta\mathbf x_{\mathrm{desired}}=\mathbf e_k
-$$
+> $\Delta\mathbf x_{\mathrm{desired}}=\mathbf e_k$
 
 Require the joint correction to produce that desired tool change:
 
-$$
-\mathbf J(\mathbf q_k)\Delta\mathbf q\approx\mathbf e_k
-$$
+> $\mathbf J(\mathbf q_k)\Delta\mathbf q\approx\mathbf e_k$
 
 If the Jacobian is square and safely invertible, solve for the joint correction:
 
-$$
-\Delta\mathbf q\approx\mathbf J^{-1}(\mathbf q_k)\mathbf e_k
-$$
+> $\Delta\mathbf q\approx\mathbf J^{-1}(\mathbf q_k)\mathbf e_k$
 
 Then update the joint estimate:
 
-$$
-\mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q
-$$
+> $\mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q$
 
 This local correction is closely related to multivariable Newton's method, but that connection is not required to apply the IK update. The optional reading below explains the relationship.
 
@@ -351,15 +311,11 @@ A direct inverse is not reliable for general robot IK. Some robots have a non-sq
 
 The Moore-Penrose pseudoinverse generalizes the inverse. It is written as `J+` in plain text and with a superscript `+` on `J` in the equation below. The update becomes
 
-$$
-\Delta\mathbf q=\mathbf J^{+}(\mathbf q_k)\mathbf e_k,\qquad \mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q
-$$
+> $\Delta\mathbf q=\mathbf J^{+}(\mathbf q_k)\mathbf e_k,\qquad \mathbf q_{k+1}=\mathbf q_k+\Delta\mathbf q$
 
 When the task rows are independent, one useful form is
 
-$$
-\mathbf J^{+}=\mathbf J^T\left(\mathbf J\mathbf J^T\right)^{-1}
-$$
+> $\mathbf J^{+}=\mathbf J^T\left(\mathbf J\mathbf J^T\right)^{-1}$
 
 The pseudoinverse chooses a least-squares correction: if no joint change produces the requested tool change exactly, it chooses one whose predicted tool motion is as close as possible. For redundant robots, it also selects a minimum-norm solution.
 
@@ -380,9 +336,7 @@ The pseudoinverse is more general than a direct inverse, but it can still reques
 
 Damped least squares modifies the pseudoinverse so the solver does not react too aggressively near a singularity:
 
-$$
-\Delta\mathbf q_{DLS}=\mathbf J^T\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)^{-1}\mathbf e_k
-$$
+> $\Delta\mathbf q_{DLS}=\mathbf J^T\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)^{-1}\mathbf e_k$
 
 It balances two goals:
 
@@ -391,9 +345,7 @@ It balances two goals:
 
 This balance can be written as
 
-$$
-\min_{\Delta\mathbf q}\quad \left\|\mathbf J\Delta\mathbf q-\mathbf e_k\right\|^2+\lambda^2\left\|\Delta\mathbf q\right\|^2
-$$
+> $\min_{\Delta\mathbf q}\quad \left\|\mathbf J\Delta\mathbf q-\mathbf e_k\right\|^2+\lambda^2\left\|\Delta\mathbf q\right\|^2$
 
 The first term penalizes remaining pose error. The second term penalizes a large joint correction. The damping value `lambda` controls how strongly large joint changes are discouraged.
 
@@ -401,9 +353,7 @@ A useful analogy is steering a shopping cart through a narrow doorway. An undamp
 
 This lab also applies only a fraction `alpha` of the DLS proposal:
 
-$$
-\mathbf q_{k+1}=\mathbf q_k+\alpha\Delta\mathbf q_{DLS}
-$$
+> $\mathbf q_{k+1}=\mathbf q_k+\alpha\Delta\mathbf q_{DLS}$
 
 The safeguards have different jobs:
 
@@ -416,15 +366,11 @@ Too little damping can allow very large or unstable corrections. Too much dampin
 
 Do not form the inverse in the displayed DLS equation explicitly. First solve
 
-$$
-\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)\mathbf y=\mathbf e_k
-$$
+> $\left(\mathbf J\mathbf J^T+\lambda^2\mathbf I\right)\mathbf y=\mathbf e_k$
 
 then calculate
 
-$$
-\Delta\mathbf q_{DLS}=\mathbf J^T\mathbf y
-$$
+> $\Delta\mathbf q_{DLS}=\mathbf J^T\mathbf y$
 
 After that, multiply by `alpha`, limit the applied joint step, enforce the joint limits, and update `q`.
 
@@ -432,9 +378,7 @@ After that, multiply by `alpha`, limit the applied joint step, enforce the joint
 
 A simpler method replaces the inverse with the Jacobian transpose:
 
-$$
-\mathbf q_{k+1}=\mathbf q_k+\alpha\mathbf J^T(\mathbf q_k)\mathbf e_k
-$$
+> $\mathbf q_{k+1}=\mathbf q_k+\alpha\mathbf J^T(\mathbf q_k)\mathbf e_k$
 
 The transpose points generally in a direction that reduces the pose error. It is inexpensive because it does not solve a matrix equation. However, its convergence depends strongly on the step size `alpha` and is often slower than pseudoinverse or DLS IK.
 
@@ -574,9 +518,7 @@ position = __________ - __________
 
 This implements
 
-$$
-\mathbf e_p=\mathbf p_{target}-\mathbf p_{current}.
-$$
+> $\mathbf e_p=\mathbf p_{target}-\mathbf p_{current}.$
 
 The sign matters: the error vector points from the current tool position toward the desired tool position. The provided code calculates the orientation part and joins it with this position error.
 
@@ -588,15 +530,11 @@ step = jacobian.T @ np.linalg.solve(__________, __________)
 
 The provided line immediately above has already formed
 
-$$
-\mathbf{system}=\mathbf J\mathbf J^T+\lambda^2\mathbf I.
-$$
+> $\mathbf{system}=\mathbf J\mathbf J^T+\lambda^2\mathbf I.$
 
 Your completed line should calculate
 
-$$
-\Delta\mathbf q=\mathbf J^T(\mathbf J\mathbf J^T+\lambda^2\mathbf I)^{-1}\mathbf e_k.
-$$
+> $\Delta\mathbf q=\mathbf J^T(\mathbf J\mathbf J^T+\lambda^2\mathbf I)^{-1}\mathbf e_k.$
 
 For `TODO 3`, combine the current joint vector `q`, step size `alpha`, and joint correction `delta_q`:
 
@@ -606,9 +544,7 @@ q_proposed = __________ + __________ * __________
 
 This implements
 
-$$
-\mathbf q_{k+1}=\mathbf q_k+\alpha\Delta\mathbf q.
-$$
+> $\mathbf q_{k+1}=\mathbf q_k+\alpha\Delta\mathbf q.$
 
 The provided code then limits the size of the change and enforces the joint limits.
 
