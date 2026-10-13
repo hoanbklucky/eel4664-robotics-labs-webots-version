@@ -144,7 +144,7 @@ The robot base is placed at the Webots world origin, so DH frame `{0}` and the W
 - ${}^{6}_{tool}T$ is the fixed pose of the tool frame relative to frame `{6}`; and
 - ${}^{0}_{tool}T(\mathbf q)$ is the resulting tool pose relative to frame `{0}`.
 
-Chain the two transforms in this order: multiply ${}^{0}_{6}T(\mathbf q)$ by ${}^{6}_{tool}T$ to obtain ${}^{0}_{tool}T(\mathbf q)$.
+Chain the transforms in the order listed above: multiply the first matrix by the second matrix to obtain the third matrix.
 
 Read the chain from right to left when transforming a point: first go from the tool frame to frame `{6}`, and then from frame `{6}` to frame `{0}`. Transformation order matters; reversing the two matrices describes a different frame relationship.
 
