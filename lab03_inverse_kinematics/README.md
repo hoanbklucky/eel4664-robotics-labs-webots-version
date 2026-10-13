@@ -133,11 +133,10 @@ Because the process begins with a guess, different initial guesses can lead to d
 
 ### 4. Use the same tool frame everywhere
 
-Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool frame. This lab follows Craig's frame notation:
+Lab 2 FK ends at DH frame `{6}`, while Webots measures the attached tool frame. This lab follows Craig's frame notation.
 
-> ${}^{A}_{B}T$
+In this notation, ${}^{A}_{B}T$ means "the pose of frame `{B}` expressed relative to frame `{A}`." The same matrix converts coordinates written in frame `{B}` into coordinates written in frame `{A}`.
 
-means "the pose of frame `{B}` expressed relative to frame `{A}`." The same matrix converts coordinates written in frame `{B}` into coordinates written in frame `{A}`.
 
 The robot base is placed at the Webots world origin, so DH frame `{0}` and the Webots world frame coincide in this course world. Therefore:
 
@@ -145,13 +144,11 @@ The robot base is placed at the Webots world origin, so DH frame `{0}` and the W
 - ${}^{6}_{tool}T$ is the fixed pose of the tool frame relative to frame `{6}`; and
 - ${}^{0}_{tool}T(\mathbf q)$ is the resulting tool pose relative to frame `{0}`.
 
-Chain the two transforms in this order:
-
-> ${}^{0}_{tool}T(\mathbf q) = {}^{0}_{6}T(\mathbf q) \cdot {}^{6}_{tool}T$
+Chain the two transforms in this order: multiply ${}^{0}_{6}T(\mathbf q)$ by ${}^{6}_{tool}T$ to obtain ${}^{0}_{tool}T(\mathbf q)$.
 
 Read the chain from right to left when transforming a point: first go from the tool frame to frame `{6}`, and then from frame `{6}` to frame `{0}`. Transformation order matters; reversing the two matrices describes a different frame relationship.
 
-In the code, `forward_kinematics(q)` returns the first transform on the right side of the equation above. The supplied `T_6_TOOL` stores the second, fixed transform. The wrapper `fk_tool(q)` multiplies them and returns the tool pose on the left side. Use this same wrapper for the current and target poses. Never recalculate `T_6_TOOL` for a new target.
+In the code, `forward_kinematics(q)` returns the first transform named in the relationship above. The supplied `T_6_TOOL` stores the second, fixed transform. The wrapper `fk_tool(q)` multiplies them and returns the tool pose on the left side. Use this same wrapper for the current and target poses. Never recalculate `T_6_TOOL` for a new target.
 
 The tool-frame origin is at the stylus mount. In tool coordinates, the visible orange tip is the fixed point
 
