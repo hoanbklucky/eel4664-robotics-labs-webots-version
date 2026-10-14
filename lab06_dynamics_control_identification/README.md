@@ -56,6 +56,7 @@ By the end of this lab, you should be able to:
 
 Complete Lab 5 and the [setup prerequisites](../lab00_setup/README.md). Bring a tested trajectory generator and logger. The instructor must approve the two payload/model conditions and any effort-control limits. Do not edit the installed Cyberbotics UR5e PROTO.
 
+The standalone [Manipulator Dynamics: A Simple 1R Arm](../activities/manipulator-dynamics/README.md) activity is recommended preparation. It introduces the inertia, friction, gravity, payload, and torque-limit ideas used in this lab without requiring Webots.
 
 **Platform note:** The required workflow supports Windows, macOS, and Ubuntu when configured through Lab 00. Terminal examples use `python`; on macOS or Ubuntu, use `python3` instead if `python` is not recognized.
 

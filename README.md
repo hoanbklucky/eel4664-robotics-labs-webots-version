@@ -78,6 +78,10 @@ Lab 1 directly teaches the small set of UR5e and world-interaction skills requir
 
 The [Planar Robot FK and IK Simulator Activities](docs/PLANAR_3R_SIMULATOR_ACTIVITIES.md) use two external browser simulators for guided practice with 3R forward kinematics, DH transforms, elbow-up/elbow-down solutions, FK verification of IK, reachability, singularities, and iterative IK. They are optional lecture or pre-lab activities and are not required submissions unless assigned by the instructor.
 
+## Manipulator Dynamics Activity
+
+The [Manipulator Dynamics: A Simple 1R Arm](activities/manipulator-dynamics/README.md) activity introduces inertia, friction, gravity, payload, forward dynamics, inverse dynamics, and torque limits before the more detailed Lab 6 experiments. It is a standalone Python activity that can run in Google Colab, Jupyter, VS Code, or a local terminal; Webots is not required. Follow the instructor's assignment for required tasks and submissions.
+
 ## Required safe workflow
 
 Every required lab provides one tracked `*_starter.wbt`. Labs 2-7 also provide the `diagnostic_minimal` and `diagnostic_devices` controllers for technical experiments.
@@ -102,6 +106,7 @@ lab04_jacobian_singularities/               required Lab 4
 lab05_trajectory_tracking/                  required Lab 5
 lab06_dynamics_control_identification/      required Lab 6
 lab07_integrated_manipulation/              required Lab 7 / final project
+activities/manipulator-dynamics/            standalone 1R manipulator-dynamics activity
 docs/                                       shared troubleshooting
 webots/controllers/                         canonical shared controllers
 optional_legacy/previous_lab_sequence/      archived material from the former sequence
