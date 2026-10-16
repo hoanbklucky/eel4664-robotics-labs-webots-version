@@ -134,7 +134,7 @@ A centered finite difference estimates each column:
 
 $$
 J[:,i]\approx
-\frac{\operatorname{poseDifference}(T(\mathbf q-\varepsilon\mathbf e_i),
+\frac{\mathrm{poseDifference}(T(\mathbf q-\varepsilon\mathbf e_i),
 T(\mathbf q+\varepsilon\mathbf e_i))}
 {2\varepsilon}.
 $$

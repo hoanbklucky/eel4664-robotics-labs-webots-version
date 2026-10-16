@@ -1,6 +1,6 @@
 # Lab 5 Optional Background
 
-This page explains the main ideas behind trajectory generation and tracking. Read Sections 1 through 5 before the lab if you want a concepts-first introduction. Sections 6 through 10 provide additional detail and are useful when interpreting your plots.
+This page explains the main ideas behind trajectory generation and tracking. Read Sections 1 through 6 before the lab if you want a concepts-first introduction. Sections 7 through 11 provide additional detail and are useful when interpreting your plots.
 
 Return to the [Lab 5 instructions](README.md) when you are ready to complete the required activity.
 
@@ -18,51 +18,99 @@ For one joint, imagine drawing a curve of angle versus time. The height of the c
 
 This distinction matters because two motions can follow the same path but use different durations. The slower motion usually requires smaller velocity and acceleration, even though its start and finish are unchanged.
 
-## 2. From two endpoint angles to a smooth motion
+## 2. Start with the simplest choice: a straight line in time
 
-Suppose one joint must move from angle $\theta_0$ at time $0$ to angle $\theta_f$ at time $T_f$. Jumping immediately from one angle command to the other would demand an unrealistically abrupt motion.
+Suppose one joint must move from angle $\theta_0$ at time $0$ to angle $\theta_f$ at time $T_f$. The simplest interpolation is a linear function:
 
-A cubic trajectory replaces that jump with a smooth polynomial:
+$$
+\theta(t)=at+b.
+$$
+
+There are two unknown coefficients, so use the two position constraints
+
+$$
+\theta(0)=\theta_0,
+\qquad
+\theta(T_f)=\theta_f.
+$$
+
+The first constraint gives $b=\theta_0$. Substituting this into the second constraint gives
+
+$$
+\theta_f=aT_f+\theta_0,
+$$
+
+and therefore
+
+$$
+a=\frac{\theta_f-\theta_0}{T_f}.
+$$
+
+The resulting trajectory and velocity are
+
+$$
+\theta(t)=\theta_0+\frac{\theta_f-\theta_0}{T_f}t,
+$$
+
+$$
+\dot{\theta}(t)=\frac{\theta_f-\theta_0}{T_f}.
+$$
+
+The position is continuous, but the joint is normally stationary before and after the commanded move. Its desired velocity must therefore jump instantly from zero to a nonzero constant at $t=0$, then jump back to zero at $t=T_f$. An ideal instantaneous velocity change requires unbounded acceleration. A real actuator cannot do this, so it produces a large acceleration and torque transient: the motion starts and stops abruptly.
+
+![Linear interpolation has velocity jumps at the endpoints, whereas a cubic rest-to-rest trajectory changes velocity smoothly.](figures/linear_vs_cubic.png)
+
+*Linear interpolation satisfies the two position constraints, but it cannot also impose zero endpoint velocities. The vertical orange marks represent the idealized acceleration impulses associated with its velocity jumps.*
+
+## 3. Add two constraints with a cubic polynomial
+
+To make the joint start and finish at rest, add two velocity constraints. Four total constraints require four adjustable coefficients, so choose a cubic:
 
 $$
 \theta(t)=a_0+a_1t+a_2t^2+a_3t^3.
 $$
 
-Differentiate once to obtain velocity:
+Differentiate once to obtain velocity and again to obtain acceleration:
 
 $$
-\dot{\theta}(t)=a_1+2a_2t+3a_3t^2.
+\dot{\theta}(t)=a_1+2a_2t+3a_3t^2,
 $$
-
-Differentiate again to obtain acceleration:
 
 $$
 \ddot{\theta}(t)=2a_2+6a_3t.
 $$
 
-There are four unknown coefficients, so we need four boundary conditions. A common rest-to-rest motion uses
+A common rest-to-rest motion uses
 
 $$
-\theta(0)=\theta_0,\qquad
-\theta(T_f)=\theta_f,\qquad
-\dot{\theta}(0)=0,\qquad
+\theta(0)=\theta_0,
+\qquad
+\theta(T_f)=\theta_f,
+$$
+
+$$
+\dot{\theta}(0)=0,
+\qquad
 \dot{\theta}(T_f)=0.
 $$
 
 Solving these four equations gives
 
 $$
-a_0=\theta_0,\qquad a_1=0,
+a_0=\theta_0,
+\qquad
+a_1=0,
 $$
 
 $$
-a_2=\frac{3(\theta_f-\theta_0)}{T_f^2},\qquad
+a_2=\frac{3(\theta_f-\theta_0)}{T_f^2},
+\qquad
 a_3=\frac{-2(\theta_f-\theta_0)}{T_f^3}.
 $$
 
-The boundary conditions are not extra checks added after the polynomial is generated. They are what determine the polynomial.
+The boundary conditions are not checks added after the trajectory is generated. They determine its coefficients. A linear polynomial has only two coefficients and can satisfy only the two position constraints; a cubic has four coefficients and can satisfy both position and velocity constraints.
 
-## 3. A normalized clock makes the formula easier to read
+## 4. A normalized clock makes the formula easier to read
 
 Define normalized time
 
@@ -92,7 +140,7 @@ $$
 
 At $t=1$ second, the motion is halfway through its duration and the joint reaches $45^\circ$.
 
-## 4. Why changing duration changes velocity and acceleration
+## 5. Why changing duration changes velocity and acceleration
 
 Differentiate the normalized cubic:
 
@@ -104,16 +152,46 @@ $$
 \ddot{\theta}(t)=\frac{\Delta\theta}{T_f^2}(6-12s).
 $$
 
-These equations reveal the time-scaling rule:
+The factors $6s-6s^2$ and $6-12s$ describe the shapes of the velocity and acceleration curves. Every complete motion passes through the same normalized interval $0\le s\le1$, regardless of $T_f$. Changing $T_f$ stretches or compresses those shapes along the physical-time axis.
+
+The velocity-shape factor reaches its maximum halfway through the motion. To see this, differentiate it with respect to $s$:
+
+$$
+\frac{d}{ds}(6s-6s^2)=6-12s.
+$$
+
+Setting this derivative to zero gives $s=0.5$. Because the second derivative is $-12$, the curve bends downward there, so this point is a maximum. Its value is
+
+$$
+6(0.5)-6(0.5)^2=1.5.
+$$
+
+Consequently,
+
+$$
+\max |\dot{\theta}|=\frac{1.5|\Delta\theta|}{T_f}.
+$$
+
+Similarly, the largest magnitude of $6-12s$ on $0\le s\le1$ is $6$, so
+
+$$
+\max |\ddot{\theta}|=\frac{6|\Delta\theta|}{T_f^2}.
+$$
+
+These results reveal the time-scaling rule:
 
 - velocity is proportional to $1/T_f$;
 - acceleration is proportional to $1/T_f^2$.
 
-If the same motion takes twice as long, its peak velocity is cut in half and its peak acceleration becomes one quarter as large. If the duration is halved, peak velocity doubles and peak acceleration quadruples.
+If the same motion takes twice as long, its peak velocity is cut in half and its peak acceleration becomes one quarter as large. This statement compares peak values over each complete motion, or values at the same normalized progress $s$; it does not compare the trajectories at the same physical time $t$.
+
+![Cubic trajectories with one-second and two-second durations showing the change in position, velocity, and acceleration.](figures/duration_scaling.png)
+
+*Both motions follow the same normalized cubic shape. The two-second motion traverses it more slowly: its peak velocity is half as large and its peak acceleration magnitude is one quarter as large.*
 
 This is why slowing a motion often reduces actuator demand. It does not, however, change gravity torque at a given pose or make an unreachable pose reachable.
 
-## 5. Cubic, quintic, and trapezoidal profiles
+## 6. Cubic, quintic, and trapezoidal profiles
 
 A cubic rest-to-rest trajectory guarantees zero endpoint velocity, but its endpoint acceleration is generally nonzero. Joining that motion directly to a stationary hold can create an acceleration and torque jump.
 
@@ -135,7 +213,7 @@ A trapezoidal velocity profile uses three phases: accelerate, travel at approxim
 
 No profile is universally best. The choice depends on endpoint smoothness, motion time, actuator limits, and how the reference will be tracked.
 
-## 6. Synchronizing several joints
+## 7. Synchronizing several joints
 
 For a multi-joint robot, use the same progress function $s(t)$ for every joint:
 
@@ -147,7 +225,7 @@ All joints start and finish together because they share the same duration and no
 
 The duration must satisfy the limits of every joint. One slow or heavily loaded joint can determine the minimum feasible duration for the whole synchronized move.
 
-## 7. Joint-space motion and Cartesian motion are different
+## 8. Joint-space motion and Cartesian motion are different
 
 A MoveJ-style motion interpolates joint angles. It is simple and usually produces smooth joint commands, but the end effector generally follows a curved path because forward kinematics is nonlinear:
 
@@ -167,13 +245,13 @@ The program samples this path and solves IK at each waypoint. The previous joint
 
 A straight Cartesian path can therefore require a complicated joint-space path. Joint limits, singularities, reachability, and discontinuous IK solutions must still be checked.
 
-## 8. Waypoints and continuity
+## 9. Waypoints and continuity
 
 A waypoint is an intermediate desired configuration or pose. Stopping at every waypoint is easy because each segment can use zero endpoint velocity. Passing smoothly through a waypoint is harder because adjacent segments must agree on velocity and preferably acceleration.
 
 Smaller waypoint spacing can represent a Cartesian line more accurately, but it increases the number of IK solves and commands. Very coarse spacing can produce visible corner cutting or large interpolation error. Very fine spacing does not automatically improve tracking if the controller or simulation step cannot follow the commands.
 
-## 9. A generated trajectory is a reference, not a measurement
+## 10. A generated trajectory is a reference, not a measurement
 
 The generated trajectory describes what the robot should do. Sensors and FK describe what it actually did. For joint $i$, define tracking error as
 
@@ -184,7 +262,7 @@ $$
 A useful summary is root-mean-square error:
 
 $$
-\operatorname{RMSE}_i
+\mathrm{RMSE}_i
 =\sqrt{\frac{1}{N}\sum_{k=1}^{N}e_i(t_k)^2}.
 $$
 
@@ -194,7 +272,7 @@ For a desired Cartesian line from $\mathbf p_0$ to $\mathbf p_f$, straightness e
 
 Use Webots simulation time rather than wall-clock time. Wall-clock time depends on computer speed and simulation rendering; simulation time represents the experiment.
 
-## 10. Feasibility checks before motion
+## 11. Feasibility checks before motion
 
 A mathematically smooth trajectory can still be unsafe or impossible. Check at least:
 
