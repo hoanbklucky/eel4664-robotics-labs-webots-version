@@ -132,7 +132,7 @@ The official UR5e sample is prepared at the beginning of Lab 1, not during Lab 0
 
 ## Submission convention
 
-Each lab README defines its required submission. Lab 1 uses one short `answers.md`; technical labs generally submit source code, `answers.md`, quantitative evidence, and enough run instructions to reproduce the result. Do not submit Webots installations, downloaded sample assets, caches, or `*_work.wbt` unless the instructor requests the working world.
+Each lab README defines its required submission. Labs 1-7 use a personal copy of the provided `Lab##_Report_Template.docx`; technical labs also submit the specified source code and quantitative evidence. Do not submit Webots installations, downloaded sample assets, caches, or `*_work.wbt` unless the instructor requests the working world.
 
 ## Optional and archived material
 

@@ -2,29 +2,7 @@
 
 ## Get the Latest Course Files
 
-Before starting the lab, save your work, close Webots, and update the course repository. Open a terminal and use the commands for your operating system.
-
-**Windows PowerShell:**
-
-```powershell
-cd C:\eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-**macOS or Ubuntu Terminal:**
-
-```bash
-cd ~/eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-A successful update reports either `Already up to date.` or the files that Git updated.
-
-`git status --short` lists local file changes; no output means there are none. `git pull --rebase` downloads new course commits from GitHub and then reapplies any of your local commits after them. It does not submit your work to GitHub. See [What these Git commands mean](../lab00_setup/README.md#what-these-git-commands-mean) for an explanation of Git terminology.
-
-If `git pull --rebase` reports local changes, a conflict, or another error, do not force the update or discard your work. Follow [If the repository cannot update cleanly](../lab00_setup/README.md#if-the-repository-cannot-update-cleanly).
+Before starting, save your work and close Webots. Follow [Updating the Course Repository](../docs/UPDATE_REPOSITORY.md). Do not force an update or discard local work when Git reports a conflict.
 
 ## Mission
 
@@ -46,12 +24,14 @@ You are finished when:
 - the provided offline program converges for Targets A and B and rejects an unreachable target;
 - the provided controller executes both accepted solutions in Webots; and
 - the report compares the predicted and measured tool poses.
+
 ## Learning Objectives
 
 - Explain numerical IK as repeated small corrections from the current pose toward a desired pose.
 - Connect the damped-least-squares equation to one joint correction.
 - Explain how the seed, damping, and step size affect convergence.
 - Compare an FK-predicted tool pose with the pose measured in Webots.
+
 ## Prerequisites
 
 Complete [Lab 2 - UR5e Frames and Forward Kinematics](../lab02_webots_ur5e_frames/README.md). Reuse its tested `forward_kinematics(q)`, fixed `T_6_TOOL`, device adapter, and smooth joint interpolation. Do not copy or reimplement FK.
@@ -81,20 +61,10 @@ The required activity begins below. For derivations, examples, and a deeper expl
 - `src/run_ik_experiments.py` - complete offline test program
 - `src/execute_pose_target.py` - complete validation and execution helpers
 - `Lab03_Report_Template.docx` - results template
+
 ## Open the Word report template
 
-VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be used to edit it.
-
-1. In the VS Code Explorer on the left, expand the `lab03_inverse_kinematics` folder.
-2. Find `Lab03_Report_Template.docx`.
-3. Right-click the file and choose:
-   - **Reveal in File Explorer** on Windows;
-   - **Reveal in Finder** on macOS; or
-   - **Open Containing Folder** on Ubuntu.
-4. In the folder that opens, double-click `Lab03_Report_Template.docx` to open it in Microsoft Word.
-5. In Word, select **File -> Save As** and save a personal copy such as `LastName_Lab03_Report.docx`. Enter all requested results and screenshots in this personal copy.
-
-Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab03_Report_Template.docx`, paste it into the personal Word copy you created.
+Follow [Opening a Word Report Template](../docs/OPEN_WORD_REPORT.md) and create a personal copy of `Lab03_Report_Template.docx` before entering results.
 
 ## Part 1 - Required Setup and Validation
 

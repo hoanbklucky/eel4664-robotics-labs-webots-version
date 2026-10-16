@@ -2,31 +2,7 @@
 
 ## Get the Latest Course Files
 
-Before starting the lab, save your work, close Webots, and update the course repository. Open a terminal and use the commands for your operating system.
-
-**Windows PowerShell:**
-
-```powershell
-cd C:\eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-**macOS or Ubuntu Terminal:**
-
-```bash
-cd ~/eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-A successful update reports either `Already up to date.` or the files that Git updated.
-
-`git status --short` lists local file changes; no output means there are none. `git pull --rebase` downloads new course commits from GitHub and then reapplies any of your local commits after them. It does not submit your work to GitHub. See [What these Git commands mean](../lab00_setup/README.md#what-these-git-commands-mean) for an explanation of Git terminology.
-
-If `git pull --rebase` reports local changes, a conflict, or another error, do not force the update or discard your work. Follow [If the repository cannot update cleanly](../lab00_setup/README.md#if-the-repository-cannot-update-cleanly).
-
-**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
+Before starting, save your work and close Webots. Follow [Updating the Course Repository](../docs/UPDATE_REPOSITORY.md). Do not force an update or discard local work when Git reports a conflict.
 
 ## Mission
 
@@ -61,20 +37,17 @@ Complete Labs 1-4 and the [setup prerequisites](../lab00_setup/README.md). Bring
 
 ## Background
 
-A trajectory is a time-parameterized reference, not merely a sequence of poses. A MoveJ-style motion interpolates in joint space and generally traces a curved Cartesian path. A practical MoveL-style motion samples a straight Cartesian segment, solves each waypoint with your own IK using continuity-aware initial guesses, and time-parameterizes the resulting joint path.
+A path describes where the robot moves; a trajectory also specifies when it reaches each point. The generated trajectory is only a reference. Webots measurements are needed to determine whether the robot followed that reference accurately and whether the motion respected its limits.
 
-Use simulation time, not wall-clock time. At minimum compute
+For a concepts-first explanation of cubic and quintic timing, duration scaling, synchronized joints, MoveJ versus MoveL, IK continuity, and tracking metrics, read [Lab 5 Optional Background](OPTIONAL_BACKGROUND.md). The required activity remains in this README.
 
-```text
-e_i(t) = q_des,i(t) - q_meas,i(t)
-RMSE_i = sqrt(mean(e_i(t)^2))
+Use simulation time, not wall-clock time. For every desired and measured comparison, use the same joint ordering, frame, and physical tool point. The starter's orange stylus tip is
+
+```python
+p_world_tip = transform_point(T_world_tool, [0, 0.13, 0])
 ```
 
-and a Cartesian straightness error measured from each FK position to the desired line segment.
-
-The starter retains the common visual-only stylus. For a path that matches the visible orange tip, calculate `p_world_tip = transform_point(T_world_tool, [0, 0.13, 0])` and use that same point for desired and measured straightness. Do not compare a desired tool-origin path with a measured tip path.
-
-The `TRAJECTORY_REFERENCE_BOARD` shows a green straight segment, an orange curved segment, and common endpoints. It is a qualitative MoveL-versus-MoveJ reference, not measurement data. Grade straightness and tracking from logged FK/sensor values.
+Use that point for both desired and measured Cartesian straightness. The `TRAJECTORY_REFERENCE_BOARD` is a qualitative visual reference, not measurement data.
 
 ## Provided Files
 
@@ -89,18 +62,7 @@ The `TRAJECTORY_REFERENCE_BOARD` shows a green straight segment, an orange curve
 
 ## Open the Word report template
 
-VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be used to edit it.
-
-1. In the VS Code Explorer on the left, expand the `lab05_trajectory_tracking` folder.
-2. Find `Lab05_Report_Template.docx`.
-3. Right-click the file and choose:
-   - **Reveal in File Explorer** on Windows;
-   - **Reveal in Finder** on macOS; or
-   - **Open Containing Folder** on Ubuntu.
-4. In the folder that opens, double-click `Lab05_Report_Template.docx` to open it in Microsoft Word.
-5. In Word, select **File -> Save As** and save a personal copy such as `LastName_Lab05_Report.docx`. Enter all requested results and screenshots in this personal copy.
-
-Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab05_Report_Template.docx`, paste it into the personal Word copy you created.
+Follow [Opening a Word Report Template](../docs/OPEN_WORD_REPORT.md) and create a personal copy of `Lab05_Report_Template.docx` before entering results.
 
 ## Part 1 - Setup / Validation
 
@@ -116,16 +78,15 @@ Unit-test polynomial boundary conditions outside Webots before commanding the ro
 
 ## Part 2 - Core Implementation
 
-> **Why this part matters:** Generating MoveJ- and MoveL-style references explicitly teaches how timing, IK continuity, and limits turn endpoints into safe, executable motion.
+> **Why this part matters:** The three cubic equations show how endpoint conditions become a timed joint trajectory. Cartesian waypoint sampling, IK continuity checks, straightness measurement, logging, and execution infrastructure are supplied.
 
-1. Complete `cubic_coefficients` and `sample_cubic`; add quintic timing if assigned.
-2. Check endpoint position, velocity, and acceleration numerically.
-3. Generate a synchronized MoveJ-style trajectory with explicit position, rate, and acceleration checks.
-4. Complete `cartesian_line.py` to sample position—and orientation if assigned—between two poses.
-5. Solve each Cartesian waypoint with your Lab 3 IK; reject failed, discontinuous, or unsafe solutions.
-6. Keep trajectory generation, IK, metrics, and Webots device I/O in separate functions/modules.
+1. Open `src/cubic_trajectory.py`.
+2. Complete only `TODO 1`, `TODO 2`, and `TODO 3`: final position change, the quadratic coefficient, and the cubic coefficient.
+3. Run endpoint checks confirming the requested initial/final position and velocity.
+4. Read the supplied `cartesian_line.py` and identify where the previous IK solution becomes the next seed.
+5. Use the provided helpers to generate the synchronized MoveJ-style motion and Cartesian waypoint motion. Apply the same limits and timing conventions to both.
 
-Do not call a Webots, SciPy, MoveIt, or other library trajectory/IK solver for the submitted implementation.
+Do not rewrite the supplied waypoint, line-distance, logging, or execution helpers, and do not call a Webots, SciPy, MoveIt, or other library trajectory/IK solver for the assigned equations.
 
 ## Part 3 - Robot Experiment
 
@@ -153,23 +114,18 @@ For both motions report:
 
 Plot joint trajectories and the 3-D or projected end-effector paths on common axes. Explain the observed geometry/performance tradeoff rather than judging from animation alone.
 
-## Engineering Questions
+## Engineering Question
 
-1. Why can a smooth joint-space trajectory produce a curved Cartesian path?
-2. Why does increasing duration usually reduce velocity and acceleration demand?
-3. Which IK continuity strategy prevented joint jumps along the Cartesian path?
-4. How did waypoint spacing affect straightness, computation, and tracking?
-5. Which metric most clearly distinguishes the two motions?
+Answer in 2-3 sentences.
+
+Why can a smooth joint-space trajectory produce a curved Cartesian tool path, while a Cartesian waypoint trajectory can remain approximately straight? Refer to your measured paths.
 
 ## What to Submit
 
-- completed trajectory and Cartesian-line source;
-- endpoint/unit tests and stated limits;
-- Webots controller or adapter;
-- desired/measured CSV logs for both motions;
-- joint and Cartesian path plots;
-- comparison table with all required metrics; and
-- completed `Lab05_Report_Template.docx`.
+1. Completed `src/cubic_trajectory.py` containing the three equation lines.
+2. Completed `Lab05_Report_Template.docx` containing endpoint checks, MoveJ and Cartesian-waypoint logs and plots, the metric comparison, and the Engineering Question response.
+
+Do not submit supplied helper code, `lab05_work.wbt`, vendor assets, or caches unless requested.
 
 ## Troubleshooting
 

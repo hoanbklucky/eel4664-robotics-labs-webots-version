@@ -1,10 +1,25 @@
 #!/usr/bin/env python3
-"""Webots execution outline; import your own Lab 5 polynomial evaluator."""
-# from controller import Robot
-# robot = Robot(); enable six sensors; acquire six motors; step once for q0
-# while robot.step(time_step) != -1:
-#     t = robot.getTime() - t0
-#     q, qd, qdd = your_trajectory(t)
-#     for motor, target in zip(motors, q): motor.setPosition(float(target))
-#     log simulation time, q, qd, qdd, and measured sensor positions
-raise NotImplementedError("Complete as a Webots controller using your trajectory")
+"""Provided execution loop; hardware-specific details live in the adapter."""
+
+
+def run_trajectory(adapter, trajectory, duration_s):
+    """Execute a trajectory using Webots simulation time and return log rows."""
+    if duration_s <= 0:
+        raise ValueError("duration_s must be positive")
+    start = adapter.get_time()
+    rows = []
+    while adapter.step():
+        elapsed = adapter.get_time() - start
+        q_des, qd_des, qdd_des = trajectory(min(elapsed, duration_s))
+        adapter.command_positions(q_des)
+        rows.append({
+            "time": adapter.get_time(),
+            "q_des": q_des.copy(),
+            "qd_des": qd_des.copy(),
+            "qdd_des": qdd_des.copy(),
+            "q_measured": adapter.read_joint_positions().copy(),
+        })
+        if elapsed >= duration_s:
+            break
+    adapter.command_positions(trajectory(duration_s)[0])
+    return rows

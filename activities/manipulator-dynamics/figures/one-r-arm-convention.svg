@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img" aria-labelledby="title desc">
+  <title id="title">One-revolute-joint arm angle and torque convention</title>
+  <desc id="desc">A uniform rod rotates in a vertical plane. Zero angle points downward, positive angle and motor torque are counterclockwise, the center of mass is halfway along the rod, and gravity acts downward at the center of mass.</desc>
+  <defs>
+    <marker id="arrow-dark" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#24292f"/></marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0969da"/></marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cf222e"/></marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8250df"/></marker>
+    <style>text{font-family:Arial,sans-serif;fill:#24292f}.label{font-size:20px}.small{font-size:17px}.formula{font-size:22px;font-weight:600}.muted{fill:#57606a}.axis{stroke:#57606a;stroke-width:2}.guide{stroke:#8c959f;stroke-width:2;stroke-dasharray:8 7}.arm{stroke:#bf8700;stroke-width:24;stroke-linecap:round}.dimension{stroke:#0969da;stroke-width:3}.gravity{stroke:#cf222e;stroke-width:4}.torque{stroke:#8250df;stroke-width:4;fill:none}.panel{fill:#f6f8fa;stroke:#d0d7de;stroke-width:2}</style>
+  </defs>
+  <rect width="960" height="520" fill="#ffffff"/>
+  <line x1="235" y1="115" x2="390" y2="115" class="axis" marker-end="url(#arrow-dark)"/>
+  <line x1="235" y1="115" x2="235" y2="42" class="axis" marker-end="url(#arrow-dark)"/>
+  <text x="400" y="121" class="label">+x</text><text x="213" y="35" class="label">+y</text>
+  <line x1="235" y1="115" x2="235" y2="442" class="guide"/>
+  <text x="92" y="454" class="small muted">θ = 0° (downward)</text>
+  <line x1="235" y1="115" x2="650" y2="355" class="arm"/>
+  <circle cx="235" cy="115" r="19" fill="#ffffff" stroke="#24292f" stroke-width="5"/>
+  <circle cx="442.5" cy="235" r="11" fill="#0969da" stroke="#ffffff" stroke-width="3"/>
+  <text x="456" y="226" class="label">COM</text>
+  <text x="664" y="364" class="label">tip</text>
+  <line x1="252" y1="151" x2="430" y2="254" class="dimension" marker-start="url(#arrow-blue)" marker-end="url(#arrow-blue)"/>
+  <text x="324" y="230" class="label" fill="#0969da">r<tspan baseline-shift="sub" font-size="14">c</tspan> = L/2</text>
+  <path d="M235 246 A131 131 0 0 0 348 181" fill="none" stroke="#0969da" stroke-width="4" marker-end="url(#arrow-blue)"/>
+  <text x="277" y="247" class="formula" fill="#0969da">θ</text>
+  <path d="M176 130 A68 68 0 1 1 251 181" class="torque" marker-end="url(#arrow-purple)"/>
+  <text x="122" y="190" class="formula" fill="#8250df">+tau</text>
+  <line x1="442.5" y1="235" x2="442.5" y2="395" class="gravity" marker-end="url(#arrow-red)"/>
+  <text x="458" y="386" class="formula" fill="#cf222e">mg</text>
+  <rect x="700" y="82" width="224" height="306" rx="8" class="panel"/>
+  <text x="724" y="119" class="label">Coordinates of COM</text>
+  <text x="724" y="162" class="formula">x<tspan baseline-shift="sub" font-size="15">c</tspan> = r<tspan baseline-shift="sub" font-size="15">c</tspan> sin θ</text>
+  <text x="724" y="202" class="formula">y<tspan baseline-shift="sub" font-size="15">c</tspan> = −r<tspan baseline-shift="sub" font-size="15">c</tspan> cos θ</text>
+  <line x1="724" y1="225" x2="900" y2="225" stroke="#d0d7de" stroke-width="2"/>
+  <text x="724" y="264" class="label">Gravity compensation</text>
+  <text x="724" y="307" class="formula">tau<tspan baseline-shift="sub" font-size="15">g</tspan> = mgr<tspan baseline-shift="sub" font-size="15">c</tspan> sin θ</text>
+  <text x="724" y="346" class="small muted">Maximum at θ = 90°</text>
+  <text x="724" y="374" class="small muted">Zero at θ = 0° or 180°</text>
+  <text x="36" y="495" class="small muted">Positive θ and positive motor torque act counterclockwise. Gravity always acts downward.</text>
+</svg>

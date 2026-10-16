@@ -8,6 +8,10 @@ The supplied code is complete. Your work is to run it, change parameters, check 
 
 > This is a standalone Python activity. It does not require Webots, a robot model, or a Webots controller. It gives you a simple dynamics model to understand before working with a more detailed simulator.
 
+## Optional conceptual background
+
+For a concepts-first explanation of torque balance, gravity, rotational inertia, inverse and forward dynamics, the energy method, time scaling, and torque limits, read [Manipulator Dynamics Optional Background](OPTIONAL_BACKGROUND.md). The numbered sections below contain the detailed derivations and required activities.
+
 ## Learning objectives
 
 After completing the activity, you should be able to:
@@ -27,7 +31,6 @@ After completing the activity, you should be able to:
 | [manipulator_dynamics.ipynb](./manipulator_dynamics.ipynb) | Complete code and activity prompts for Google Colab or Jupyter |
 | [manipulator_dynamics.py](./manipulator_dynamics.py) | The same numerical code as a standalone Python script |
 | [requirements.txt](./requirements.txt) | Python dependencies: NumPy and Matplotlib |
-| [Manipulator_Dynamics_Compact.pptx](./Manipulator_Dynamics_Compact.pptx) | Lecture slides with arm figures and four classroom poll prompts |
 
 ## Getting started
 
@@ -81,6 +84,10 @@ We use $g=10\ \mathrm{m/s^2}$ to simplify classroom calculations. Use the same v
 - $\theta=90^\circ$: the arm points horizontally to the right.
 - $\theta=180^\circ$: the arm points upward.
 - Positive angle and motor torque act counterclockwise.
+
+![One-revolute-joint arm showing the downward zero-angle reference, positive rotation, center of mass, gravity, and motor torque](figures/one-r-arm-convention.svg)
+
+*Figure 1. Angle, torque, center-of-mass, and gravity conventions used throughout the activity.*
 
 With the joint at the origin, the COM coordinates are
 
@@ -142,13 +149,29 @@ Zero velocity and acceleration do not imply zero motor torque: the motor must ba
 
 ### Inertia about the joint
 
-For this uniform rod,
+Rotational inertia depends on how far the mass lies from the rotation axis. For a uniform slender rod, let $x$ measure distance from its center. Its constant mass per unit length is $m/L$, so a small piece of length $dx$ has mass $dm=(m/L)dx$. The inertia about the center of mass is therefore
+
+![Uniform rod showing the center-of-mass axis, end-joint axis, their separation, and the parallel-axis relationship](figures/rod-inertia-axes.svg)
+
+*Figure 2. The rod is unchanged, but moving the rotation axis from the COM to the end increases its inertia.*
 
 $$
-I_{\mathrm{joint}}=\frac{mL^2}{3}.
+I_{\mathrm{COM}}
+=\int_{-L/2}^{L/2}x^2\,dm
+=\int_{-L/2}^{L/2}x^2\frac{m}{L}\,dx
+=\frac{mL^2}{12}.
 $$
 
-The inertia about the rod's own COM is $mL^2/12$. These are different quantities. The 1R torque equation uses the inertia **about the joint**.
+The 1R arm rotates about the joint at the end of the rod, a distance $L/2$ from the COM. Apply the parallel-axis theorem:
+
+$$
+I_{\mathrm{joint}}
+=I_{\mathrm{COM}}+m\left(\frac{L}{2}\right)^2
+=\frac{mL^2}{12}+\frac{mL^2}{4}
+=\frac{mL^2}{3}.
+$$
+
+Thus, $mL^2/12$ is the inertia about the rod's center, while $mL^2/3$ is the inertia about its end joint. The 1R torque equation must use $I_{\mathrm{joint}}$ because that is the axis about which the link actually rotates.
 
 ## Activity 1: Holding torque and payload
 
@@ -232,6 +255,10 @@ Substitution recovers the torque equation from Section 2.
 When taking these partial derivatives, treat angle and angular velocity as independent arguments of $\mathcal L(\theta,\dot{\theta})$. Hold one fixed while differentiating with respect to the other. Along an actual motion, $\dot{\theta}$ is still the time derivative of $\theta$.
 
 ## 4. Inverse dynamics and forward dynamics
+
+![Flow diagram comparing inverse dynamics and forward dynamics and showing the three signed torque contributions](figures/inverse-forward-dynamics.svg)
+
+*Figure 3. Inverse and forward dynamics use the same physical model but solve for different unknowns.*
 
 **Inverse dynamics** calculates the torque needed for a specified angle, velocity, and acceleration:
 

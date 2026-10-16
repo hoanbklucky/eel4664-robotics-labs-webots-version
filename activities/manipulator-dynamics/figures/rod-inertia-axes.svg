@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" role="img" aria-labelledby="title desc">
+  <title id="title">Uniform rod inertia about its center and end joint</title>
+  <desc id="desc">The same uniform rod has inertia m L squared over 12 about its center of mass and m L squared over 3 about an end joint. The axes are separated by L over 2 and related by the parallel-axis theorem.</desc>
+  <defs>
+    <marker id="dim" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 10 0 L 0 5 L 10 10 z" fill="#0969da"/></marker>
+    <style>text{font-family:Arial,sans-serif;fill:#24292f}.title{font-size:24px;font-weight:600}.label{font-size:20px}.small{font-size:17px}.formula{font-size:22px;font-weight:600}.muted{fill:#57606a}.rod{fill:#fff8c5;stroke:#9a6700;stroke-width:3}.axis-joint{stroke:#8250df;fill:#ffffff;stroke-width:5}.axis-com{stroke:#0969da;fill:#ffffff;stroke-width:5}.dimension{stroke:#0969da;stroke-width:3}.panel{fill:#f6f8fa;stroke:#d0d7de;stroke-width:2}</style>
+  </defs>
+  <rect width="960" height="500" fill="#ffffff"/>
+  <text x="36" y="42" class="title">The rotation axis changes the inertia</text>
+  <rect x="140" y="183" width="680" height="70" rx="30" class="rod"/>
+  <circle cx="140" cy="218" r="19" class="axis-joint"/>
+  <circle cx="480" cy="218" r="16" class="axis-com"/>
+  <line x1="140" y1="132" x2="480" y2="132" class="dimension" marker-start="url(#dim)" marker-end="url(#dim)"/>
+  <text x="270" y="117" class="formula" fill="#0969da">d = L/2</text>
+  <line x1="140" y1="274" x2="820" y2="274" class="dimension" marker-start="url(#dim)" marker-end="url(#dim)"/>
+  <text x="469" y="310" class="formula" fill="#0969da">L</text>
+  <text x="87" y="166" class="label" fill="#8250df">joint axis</text>
+  <text x="442" y="166" class="label" fill="#0969da">COM axis</text>
+  <text x="829" y="225" class="label">rod tip</text>
+  <rect x="48" y="334" width="390" height="126" rx="8" class="panel"/>
+  <text x="72" y="370" class="label">About the center</text>
+  <text x="72" y="419" class="formula">I<tspan baseline-shift="sub" font-size="15">COM</tspan> = mL²/12</text>
+  <rect x="522" y="334" width="390" height="126" rx="8" class="panel"/>
+  <text x="546" y="370" class="label">Shift the axis by d = L/2</text>
+  <text x="546" y="408" class="formula">I<tspan baseline-shift="sub" font-size="15">joint</tspan> = I<tspan baseline-shift="sub" font-size="15">COM</tspan> + md²</text>
+  <text x="546" y="445" class="formula">= mL²/3</text>
+  <text x="36" y="490" class="small muted">Mass farther from the axis contributes more because every mass element is weighted by distance squared.</text>
+</svg>

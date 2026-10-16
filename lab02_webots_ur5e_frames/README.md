@@ -2,25 +2,7 @@
 
 ## Get the Latest Course Files
 
-Before starting, save your work, close Webots, and update the repository.
-
-Windows PowerShell:
-
-```powershell
-cd C:\eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-macOS or Ubuntu Terminal:
-
-```bash
-cd ~/eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-If Git reports local changes or a conflict, do not discard your work. Follow [the Lab 00 update instructions](../lab00_setup/README.md#if-the-repository-cannot-update-cleanly).
+Before starting, save your work and close Webots. Follow [Updating the Course Repository](../docs/UPDATE_REPOSITORY.md). Do not force an update or discard local work when Git reports a conflict.
 
 ## Mission
 
@@ -157,18 +139,7 @@ The robot base is at the world origin in this lab, so `T_world_0` is identity.
 
 ## Open the Word report template
 
-VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be used to edit it.
-
-1. In the VS Code Explorer on the left, expand the `lab02_webots_ur5e_frames` folder.
-2. Find `Lab02_Report_Template.docx`.
-3. Right-click the file and choose:
-   - **Reveal in File Explorer** on Windows;
-   - **Reveal in Finder** on macOS; or
-   - **Open Containing Folder** on Ubuntu.
-4. In the folder that opens, double-click `Lab02_Report_Template.docx` to open it in Microsoft Word.
-5. In Word, select **File -> Save As** and save a personal copy such as `LastName_Lab02_Report.docx`. Enter all requested results and screenshots in this personal copy.
-
-Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab02_Report_Template.docx`, paste it into the personal Word copy you created.
+Follow [Opening a Word Report Template](../docs/OPEN_WORD_REPORT.md) and create a personal copy of `Lab02_Report_Template.docx` before entering results.
 
 ## Student Workflow
 

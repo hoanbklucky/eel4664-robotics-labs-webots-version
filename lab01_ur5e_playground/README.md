@@ -2,29 +2,7 @@
 
 ## Get the Latest Course Files
 
-Before starting the lab, save your work, close Webots, and update the course repository. Open a terminal and use the commands for your operating system.
-
-**Windows PowerShell:**
-
-```powershell
-cd C:\eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-**macOS or Ubuntu Terminal:**
-
-```bash
-cd ~/eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-A successful update reports either `Already up to date.` or the files that Git updated.
-
-`git status --short` lists local file changes; no output means there are none. `git pull --rebase` downloads new course commits from GitHub and then reapplies any of your local commits after them. It does not submit your work to GitHub. See [What these Git commands mean](../lab00_setup/README.md#what-these-git-commands-mean) for an explanation of Git terminology.
-
-If `git pull --rebase` reports local changes, a conflict, or another error, do not force the update or discard your work. Follow [If the repository cannot update cleanly](../lab00_setup/README.md#if-the-repository-cannot-update-cleanly).
+Before starting, save your work and close Webots. Follow [Updating the Course Repository](../docs/UPDATE_REPOSITORY.md). Do not force an update or discard local work when Git reports a conflict.
 
 ## Mission
 
@@ -73,18 +51,7 @@ Complete [Lab 00 - Software Setup and Webots Basics](../lab00_setup/README.md), 
 
 ## Open the Word report template
 
-VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be used to edit it.
-
-1. In the VS Code Explorer on the left, expand the `lab01_ur5e_playground` folder.
-2. Find `Lab01_Report_Template.docx`.
-3. Right-click the file and choose:
-   - **Reveal in File Explorer** on Windows;
-   - **Reveal in Finder** on macOS; or
-   - **Open Containing Folder** on Ubuntu.
-4. In the folder that opens, double-click `Lab01_Report_Template.docx` to open it in Microsoft Word.
-5. In Word, select **File -> Save As** and save a personal copy such as `LastName_Lab01_Report.docx`. Enter all requested results and screenshots in this personal copy.
-
-Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab01_Report_Template.docx`, paste it into the personal Word copy you created.
+Follow [Opening a Word Report Template](../docs/OPEN_WORD_REPORT.md) and create a personal copy of `Lab01_Report_Template.docx` before entering results.
 
 ## Part 1 - Open the Playground
 

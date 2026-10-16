@@ -2,31 +2,7 @@
 
 ## Get the Latest Course Files
 
-Before starting the lab, save your work, close Webots, and update the course repository. Open a terminal and use the commands for your operating system.
-
-**Windows PowerShell:**
-
-```powershell
-cd C:\eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-**macOS or Ubuntu Terminal:**
-
-```bash
-cd ~/eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-A successful update reports either `Already up to date.` or the files that Git updated.
-
-`git status --short` lists local file changes; no output means there are none. `git pull --rebase` downloads new course commits from GitHub and then reapplies any of your local commits after them. It does not submit your work to GitHub. See [What these Git commands mean](../lab00_setup/README.md#what-these-git-commands-mean) for an explanation of Git terminology.
-
-If `git pull --rebase` reports local changes, a conflict, or another error, do not force the update or discard your work. Follow [If the repository cannot update cleanly](../lab00_setup/README.md#if-the-repository-cannot-update-cleanly).
-
-**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
+Before starting, save your work and close Webots. Follow [Updating the Course Repository](../docs/UPDATE_REPOSITORY.md). Do not force an update or discard local work when Git reports a conflict.
 
 ## Mission
 
@@ -65,6 +41,8 @@ The task combines the course pipeline: frame reasoning locates targets, FK/IK ge
 
 The starter provides a default physical `PICK_OBJECT`, physical `TRANSPORT_OBSTACLE`, `MANIPULATION_TABLE`, and visual `DESTINATION_BIN`. The instructor will provide or approve a gripper or equivalent grasp interface and may approve controlled scene variations. If no gripper is provided, an approved attachment/contact proxy may mark grasp and release while the student implementation still controls approach, transport, and placement.
 
+For a concepts-first explanation of interfaces, state machines, edge checking, safe aborts, and repeatability, read [Lab 7 Optional Integration Guide](OPTIONAL_BACKGROUND.md).
+
 Unlike Labs 1-6, the Lab 7 starter intentionally does not include the course stylus. The instructor-approved gripper or grasp interface becomes the new tool. Determine and validate its fixed tool transform once, then keep that transform unchanged during the project.
 
 ## Provided Files
@@ -81,18 +59,7 @@ Unlike Labs 1-6, the Lab 7 starter intentionally does not include the course sty
 
 ## Open the Word report template
 
-VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be used to edit it.
-
-1. In the VS Code Explorer on the left, expand the `lab07_integrated_manipulation` folder.
-2. Find `Lab07_Report_Template.docx`.
-3. Right-click the file and choose:
-   - **Reveal in File Explorer** on Windows;
-   - **Reveal in Finder** on macOS; or
-   - **Open Containing Folder** on Ubuntu.
-4. In the folder that opens, double-click `Lab07_Report_Template.docx` to open it in Microsoft Word.
-5. In Word, select **File -> Save As** and save a personal copy such as `LastName_Lab07_Report.docx`. Enter all requested results and screenshots in this personal copy.
-
-Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab07_Report_Template.docx`, paste it into the personal Word copy you created.
+Follow [Opening a Word Report Template](../docs/OPEN_WORD_REPORT.md) and create a personal copy of `Lab07_Report_Template.docx` before entering results.
 
 ## Part 1 - Setup / Validation
 
@@ -108,16 +75,16 @@ Record frames, home configuration, object/goal poses, obstacle geometry, limits,
 
 ## Part 2 - Core Implementation
 
-> **Why this part matters:** Collision checking, planning, state transitions, kinematics, trajectories, and control must work through explicit interfaces so one failure does not become an unexplained system failure.
+> **Why this part matters:** The final project should integrate course concepts through explicit interfaces. Generic edge sampling, plan validation, state sequencing, timeout handling, and safe-abort mechanics are supplied so students can focus on project-specific decisions.
 
-1. Complete configuration and edge collision checks using link geometry derived from your FK.
-2. Inflate obstacles or explicitly include a safety margin; check interpolated edges, not endpoints alone.
-3. Complete a waypoint or sampling-based planner and validate every smoothing shortcut.
-4. Complete `mission_sequence.py` with explicit states, completion guards, timeouts, and a safe failure state.
-5. Connect your own FK/IK, Jacobian logic where useful, trajectory generator, controller, and logger.
-6. Check reachability, joint/rate limits, collision clearance, and IK continuity before each segment.
+1. Define link segments from your tested FK and the project obstacle representation.
+2. Supply the collision predicate used by the provided configuration and edge checkers.
+3. Choose and justify candidate waypoint configurations; the provided planner tests the direct path and each one-waypoint alternative.
+4. Define the state-completion, failure, timeout, and entry-action callbacks used by `mission_sequence.py`.
+5. Connect your own FK/IK, trajectory generator, controller, and logger through these interfaces.
+6. Validate reachability, limits, clearance, IK continuity, and trajectory limits before each segment.
 
-Do not use Webots, MoveIt, or another package to provide the submitted kinematics, trajectory, collision, or planning solution.
+Read the supplied helpers before integrating them. Do not rewrite generic interpolation or state-transition mechanics unless your approved project requires a documented extension. Do not use Webots, MoveIt, or another package to replace the submitted kinematics or collision model.
 
 ## Part 3 - Robot Experiment
 
@@ -150,26 +117,20 @@ Report:
 
 Compare the direct and planned paths and explain the controlled variation/failure using logs. State which simulator ground-truth values were reserved for validation.
 
-## Engineering Questions
+## Engineering Question
 
-1. Which coordinate-frame interface created the greatest integration risk?
-2. How did edge resolution affect clearance and computation time?
-3. What conditions trigger each state transition and safe abort?
-4. What evidence demonstrates repeatability rather than one successful animation?
-5. Which earlier module required the most revision, and why?
-6. What would have to change for transfer to a physical arm?
+Answer in one short paragraph.
+
+What evidence shows that your integrated system is repeatable and handles an unsafe or failed condition deliberately, rather than succeeding once by chance?
 
 ## What to Submit
 
-- proposal and architecture/state diagram;
-- source code and reproducible run instructions;
-- configuration, parameters, limits, tolerances, gains, and seeds;
-- collision representation and planning pseudocode;
-- successful video or approved live demonstration;
-- raw logs, plots, and required metrics;
-- repeatability and failure analysis;
-- final technical report; and
-- completed `Lab07_Report_Template.docx`.
+1. Proposal and architecture/state diagram.
+2. Source code and reproducible run instructions.
+3. Completed `Lab07_Report_Template.docx` containing configuration and limits, successful-run evidence and metrics, repeatability and one failure analysis, and the Engineering Question response.
+4. Successful video or approved live demonstration.
+
+Do not submit `lab07_work.wbt`, vendor assets, or caches unless requested.
 
 ## Troubleshooting
 

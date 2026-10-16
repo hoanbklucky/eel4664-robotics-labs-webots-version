@@ -2,31 +2,7 @@
 
 ## Get the Latest Course Files
 
-Before starting the lab, save your work, close Webots, and update the course repository. Open a terminal and use the commands for your operating system.
-
-**Windows PowerShell:**
-
-```powershell
-cd C:\eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-**macOS or Ubuntu Terminal:**
-
-```bash
-cd ~/eel4664-robotics-labs
-git status --short
-git pull --rebase
-```
-
-A successful update reports either `Already up to date.` or the files that Git updated.
-
-`git status --short` lists local file changes; no output means there are none. `git pull --rebase` downloads new course commits from GitHub and then reapplies any of your local commits after them. It does not submit your work to GitHub. See [What these Git commands mean](../lab00_setup/README.md#what-these-git-commands-mean) for an explanation of Git terminology.
-
-If `git pull --rebase` reports local changes, a conflict, or another error, do not force the update or discard your work. Follow [If the repository cannot update cleanly](../lab00_setup/README.md#if-the-repository-cannot-update-cleanly).
-
-**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
+Before starting, save your work and close Webots. Follow [Updating the Course Repository](../docs/UPDATE_REPOSITORY.md). Do not force an update or discard local work when Git reports a conflict.
 
 ## Mission
 
@@ -62,18 +38,11 @@ The standalone [Manipulator Dynamics: A Simple 1R Arm](../activities/manipulator
 
 ## Background
 
-For a focused one-joint experiment,
+Trajectory generation specifies the desired motion; feedback control determines how the robot responds when measured motion differs from that reference. In this lab, a focused one-joint model separates inertia, friction, gravity, feedback, and disturbances so their effects can be measured clearly.
 
-```text
-tau = I_eff qddot + b_eff qdot + g_eff(q)
-tau_cmd = Kp (q_des - q) + Kd (qdot_des - qdot_est) + Ki integral(e)
-```
+For a concepts-first explanation of the feedback loop, the one-joint plant, P and PD control, gravity compensation, feedforward tracking, PID, windup, second-order behavior, and parameter identification, read [Lab 6 Optional Background](OPTIONAL_BACKGROUND.md). The required implementation begins below.
 
-This approximation supports a controlled comparison; it does not replace full manipulator dynamics. Numerical differentiation amplifies noise, filtering introduces delay, and parameter estimates are credible only when units, excitation, conditioning, and held-out validation are reported.
-
-The starter keeps the same visual stylus and `p_tool = [0, 0.13, 0]` m used in Labs 1-4. It is visual-only: because it has no `Physics` or `boundingObject` node, it adds no payload, inertia, or contact force to the dynamics experiment.
-
-The green `BASELINE_CONDITION_PAD` and orange `PAYLOAD_CONDITION_PAD` distinguish the two matched trials visually. They are labels only and do not change dynamics; the actual Condition B payload/model change must remain instructor-approved and explicitly logged.
+The starter keeps the visual stylus and `p_tool = [0, 0.13, 0]` m used in earlier labs. The stylus has no `Physics` or `boundingObject` node, so it adds no payload, inertia, or contact force. The green `BASELINE_CONDITION_PAD` and orange `PAYLOAD_CONDITION_PAD` are visual labels only. The actual Condition B model change must remain instructor-approved and explicitly logged.
 
 ## Provided Files
 
@@ -90,18 +59,7 @@ The green `BASELINE_CONDITION_PAD` and orange `PAYLOAD_CONDITION_PAD` distinguis
 
 ## Open the Word report template
 
-VS Code can show the `.docx` file in the Explorer, but Microsoft Word should be used to edit it.
-
-1. In the VS Code Explorer on the left, expand the `lab06_dynamics_control_identification` folder.
-2. Find `Lab06_Report_Template.docx`.
-3. Right-click the file and choose:
-   - **Reveal in File Explorer** on Windows;
-   - **Reveal in Finder** on macOS; or
-   - **Open Containing Folder** on Ubuntu.
-4. In the folder that opens, double-click `Lab06_Report_Template.docx` to open it in Microsoft Word.
-5. In Word, select **File -> Save As** and save a personal copy such as `LastName_Lab06_Report.docx`. Enter all requested results and screenshots in this personal copy.
-
-Do not try to edit the Word report as text inside VS Code. Whenever the instructions say to paste something into `Lab06_Report_Template.docx`, paste it into the personal Word copy you created.
+Follow [Opening a Word Report Template](../docs/OPEN_WORD_REPORT.md) and create a personal copy of `Lab06_Report_Template.docx` before entering results.
 
 ## Part 1 - Setup / Validation
 
@@ -117,16 +75,15 @@ Complete the offline dynamics/controller sanity checks first. Reset to identical
 
 ## Part 2 - Core Implementation
 
-> **Why this part matters:** Implementing the plant approximation, feedback controller, velocity estimator, and least-squares identification separately makes each source of behavior testable and understandable.
+> **Why this part matters:** Three equations connect the physical model, feedback correction, and parameter estimation. Simulation, velocity estimation, filtering, experiment logging, matched-trial checks, saturation, and safe hold are supplied.
 
-1. Complete the simplified dynamics model and independent P/PD/PID simulation.
-2. Implement raw finite differences and a stated causal filter for velocity.
-3. Implement feedback, saturation, and anti-windup when integral action is used.
-4. Complete a NumPy linear least-squares estimator; state the regressor and parameter units.
-5. Complete `run_payload_experiment.py` so condition, gains, commands, measurements, and timestamps are logged deterministically.
-6. Keep plant model, estimator, controller, identification, metrics, and Webots I/O separable and testable.
+Complete only these marked lines:
 
-Do not use a simulator or identification API to compute the model/controller quantities students are required to implement.
+1. `TODO 1` in `simple_dynamics.py`: the one-joint inertia, damping, and gravity torque equation.
+2. `TODO 2` in `pd_control_sim.py`: the PD feedback torque equation.
+3. `TODO 3` in `least_squares_id.py`: the NumPy least-squares solve.
+
+Then run the supplied offline checks, compare raw and filtered velocity, and read `run_payload_experiment.py` to trace how the identical reference and gains are enforced across conditions. Do not rewrite the supplied loop, estimator, filtering, saturation, logging, or matched-trial validation.
 
 ## Part 3 - Robot Experiment
 
@@ -149,24 +106,18 @@ If a safe payload-changing world is unavailable, use the instructor-provided pai
 4. Predict a held-out trial at a different speed or condition and report residual plots and validation error.
 5. Discuss whether changes reflect physics, controller saturation, estimator delay, or model mismatch.
 
-## Engineering Questions
+## Engineering Question
 
-1. Which model term dominates static holding, slow motion, and rapid acceleration?
-2. How did filtering trade noise suppression against phase delay?
-3. Which gain most affected rise time, overshoot, and steady-state error?
-4. Why must initial state and reference be matched across payload conditions?
-5. What residual pattern indicates missing model structure?
-6. Does the identified parameter retain its physical meaning outside the fitted range?
+Answer in 2-3 sentences.
+
+When tracking a changing trajectory, what different jobs are performed by model-based feedforward torque and error-based feedback torque? Refer to one result from your experiment.
 
 ## What to Submit
 
-- completed dynamics, controller, estimator, identification, and experiment code;
-- stated gains, limits, parameter units, and condition definitions;
-- raw CSV logs for tuning and matched trials;
-- velocity, tracking, transient, command, and residual plots;
-- metric comparison table;
-- training/validation identification results; and
-- completed `Lab06_Report_Template.docx`.
+1. The three completed equation lines in `simple_dynamics.py`, `pd_control_sim.py`, and `least_squares_id.py`.
+2. Completed `Lab06_Report_Template.docx` containing the offline checks, matched-condition logs and plots, metric table, training and held-out validation, and the Engineering Question response.
+
+Do not submit supplied helper code, `lab06_work.wbt`, vendor assets, or caches unless requested.
 
 ## Troubleshooting
 

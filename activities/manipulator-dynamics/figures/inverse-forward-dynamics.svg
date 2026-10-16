@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Inverse and forward dynamics for the one-joint arm</title>
+  <desc id="desc">Inverse dynamics maps angle, velocity, and acceleration to required torque. Forward dynamics maps angle, velocity, and applied torque to acceleration. The torque equation is the signed sum of inertia, friction compensation, and gravity compensation.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#57606a"/></marker>
+    <style>text{font-family:Arial,sans-serif;fill:#24292f}.title{font-size:24px;font-weight:600}.label{font-size:20px}.small{font-size:17px}.formula{font-size:21px;font-weight:600}.equation{font-size:18px;font-weight:600}.muted{fill:#57606a}.box{fill:#f6f8fa;stroke:#d0d7de;stroke-width:2}.model{fill:#ddf4ff;stroke:#0969da;stroke-width:3}.output{fill:#dafbe1;stroke:#1a7f37;stroke-width:3}.line{stroke:#57606a;stroke-width:3;fill:none}.term1{fill:#fff8c5;stroke:#9a6700;stroke-width:2}.term2{fill:#ffebe9;stroke:#cf222e;stroke-width:2}.term3{fill:#fbefff;stroke:#8250df;stroke-width:2}</style>
+  </defs>
+  <rect width="960" height="540" fill="#ffffff"/>
+  <text x="60" y="42" class="title">The same model answers two different questions</text>
+  <text x="38" y="92" class="label">Inverse dynamics: What motor torque produces the requested motion?</text>
+  <rect x="46" y="116" width="245" height="84" rx="8" class="box"/>
+  <text x="70" y="151" class="equation">known: q, qdot, qddot</text><text x="70" y="181" class="small muted">desired state and acceleration</text>
+  <line x1="291" y1="158" x2="384" y2="158" class="line" marker-end="url(#arrow)"/>
+  <rect x="386" y="111" width="290" height="94" rx="8" class="model"/>
+  <text x="417" y="149" class="equation">tau = I qddot + b qdot + m g r<tspan baseline-shift="sub" font-size="14">c</tspan> sin(q)</text>
+  <text x="437" y="181" class="small muted">evaluate the torque model</text>
+  <line x1="676" y1="158" x2="756" y2="158" class="line" marker-end="url(#arrow)"/>
+  <rect x="758" y="116" width="156" height="84" rx="8" class="output"/>
+  <text x="790" y="152" class="equation">output: tau</text><text x="784" y="181" class="small muted">required torque</text>
+  <text x="38" y="258" class="label">Forward dynamics: What acceleration results from the applied torque?</text>
+  <rect x="46" y="282" width="245" height="84" rx="8" class="box"/>
+  <text x="70" y="317" class="equation">known: q, qdot, tau</text><text x="70" y="347" class="small muted">current state and input</text>
+  <line x1="291" y1="324" x2="384" y2="324" class="line" marker-end="url(#arrow)"/>
+  <rect x="386" y="277" width="290" height="94" rx="8" class="model"/>
+  <text x="411" y="315" class="equation">qddot = (tau - b qdot - m g r<tspan baseline-shift="sub" font-size="14">c</tspan> sin(q))/I</text>
+  <text x="438" y="347" class="small muted">rearrange the same model</text>
+  <line x1="676" y1="324" x2="756" y2="324" class="line" marker-end="url(#arrow)"/>
+  <rect x="758" y="282" width="156" height="84" rx="8" class="output"/>
+  <text x="784" y="318" class="equation">output: qddot</text><text x="787" y="347" class="small muted">acceleration</text>
+  <text x="38" y="421" class="label">Inverse-dynamics torque is a signed sum</text>
+  <rect x="46" y="442" width="254" height="70" rx="8" class="term1"/><text x="75" y="472" class="equation">inertia: I qddot</text><text x="75" y="498" class="small muted">depends on acceleration</text>
+  <text x="314" y="486" class="formula">+</text>
+  <rect x="344" y="442" width="254" height="70" rx="8" class="term2"/><text x="371" y="472" class="equation">friction: b qdot</text><text x="371" y="498" class="small muted">depends on velocity</text>
+  <text x="612" y="486" class="formula">+</text>
+  <rect x="642" y="442" width="272" height="70" rx="8" class="term3"/><text x="670" y="472" class="equation">gravity: m g r<tspan baseline-shift="sub" font-size="14">c</tspan> sin(q)</text><text x="670" y="498" class="small muted">depends on angle</text>
+  <text x="36" y="532" class="small muted">Keep the signs: one contribution can reinforce or oppose another during motion.</text>
+</svg>
