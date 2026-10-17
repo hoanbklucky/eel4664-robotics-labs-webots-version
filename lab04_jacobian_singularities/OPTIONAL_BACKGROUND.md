@@ -78,7 +78,10 @@ $$
 With $\dot{\mathbf q}=[0.2,\ 0.1]^T$ rad/s,
 
 $$
-\dot{\mathbf x}=J\dot{\mathbf q}=\begin{bmatrix}-1.300\\0.693\end{bmatrix}.
+\dot{\mathbf x}=J\dot{\mathbf q}=\begin{bmatrix}
+-1.300\\
+0.693
+\end{bmatrix}.
 $$
 
 The negative $x$ component and positive $y$ component mean that the endpoint moves left and upward.
