@@ -56,6 +56,7 @@ The required implementation uses the base/world frame and the same endpoint in b
 
 - `worlds/lab04_starter.wbt` - shared stylus, coordinate grid, tool-tip sensor, and Cartesian direction reference
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
+- `controllers/one_joint_test/` - supplied safe test that moves one joint and compares predicted and measured tool displacement
 - `src/jacobian_starter.py`
 - `src/singularity_scan.py`
 - `src/cartesian_direction_motion.py` - mission integration scaffold
@@ -72,10 +73,18 @@ Follow [Opening a Word Report Template](../docs/OPEN_WORD_REPORT.md) and create 
 > **Why this part matters:** A trustworthy FK model and verified device path are prerequisites for interpreting Jacobian discrepancies or singular behavior correctly.
 
 1. **World:** create `lab04_work.wbt`; verify the grid, stylus, and `CARTESIAN_DIRECTION_REFERENCE`, and confirm controller `void`.
-2. **Minimal controller:** run `diagnostic_minimal`.
-3. **Devices:** run `diagnostic_devices` and confirm ordered joint sensing.
-4. **One joint:** move one joint slightly and verify predicted tool-motion direction.
+2. **Minimal controller:** select `diagnostic_minimal` as the UR5e controller and run the simulation. Confirm that the console reports 10 successful steps.
+3. **Devices:** reset Webots, select `diagnostic_devices`, and run again. Confirm that all six named motors and their six position sensors appear in the console output.
+4. **One-joint test:** use the supplied controller as follows.
+   1. Stop and reset the simulation.
+   2. In the Scene Tree, select `DEF UR5E UR5e`.
+   3. Find its `controller` field, click **Select...**, and choose `one_joint_test`.
+   4. Run the simulation. The controller smoothly increases only `shoulder_pan_joint` by `0.10` rad (about $5.7^\circ$) over 3 seconds and holds the other five joints at their initial angles.
+   5. Watch the arm and read the console. Compare the signs and dominant direction of `Predicted tool displacement` and `Measured tool displacement`; they should agree closely even though small simulation and settling differences are expected.
+   6. Reset Webots before continuing. Do not drag a robot link manually because that bypasses the commanded joint and does not provide a controlled validation test.
 5. **Full algorithm:** enable Cartesian and near-singular experiments only after stages 1-4 pass.
+
+The default test is intentionally small and requires no student coding. To test a different joint later, change only `TEST_JOINT_INDEX` near the top of `controllers/one_joint_test/one_joint_test.py`, using the printed joint order, then reset and rerun.
 
 Import your Lab 2 FK rather than duplicating it. Establish conservative joint-rate, joint-limit, and condition-number stop thresholds before motion.
 
