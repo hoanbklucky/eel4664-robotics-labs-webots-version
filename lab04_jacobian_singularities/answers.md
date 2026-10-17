@@ -2,22 +2,22 @@
 
 ## Expected observations
 
-Trial 1 has a substantially larger minimum singular value, a lower condition number, moderate joint rates, and a measured tool displacement close to the requested 6 cm.
+Both trials start from the same bent, well-conditioned pose. Trial 1 moves away from the straight-elbow singularity and maintains moderate joint rates over the 20 cm path.
 
-Trials 2 and 3 start from the same almost straight-elbow pose. Their minimum singular value is much smaller and their condition number is much larger. In Trial 2, the raw undamped inverse requests roughly 6 rad/s in joint-rate-vector norm and is uniformly rate-limited before execution. In Trial 3, damping produces a much smaller joint command without requiring the safety limiter, but the tool still completes only a small part of the Cartesian request.
+Trial 2 reverses direction and approaches the straight-elbow workspace boundary. As the elbow straightens, the minimum singular value decreases, the condition number increases, and the undamped joint-rate curve rises sharply toward the 3.00 rad/s simulation limit.
+
+The automatic checkpoint occurs when the condition number first reaches 200. It freezes the scene close to the singularity and prominently displays the raw requested peak joint rate and the applied peak joint rate. The generated SVG should show a moderate green Trial 1 curve and a sharply rising red Trial 2 curve.
 
 ## Question 1
 
-The configuration used in Trials 2 and 3 is closer to a singularity. Its minimum singular value is near zero and its condition number is much larger, showing that the Jacobian is nearly rank deficient.
+During Trial 2, the minimum singular value decreases toward zero while the condition number grows from a moderate value to 200 and beyond. The nearly straight elbow makes the Jacobian poorly conditioned and the inverse highly sensitive.
 
 ## Question 2
 
-The raw undamped inverse divides by the Jacobian's very small singular value. This amplifies a modest Cartesian request into large, opposing joint rates even though the requested translation is only 6 cm.
+The Cartesian speed remains constant, but the undamped inverse effectively divides the weak-direction component by a singular value that is approaching zero. Consequently, the required joint rates grow rapidly as the elbow straightens.
+
+Equivalently, if neighboring Cartesian via points are scheduled `dt` seconds apart, the physical rate is approximately `(q_(k+1) - q_k) / dt`. Near the singularity, a small Cartesian increment requires a large joint increment, so using more IK iterations or more via points does not eliminate the large rate. The trajectory must instead slow down near the boundary.
 
 ## Question 3
 
-Trial 2 retains the undamped inverse direction but uniformly scales it to satisfy the rate limit, so the joints still move much more than in Trial 3. Damping changes the inverse calculation itself, producing smaller joint motion while accepting a large Cartesian tracking error.
-
-## Question 4
-
-The raw Trial 2 command includes a peak joint rate of roughly 5 rad/s and would create a large configuration change during the two-second test. Rate limiting makes the comparison controlled and repeatable while still exposing the excessive command numerically and preserving its joint-space direction.
+Near the end of Trial 2, the raw undamped command grows rapidly and would become unbounded in the lost motion direction at the exact singularity. The 3.00 rad/s simulation limit keeps the command below the Webots model's 3.14 rad/s joint limit while preserving a clearly visible rapid joint motion. This setting is for the simulation demonstration and is not a recommended hardware limit.

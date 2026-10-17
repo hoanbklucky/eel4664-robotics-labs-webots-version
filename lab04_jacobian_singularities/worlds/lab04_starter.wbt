@@ -122,8 +122,81 @@ DEF CARTESIAN_DIRECTION_REFERENCE Pose {
     }
   ]
 }
+# Dynamic overlays controlled by singularity_demo. Yellow shows the requested
+# Cartesian path; red shows the translation the tool actually completes.
+DEF REQUEST_START_MARKER Pose {
+  translation 0 0 -1
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0.1 0.85 1 emissiveColor 0.02 0.2 0.25 }
+      geometry Sphere { radius 0.014 subdivision 2 }
+    }
+  ]
+}
+DEF REQUEST_GOAL_MARKER Pose {
+  translation 0 0 -1
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 0.15 1 0.2 emissiveColor 0.05 0.35 0.06 }
+      geometry Sphere { radius 0.022 subdivision 2 }
+    }
+  ]
+}
+DEF REQUEST_DOT_1 Pose {
+  translation 0 0 -1
+  children [ Shape { appearance PBRAppearance { baseColor 1 0.9 0.05 emissiveColor 0.3 0.22 0 } geometry Sphere { radius 0.012 subdivision 2 } } ]
+}
+DEF REQUEST_DOT_2 Pose {
+  translation 0 0 -1
+  children [ Shape { appearance PBRAppearance { baseColor 1 0.9 0.05 emissiveColor 0.3 0.22 0 } geometry Sphere { radius 0.012 subdivision 2 } } ]
+}
+DEF REQUEST_DOT_3 Pose {
+  translation 0 0 -1
+  children [ Shape { appearance PBRAppearance { baseColor 1 0.9 0.05 emissiveColor 0.3 0.22 0 } geometry Sphere { radius 0.012 subdivision 2 } } ]
+}
+DEF REQUEST_DOT_4 Pose {
+  translation 0 0 -1
+  children [ Shape { appearance PBRAppearance { baseColor 1 0.9 0.05 emissiveColor 0.3 0.22 0 } geometry Sphere { radius 0.012 subdivision 2 } } ]
+}
+DEF REQUESTED_PATH Shape {
+  appearance PBRAppearance { baseColor 1 0.9 0.05 emissiveColor 0.35 0.28 0 }
+  geometry IndexedLineSet {
+    coord DEF REQUESTED_PATH_COORD Coordinate { point [ 0 0 -1, 0 0 -1 ] }
+    coordIndex [ 0 1 -1 ]
+  }
+}
+DEF ACTUAL_END_MARKER Pose {
+  translation 0 0 -1
+  children [
+    Shape {
+      appearance PBRAppearance { baseColor 1 0.08 0.08 emissiveColor 0.35 0.01 0.01 }
+      geometry Sphere { radius 0.018 subdivision 2 }
+    }
+  ]
+}
+DEF ACTUAL_PATH Shape {
+  appearance PBRAppearance { baseColor 1 0.08 0.08 emissiveColor 0.4 0.01 0.01 }
+  geometry IndexedLineSet {
+    coord DEF ACTUAL_PATH_COORD Coordinate { point [ 0 0 -1, 0 0 -1 ] }
+    coordIndex [ 0 1 -1 ]
+  }
+}
 DEF UR5E UR5e {
-  controller "void"
+  # Start directly at the bent-elbow Trial 1 configuration.
+  hidden position_0_0 0.2
+  hidden rotation_1 0 0 1 0.2
+  hidden position_1_0 -0.8
+  hidden rotation_2 0 1 0 0.77079632679
+  hidden position_2_0 1.4
+  hidden rotation_3 0 1 0 1.4
+  hidden position_3_0 -1.1
+  hidden rotation_4 0 1 0 0.47079632679
+  hidden position_4_0 -0.7
+  hidden rotation_5 0 0 -1 0.7
+  hidden position_5_0 0.3
+  hidden rotation_6 0 1 0 0.3
+  controller "singularity_demo"
+  supervisor TRUE
   toolSlot [
     # Visual-only stylus aligned with the Universal Robots tool-slot +y axis.
     # No boundingObject or Physics node: it cannot alter the robot dynamics.

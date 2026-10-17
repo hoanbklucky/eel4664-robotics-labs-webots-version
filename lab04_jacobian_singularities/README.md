@@ -2,7 +2,7 @@
 
 ## Mission
 
-Run a supplied Webots experiment and observe how the same requested tool motion behaves at a bent-elbow pose and near a straight-elbow singularity. At the near-singular pose, compare an undamped inverse with a damped inverse.
+Run a supplied Webots experiment in which the stylus starts at a bent-elbow pose and moves toward a straight-elbow singularity. Compare a well-conditioned baseline with the rapidly growing joint rates near the singularity.
 
 There is no required programming in this lab. The Jacobian, inverse calculations, safety limit, and Webots controller are supplied. Your task is to predict what will happen, observe the robot, record the printed evidence, and explain the physical result.
 
@@ -13,64 +13,97 @@ After the experiment, you should be able to:
 - recognize a straight-elbow singular configuration;
 - use the minimum singular value and condition number to compare two poses;
 - explain why an undamped inverse requests very large joint rates near a singularity; and
-- explain how damping limits joint motion by accepting Cartesian tracking error.
+- explain why more Cartesian via points do not remove that rate amplification.
 
 ## Before You Start
 
-Complete Lab 3 and the [setup prerequisites](../lab00_setup/README.md). Lab 3 already introduced inverse kinematics and damped least squares; this lab uses those ideas without asking you to implement them again.
+Complete Lab 3 and the [setup prerequisites](../lab00_setup/README.md). Lab 3 already introduced inverse kinematics and damped least squares. This lab focuses only on seeing and explaining a singularity; it does not repeat the damping comparison.
 
 Use Webots R2025a. Do not save over the original starter world. Open `worlds/lab04_starter.wbt` while paused and immediately select **File -> Save World As...** to create `worlds/lab04_work.wbt`.
 
 ## Understand the Experiment Before Running It
 
-The controller asks for the same 6 cm translation in all three trials while also asking the tool orientation to remain fixed. The requested translation points approximately along the Cartesian direction that becomes difficult when the elbow is straight.
+Both trials begin at the same visibly bent, well-conditioned pose. Trial 1 moves the stylus 20 cm away from the straight-elbow singularity. Trial 2 reverses the direction and moves 20 cm toward it while holding tool orientation fixed. The slow 2 cm/s motion lets you watch the elbow straighten and the inverse become progressively more sensitive.
 
 A Jacobian maps joint rates to instantaneous tool motion. At the bent-elbow pose, its motion directions are sufficiently independent, so the inverse can produce the request with moderate joint rates. Near the straight-elbow singularity, one singular value becomes very small. Producing motion along the corresponding difficult Cartesian direction then requires a combination of large, opposing joint rates.
 
-The three trials isolate these effects:
+Two displayed numbers summarize this behavior:
+
+- **Minimum singular value:** measures the robot's weakest instantaneous motion direction. **Larger is better; zero means singular.** A small value means substantial joint speed produces very little tool speed in one direction.
+- **Condition number:** is the largest singular value divided by the smallest. **Smaller is better; 1 is ideal.** A very large value means the inverse is sensitive and strongly amplifies some commands.
+
+These values should be compared using the same Jacobian units and scaling, as done in both trials.
+
+The two trials isolate these effects:
 
 | Trial | Configuration and inverse | What to expect | Why |
 |---|---|---|---|
-| 1 | Bent elbow, undamped | Moderate joint motion and a tool translation close to 6 cm | The Jacobian is well conditioned, so ordinary inverse motion works normally. |
-| 2 | Almost straight elbow, undamped | The raw calculation requests extremely large joint rates. The controller rate-limits them before execution. Several joints move visibly, but the tool completes only a small part of the request. | The inverse divides by a very small singular value, amplifying the joint command. |
-| 3 | Almost straight elbow, damped | Much smaller joint motion and only a small tool translation | Damping suppresses the amplified singular direction. This protects the robot but introduces tracking error. |
+| 1 | Move away, undamped | The elbow remains bent and joint rates stay moderate | The motion moves away from the problematic straight-elbow configuration. |
+| 2 | Approach singularity, undamped | Joint rates rise sharply near the end of the path and may reach the 3.00 rad/s simulation limit | The minimum singular value approaches zero, so the ordinary inverse strongly amplifies the request. |
+
+Trial 2 pauses automatically when the condition number first reaches 200. At that instant, the elbow is close to straight and the display prominently reports the minimum singular value, condition number, elbow angle, raw requested peak joint rate, and applied peak joint rate. This later checkpoint makes the rate amplification easy to see before the final approach.
+
+### What the Webots display shows
+
+You do not need to infer the intended tool motion from the joint motion. During each trial, Webots displays:
+
+- a **cyan sphere** at the visible stylus tip's starting point;
+- a thick **yellow dotted path** beginning at the stylus tip and showing the requested 20 cm Cartesian translation;
+- a **green sphere** at the requested stylus-tip endpoint;
+- a **red line and sphere** showing the translation the stylus tip actually completed; and
+- a compact status panel at the top and short instructions at the bottom, leaving the center of the scene clear for the robot.
+
+The singularity is not a place in the room; it is a robot configuration. An exactly straight elbow is at 0 degrees. The 20 cm target lies at the straight-elbow workspace boundary. The robot can approach this boundary, but it cannot continue farther along the same straight Cartesian line: beyond the boundary, the requested point is unreachable. This is why the demonstration approaches and stops at the singularity instead of claiming to pass through it.
 
 ### Why Trial 2 is rate limited
 
-The near-singular undamped calculation requests a peak joint rate of roughly 5 rad/s for this experiment. Sending that raw command would create an unnecessarily large configuration change and could exceed the intended demonstration limits. The controller therefore prints the raw result, then uniformly scales the joint-rate vector so the cubic motion never exceeds 0.50 rad/s at any joint. This preserves the undamped inverse's joint-motion direction while making the Webots trial controlled and repeatable.
+The undamped rate is moderate at the beginning of Trial 2 because the elbow is still bent. It grows rapidly only as the robot approaches the straight-elbow endpoint. The controller uniformly scales each updated joint-rate vector so no joint exceeds 3.00 rad/s, just below the Webots UR5e model's 3.14 rad/s joint limit. This higher simulation-only limit makes the rapid joint motion visible while still respecting the model limit; it is not a recommended hardware setting.
 
-Trial 3 starts again from the same near-singular pose. This reset is important: it allows the undamped and damped results to be compared from the same geometry.
+The controller recomputes the stylus-tip Jacobian and pose error at every simulation step. This keeps the stylus on the yellow line while preserving the increasing rate demand caused by the changing configuration.
 
-Before running, write one prediction: Which trial will show the most joint motion, and which trial will move the tool closest to the requested 6 cm?
+### Why Cartesian via points still produce large joint rates
+
+It is helpful to separate **IK computation time** from **robot motion time**. Suppose two neighboring points on the straight path are scheduled `dt` seconds apart. Numerical IK may take several internal iterations to find their joint configurations `q_k` and `q_(k+1)`, but the robot must still move between those configurations during the scheduled `dt`. Its physical joint rate is therefore approximately
+
+`joint rate = (q_(k+1) - q_k) / dt`,
+
+and locally the joint change satisfies
+
+`q_(k+1) - q_k ~= inverse(J) * (x_(k+1) - x_k)`.
+
+Near the singular configuration, the inverse Jacobian becomes very large in the weak direction. Consequently, two nearby Cartesian via points can correspond to joint configurations that are relatively far apart. If those points must still be reached within the same `dt`, the required joint rate becomes large.
+
+Adding more via points makes the Cartesian path smoother, but it does not remove this amplification. To keep joint rates bounded, the Cartesian motion must slow down near the singularity.
+
+At the exact straight-elbow workspace boundary, the Jacobian loses a motion direction. The endpoint itself can have an IK solution, but continuing farther along the same line has no solution. With the finite 3.00 rad/s simulation limit, the robot may still fall behind the constant-speed reference near that endpoint, so the red trace can lag or stop short when the 20-second guard timeout is reached. Reaching the boundary with bounded joint rates requires slowing the requested Cartesian speed toward zero; merely allowing more IK iterations does not do that.
+
+Before running, write one prediction: In which part of Trial 2 will the joint rate be largest, and what will happen to the elbow there?
 
 ## Run the Three Trials
 
-1. Open `worlds/lab04_work.wbt` in Webots.
-2. In the Scene Tree, select `DEF UR5E UR5e`.
-3. Change its `controller` field from `void` to `singularity_demo`.
-4. Reset the simulation, then click **Run**.
-5. Keep the 3D view and Webots console visible.
-6. **Trial 1:** Watch the bent elbow and the visible tool translation.
-7. **Trial 2:** Watch the joints move at the safety limit near the almost straight elbow. Compare that large joint motion with the small tool displacement.
-8. **Trial 3:** The controller returns to the same almost straight-elbow pose, applies damping, and repeats the request. Watch how much less the joints move.
-9. When `[DEMONSTRATION COMPLETE]` appears, pause the simulation.
+1. Open `worlds/lab04_work.wbt` in Webots. The robot starts directly at the bent-elbow Trial 1 pose.
+2. Reset the simulation, then click **Run**. The supplied world already selects the `singularity_demo` controller.
+3. Keep the 3D view and Webots console visible.
+4. At each trial preview or singularity checkpoint, click inside the Webots 3D view and press **Space** when you are ready to continue. Trial 1 advances automatically to the Trial 2 preview after it finishes.
+5. **Trial 1:** Press Space and watch the stylus move away from the straight-elbow singularity. Joint rates should remain moderate.
+6. **Trial 2:** The robot returns to the bent start and reverses direction. Watch the elbow progressively straighten. When the condition number reaches 200, the controller pauses automatically; read the large on-scene raw and applied joint rates, then press Space to finish the approach.
+7. When `[DEMONSTRATION COMPLETE]` appears, inspect the final pose and pause the simulation. No extra key press is required after Trial 2.
 
-The full run takes about 27 seconds. Reset Webots if you want to repeat it.
+The controller creates `lab04_jacobian_singularities/joint_rate_comparison.svg` inside the repository and prints its complete location in the Webots console. Open it after Trial 2. It plots `max |joint rate|` against active motion time, marks when Trial 2 crosses condition number 200, and shows the 3.00 rad/s simulation limit. The green Trial 1 curve should stay moderate while the red Trial 2 curve rises sharply as the singularity is approached.
+
+The demonstration has no fixed duration because it advances only when you press Space. Reset Webots if you want to repeat it.
 
 ## What to Record
 
-Copy these values printed for each trial into the report:
+Copy these three values printed for each trial into the report:
 
 | Quantity | What it tells you |
 |---|---|
-| Minimum singular value | A value near zero indicates lost or nearly lost motion capability. |
-| Condition number | A large value indicates sensitive, poorly conditioned inverse motion. |
-| Raw undamped joint-rate norm | How strongly the ordinary inverse amplifies the request before safety limiting or damping. |
-| Applied joint-rate-vector norm | The magnitude of the joint command actually used for that trial. |
-| Safety scale | A value below 1 means the proposed command was uniformly reduced before execution. |
-| Measured translation magnitude | How far the tool actually moved in Webots. |
+| Minimum singular value, `sigma_min` | **Larger is better.** Zero means the Jacobian is singular; a value near zero means the robot has almost lost one Cartesian motion direction. |
+| Condition number, `sigma_max / sigma_min` | **Smaller is better.** A value of 1 is ideal; a large value means inverse motion is sensitive and can strongly amplify joint rates. |
+| Peak commanded joint rate | **Larger means faster joint motion.** Compare it with the 3.00 rad/s Webots simulation limit. A sharp increase in Trial 2 is visible evidence of the approaching singularity. |
 
-Take one screenshot from each trial. For Trials 2 and 3, capture the almost straight-elbow pose so the two inverse methods can be compared from the same geometry.
+Paste one Webots screenshot of Trial 1 and one screenshot of Trial 2 at the condition-200 pause with the on-scene joint rate visible. Also include the generated joint-rate comparison plot.
 
 You may optionally preview the configuration metrics without Webots:
 
@@ -84,29 +117,29 @@ This command is not a required submission.
 
 Use the sequence below when interpreting the output:
 
-1. Compare Trial 1 with Trials 2 and 3 using the minimum singular value and condition number. This establishes that the change comes from the robot configuration.
-2. Compare the raw undamped rate in Trials 1 and 2. This shows amplification near the singularity.
-3. Compare Trials 2 and 3. Trial 2 shows the rate-limited undamped behavior; Trial 3 shows how damping reduces joint motion but accepts tool-motion error.
+1. Follow Trial 2 from its well-conditioned start to the condition-200 pause. The changing metrics establish that singularity is caused by the evolving robot configuration.
+2. Compare Trial 1's moderate curve with the rising Trial 2 curve.
+3. At the condition-200 checkpoint, connect the nearly straight elbow and small minimum singular value to the large on-scene joint-rate request.
 
-The safety limit and damping solve different problems. The safety limit scales an already excessive command so it can be executed. Damping changes the inverse calculation itself so that the difficult singular direction is not amplified as strongly.
+The simulation limit scales an already excessive command so it can be displayed safely. It does not remove the singularity or change why the undamped inverse requests the large rate.
 
 ## Questions
 
 Answer each question in two or three sentences.
 
-1. Which configuration was closer to a singularity? Support your answer using the minimum singular value and condition number.
-2. In Trial 2, why did the raw undamped inverse request large joint rates even though the requested tool translation was only 6 cm?
-3. Compare Trials 2 and 3. How did damping change the applied joint motion and measured tool displacement?
-4. Why was it necessary to rate-limit Trial 2 instead of sending the raw undamped command directly to Webots?
+1. What happened to the minimum singular value and condition number as Trial 2 approached the straight-elbow configuration?
+2. Why did the undamped joint rate rise sharply near the end of Trial 2 even though Cartesian speed remained constant?
+3. Why was it necessary to rate-limit Trial 2 instead of sending the raw undamped command directly to Webots?
 
 ## What to Submit
 
 Submit the completed `Lab04_Report_Template.docx` containing:
 
 - your prediction;
-- the six recorded quantities for all three trials;
-- one screenshot from each trial; and
-- answers to the four questions.
+- the three recorded quantities for both trials;
+- one screenshot from each of the two trials;
+- the generated joint-rate comparison plot; and
+- answers to the three questions.
 
 No Python files or Webots world files are submitted.
 
@@ -115,8 +148,11 @@ No Python files or Webots world files are submitted.
 | Problem | Action |
 |---|---|
 | The controller does not appear in Webots | Close and reopen the world after updating the repository. |
-| The robot does not move | Confirm that the UR5e controller is `singularity_demo`, reset, and click Run. |
+| Webots reports that `get_from_def()` requires a Supervisor | Your work world was created from an older starter. Close it and create a fresh `lab04_work.wbt` from the updated starter; the updated UR5e has `supervisor TRUE`. |
+| The robot does not move | Confirm that you created the work world from the updated starter, then reset and click Run. |
 | Only one or two trials appear | Let the simulation run until `[DEMONSTRATION COMPLETE]` appears. |
-| Trial 2 prints a safety scale below 1 | This is expected; it prevents the excessive raw inverse rate from being commanded directly. |
+| Trial 2 prints a safety scale below 1 | This is expected; it prevents the excessive raw inverse rate from exceeding the 3.00 rad/s simulation limit. |
+| The red trace stops before the green target | Read the final console message. Near the workspace boundary, the finite joint-rate limit may prevent the robot from keeping up before the 20-second guard timeout. This is part of the singularity demonstration, not an IK-computation delay. |
+| Pressing Space does nothing | Click once inside the Webots 3D view to give it keyboard focus, then press Space again. |
 | The terminal scan reports an unfinished Lab 2 function | Complete the required Lab 2 FK equations before running Lab 4. |
 | The world or robot pose becomes corrupted | Close without saving and make a fresh copy of `lab04_starter.wbt`. |

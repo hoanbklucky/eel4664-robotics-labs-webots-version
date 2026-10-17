@@ -12,16 +12,28 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from lab04_jacobian_singularities.src.jacobian_starter import analytic_jacobian
+from lab02_webots_ur5e_frames.src.ur5e_fk_starter import (
+    T_6_TOOL,
+    forward_kinematics,
+)
 
 
 DEMO_CONFIGURATIONS = {
-    "bent elbow / well conditioned": np.array(
-        [0.20, -0.80, 1.00, -1.10, -0.70, 0.30]
+    "bent starting pose / well conditioned": np.array(
+        [0.20, -0.80, 1.40, -1.10, -0.70, 0.30]
     ),
-    "almost straight elbow / near singular": np.array(
-        [0.20, -0.80, 0.03, -1.10, -0.70, 0.30]
+    "representative straight-elbow endpoint / near singular": np.array(
+        [0.154, -0.125, 0.045, -0.395, -0.741, 0.267]
     ),
 }
+
+
+def stylus_fk(q):
+    """Return the pose of the visible stylus tip used in the Webots demo."""
+    T_tool = forward_kinematics(q) @ T_6_TOOL
+    T_tip = T_tool.copy()
+    T_tip[:3, 3] += T_tool[:3, :3] @ np.array([0.0, 0.13, 0.0])
+    return T_tip
 
 
 def singularity_metrics(J, rank_tolerance=1e-6):
@@ -58,9 +70,11 @@ def scan_configurations(configurations, jacobian_fn, rank_tolerance=1e-6):
 
 
 def main():
-    """Print the metrics for the two poses used by the Webots controller."""
+    """Print metrics representative of the start and end of the approach."""
     for label, q in DEMO_CONFIGURATIONS.items():
-        metrics = singularity_metrics(analytic_jacobian(q))
+        metrics = singularity_metrics(
+            analytic_jacobian(q, endpoint_fk=stylus_fk)
+        )
         print(f"\n{label.upper()}")
         print("q [rad]:", np.array2string(q, precision=3))
         print("singular values:",

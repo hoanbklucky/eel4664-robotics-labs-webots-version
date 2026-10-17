@@ -16,6 +16,7 @@ Thumbs.db
 **/results/*.yaml
 **/frames.pdf
 **/frames.gv
+lab04_singularities/joint_rate_comparison.svg
 *.wbproj
 *.wbproj.*
 *_work.wbt

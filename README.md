@@ -56,7 +56,7 @@ Lab 00 covers software installation, Webots Python configuration, and required W
 | Required | 1 | [UR5e Playground](lab01_ur5e_playground/README.md) | control the six joints, reach visual targets, and discover why predictive models are needed |
 | Required | 2 | [UR5e Frames and Forward Kinematics](lab02_webots_ur5e_frames/README.md) | predict tool poses and validate student FK across multiple configurations |
 | Required | 3 | [Inverse Kinematics](lab03_inverse_kinematics/README.md) | reach specified poses using student IK and the tested Lab 2 FK |
-| Required | 4 | [Jacobian, Differential Kinematics, and Singularities](lab04_jacobian_singularities/README.md) | command Cartesian motion and demonstrate degradation near singularity |
+| Required | 4 | [Singularities](lab04_singularities/README.md) | observe increasing joint rates as a robot approaches a singularity |
 | Required | 5 | [Trajectory Generation and Tracking](lab05_trajectory_tracking/README.md) | execute and compare point-to-point and straight-line motion |
 | Required | 6 | [Dynamics, Joint Control, and Parameter Identification](lab06_dynamics_control_identification/README.md) | track under changed payload/model conditions and identify a parameter |
 | Required | 7 | [Integrated Manipulation / Final Project](lab07_integrated_manipulation/README.md) | complete a repeatable autonomous pick-and-place challenge |
@@ -102,7 +102,7 @@ lab00_setup/                                required Lab 00 software setup and W
 lab01_ur5e_playground/                      required Lab 1
 lab02_webots_ur5e_frames/                   required Lab 2
 lab03_inverse_kinematics/                   required Lab 3
-lab04_jacobian_singularities/               required Lab 4
+lab04_singularities/                        required Lab 4
 lab05_trajectory_tracking/                  required Lab 5
 lab06_dynamics_control_identification/      required Lab 6
 lab07_integrated_manipulation/              required Lab 7 / final project

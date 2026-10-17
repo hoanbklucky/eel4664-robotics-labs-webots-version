@@ -14,7 +14,7 @@ SIMULATION_PROJECTS = (
     "lab01_ur5e_playground",
     "lab02_webots_ur5e_frames",
     "lab03_inverse_kinematics",
-    "lab04_jacobian_singularities",
+    "lab04_singularities",
     "lab05_trajectory_tracking",
     "lab06_dynamics_control_identification",
     "lab07_integrated_manipulation",
