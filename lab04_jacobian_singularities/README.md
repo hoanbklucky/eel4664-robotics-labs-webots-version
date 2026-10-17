@@ -1,194 +1,122 @@
-# Lab 4 - Jacobian, Differential Kinematics, and Singularities
-
-## Get the Latest Course Files
-
-Before starting, save your work and close Webots. Follow [Updating the Course Repository](../docs/UPDATE_REPOSITORY.md). Do not force an update or discard local work when Git reports a conflict.
+# Lab 4 - Seeing a Robot Singularity in Webots
 
 ## Mission
 
-**Move the end effector along a Cartesian direction and experimentally demonstrate what happens near a singularity.**
+Run a supplied Webots experiment and observe how the same requested tool motion behaves at a bent-elbow pose and near a straight-elbow singularity. At the near-singular pose, compare an undamped inverse with a damped inverse.
 
-### Why experiment in Webots?
+There is no required programming in this lab. The Jacobian, inverse calculations, safety limit, and Webots controller are supplied. Your task is to predict what will happen, observe the robot, record the printed evidence, and explain the physical result.
 
-The Jacobian predicts how small joint velocities produce tool velocity, but its physical meaning becomes clearer when the robot moves. Webots lets you compare that local prediction with measured tool motion and observe how the same Cartesian command becomes difficult near a singularity.
+## What You Should Learn
 
-This simulated experiment also permits repeatable approaches to problematic configurations without risking a physical robot. Numerical singularity metrics remain the evidence; the animation helps you interpret what motion capability is being lost.
+After the experiment, you should be able to:
 
-**Do not save over the original starter world after running the simulation. Reset/revert first, or save into a separate working copy.**
+- recognize a straight-elbow singular configuration;
+- use the minimum singular value and condition number to compare two poses;
+- explain why an undamped inverse requests very large joint rates near a singularity; and
+- explain how damping limits joint motion by accepting Cartesian tracking error.
 
-Open `worlds/lab04_starter.wbt` paused and immediately use **File -> Save World As...** to create `worlds/lab04_work.wbt`.
+## Before You Start
 
-## Success Criteria
+Complete Lab 3 and the [setup prerequisites](../lab00_setup/README.md). Lab 3 already introduced inverse kinematics and damped least squares; this lab uses those ideas without asking you to implement them again.
 
-You have completed the mission when:
+Use Webots R2025a. Do not save over the original starter world. Open `worlds/lab04_starter.wbt` while paused and immediately select **File -> Save World As...** to create `worlds/lab04_work.wbt`.
 
-- your geometric Jacobian agrees with finite differences;
-- the UR5e executes a commanded Cartesian-direction motion away from singularity;
-- singularity metrics are plotted or tabulated along an approach;
-- normal and near-singular behavior are compared quantitatively; and
-- you identify the physical Cartesian motion direction that is lost or degraded.
+## Understand the Experiment Before Running It
 
-## Learning Objectives
+The controller asks for the same 6 cm translation in all three trials while also asking the tool orientation to remain fixed. The requested translation points approximately along the Cartesian direction that becomes difficult when the elbow is straight.
 
-- Explain and verify the supplied UR5e geometric Jacobian.
-- Verify `twist = J(q) qdot` using finite differences and Webots motion.
-- Implement pseudoinverse and damped least-squares Cartesian motion.
-- Measure minimum singular value, rank, condition number, and manipulability.
-- Relate numerical conditioning to joint-rate amplification and physical mobility.
-- Enforce safe joint, rate, and conditioning limits.
+A Jacobian maps joint rates to instantaneous tool motion. At the bent-elbow pose, its motion directions are sufficiently independent, so the inverse can produce the request with moderate joint rates. Near the straight-elbow singularity, one singular value becomes very small. Producing motion along the corresponding difficult Cartesian direction then requires a combination of large, opposing joint rates.
 
-## Prerequisites
+The three trials isolate these effects:
 
-Complete Lab 3 and the [setup prerequisites](../lab00_setup/README.md). Bring the tested Lab 2 FK/transform modules, the Lab 3 IK results, frame convention, and Webots adapter. Review Jacobians and singularities from lecture/homework.
+| Trial | Configuration and inverse | What to expect | Why |
+|---|---|---|---|
+| 1 | Bent elbow, undamped | Moderate joint motion and a tool translation close to 6 cm | The Jacobian is well conditioned, so ordinary inverse motion works normally. |
+| 2 | Almost straight elbow, undamped | The raw calculation requests extremely large joint rates. The controller rate-limits them before execution. Several joints move visibly, but the tool completes only a small part of the request. | The inverse divides by a very small singular value, amplifying the joint command. |
+| 3 | Almost straight elbow, damped | Much smaller joint motion and only a small tool translation | Damping suppresses the amplified singular direction. This protects the robot but introduces tracking error. |
 
+### Why Trial 2 is rate limited
 
-**Platform note:** The required workflow supports Windows, macOS, and Ubuntu when configured through Lab 00. Terminal examples use `python`; on macOS or Ubuntu, use `python3` instead if `python` is not recognized.
+The near-singular undamped calculation requests a peak joint rate of roughly 5 rad/s for this experiment. Sending that raw command would create an unnecessarily large configuration change and could exceed the intended demonstration limits. The controller therefore prints the raw result, then uniformly scales the joint-rate vector so the cubic motion never exceeds 0.50 rad/s at any joint. This preserves the undamped inverse's joint-motion direction while making the Webots trial controlled and repeatable.
 
-## Background
+Trial 3 starts again from the same near-singular pose. This reset is important: it allows the undamped and damped results to be compared from the same geometry.
 
-The Jacobian is the local derivative of forward kinematics: it maps small joint motion to small tool motion. A singularity occurs when that mapping loses a task-space direction. Near such a configuration, a pseudoinverse can request very large joint rates, while damped least squares limits amplification by accepting some tracking error.
+Before running, write one prediction: Which trial will show the most joint motion, and which trial will move the tool closest to the requested 6 cm?
 
-For a concepts-first explanation that begins with a planar 2R derivation and then develops geometric Jacobian columns, singular directions, SVD, conditioning metrics, damped least squares, unit scaling, and finite-difference validation, read [Lab 4 Optional Background](OPTIONAL_BACKGROUND.md).
+## Run the Three Trials
 
-The required implementation uses the base/world frame and the same endpoint in both analytical and numerical Jacobians. The supplied modified-DH helper handles joint-axis bookkeeping; students enter only the two geometric column equations and one DLS equation.
+1. Open `worlds/lab04_work.wbt` in Webots.
+2. In the Scene Tree, select `DEF UR5E UR5e`.
+3. Change its `controller` field from `void` to `singularity_demo`.
+4. Reset the simulation, then click **Run**.
+5. Keep the 3D view and Webots console visible.
+6. **Trial 1:** Watch the bent elbow and the visible tool translation.
+7. **Trial 2:** Watch the joints move at the safety limit near the almost straight elbow. Compare that large joint motion with the small tool displacement.
+8. **Trial 3:** The controller returns to the same almost straight-elbow pose, applies damping, and repeats the request. Watch how much less the joints move.
+9. When `[DEMONSTRATION COMPLETE]` appears, pause the simulation.
 
-## Provided Files
+The full run takes about 27 seconds. Reset Webots if you want to repeat it.
 
-- `worlds/lab04_starter.wbt` - shared stylus, coordinate grid, tool-tip sensor, and Cartesian direction reference
-- `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
-- `controllers/one_joint_test/` - supplied safe test that moves one joint and compares predicted and measured tool displacement
-- `src/jacobian_starter.py`
-- `src/singularity_scan.py`
-- `src/cartesian_direction_motion.py` - mission integration scaffold
-- `Lab04_Report_Template.docx`
+## What to Record
 
+Copy these values printed for each trial into the report:
 
+| Quantity | What it tells you |
+|---|---|
+| Minimum singular value | A value near zero indicates lost or nearly lost motion capability. |
+| Condition number | A large value indicates sensitive, poorly conditioned inverse motion. |
+| Raw undamped joint-rate norm | How strongly the ordinary inverse amplifies the request before safety limiting or damping. |
+| Applied joint-rate-vector norm | The magnitude of the joint command actually used for that trial. |
+| Safety scale | A value below 1 means the proposed command was uniformly reduced before execution. |
+| Measured translation magnitude | How far the tool actually moved in Webots. |
 
-## Open the Word report template
+Take one screenshot from each trial. For Trials 2 and 3, capture the almost straight-elbow pose so the two inverse methods can be compared from the same geometry.
 
-Follow [Opening a Word Report Template](../docs/OPEN_WORD_REPORT.md) and create a personal copy of `Lab04_Report_Template.docx` before entering results.
-
-## Part 1 - Setup / Validation
-
-> **Why this part matters:** A trustworthy FK model and verified device path are prerequisites for interpreting Jacobian discrepancies or singular behavior correctly.
-
-1. **World:** create `lab04_work.wbt`; verify the grid, stylus, and `CARTESIAN_DIRECTION_REFERENCE`, and confirm controller `void`.
-2. **Minimal controller:** select `diagnostic_minimal` as the UR5e controller and run the simulation. Confirm that the console reports 10 successful steps.
-3. **Devices:** reset Webots, select `diagnostic_devices`, and run again. Confirm that all six named motors and their six position sensors appear in the console output.
-4. **One-joint test:** use the supplied controller as follows.
-   1. Stop and reset the simulation.
-   2. In the Scene Tree, select `DEF UR5E UR5e`.
-   3. Find its `controller` field, click **Select...**, and choose `one_joint_test`.
-   4. Run the simulation. The controller smoothly increases only `shoulder_pan_joint` by `0.10` rad (about $5.7^\circ$) over 3 seconds and holds the other five joints at their initial angles.
-   5. Watch the arm and read the console. Compare the signs and dominant direction of `Predicted tool displacement` and `Measured tool displacement`; they should agree closely even though small simulation and settling differences are expected.
-   6. Reset Webots before continuing. Do not drag a robot link manually because that bypasses the commanded joint and does not provide a controlled validation test.
-5. **Full algorithm:** enable Cartesian and near-singular experiments only after stages 1-4 pass.
-
-The default test is intentionally small and requires no student coding. To test a different joint later, change only `TEST_JOINT_INDEX` near the top of `controllers/one_joint_test/one_joint_test.py`, using the printed joint order, then reset and rerun.
-
-Import your Lab 2 FK rather than duplicating it. Establish conservative joint-rate, joint-limit, and condition-number stop thresholds before motion.
-
-## Part 2 - Core Implementation
-
-> **Why this part matters:** You will connect a supplied geometric-Jacobian implementation to its physical meaning, then enter one damped-least-squares equation that converts a desired Cartesian velocity into joint rates. The scan, logging, validation, and saturation infrastructure is supplied.
-
-### Step 1 - Understand the supplied Jacobian and complete one equation
-
-1. Read the supplied geometric-Jacobian loop in `src/jacobian_starter.py` and connect each code line to the diagram and equations below.
-2. In `src/cartesian_direction_motion.py`, complete `TODO 1` for the damped-least-squares joint-rate equation using the supplied `system` and `desired_twist`.
-
-The geometric Jacobian was not assumed from lecture, so its implementation is provided. It is the 3D version of the endpoint partial derivatives used for a planar 2R robot. For joint $i$, the supplied modified-DH code first returns the joint-axis direction $\mathbf z_i$, a point $\mathbf p_i$ on that axis, and the endpoint position $\mathbf p_e$, all in the base frame. The loop then executes:
-
-```python
-lever_arm = p_endpoint - origin
-linear_column = np.cross(axis, lever_arm)
-angular_column = axis
-
-J[:3, joint] = linear_column
-J[3:, joint] = angular_column
-```
-
-Interpret the lines in this order:
-
-1. `lever_arm` is the vector $\mathbf p_e-\mathbf p_i$ from the joint axis to the endpoint.
-2. `np.cross(axis, lever_arm)` gives the tangent direction in which that joint moves the endpoint. It is the position derivative $\partial\mathbf p_e/\partial q_i$.
-3. A revolute joint's angular-velocity contribution points along its own axis, so the lower column is `axis`.
-4. The two three-element vectors become one six-element Jacobian column.
-
-The loop repeats for all six joints. Read the expanded derivation, planar check, figure, and code walkthrough in [Optional Background, Section 3](OPTIONAL_BACKGROUND.md#from-the-2r-partial-derivatives-to-a-3d-geometric-jacobian). You are responsible for explaining what the supplied code calculates, but you do not have to reproduce this unfamiliar derivation from memory.
-
-Do not rewrite the supplied modified-DH bookkeeping, SVD metrics, scan loop, rate saturation, logging loop, or stop logic.
-
-<details>
-<summary>Stuck? Reveal the DLS equation</summary>
-
-```python
-qdot = J.T @ np.linalg.solve(system, desired_twist)
-```
-
-Use this only after you have identified the roles of `J.T`, `system`, and `desired_twist` from the surrounding code and the optional background.
-
-</details>
-
-### Step 2 - Verify before inverse motion
-
-Use `endpoint_fk=forward_kinematics` in both analytical and numerical calculations. Compare one column first, then all six columns at three nonsymmetric configurations and several `eps` values. After frame `{6}` passes, repeat with the same `fk_tool(q)` endpoint in both calculations.
+You may optionally preview the configuration metrics without Webots:
 
 ```bash
-python -c "import numpy as np; from lab02_webots_ur5e_frames.src.ur5e_fk_starter import forward_kinematics; from lab04_jacobian_singularities.src.jacobian_starter import analytic_jacobian,numerical_jacobian; q=np.array([0.2,-0.8,1.0,-1.1,-0.7,0.3]); Ja=analytic_jacobian(q); Jn=numerical_jacobian(forward_kinematics,q); print('error=',np.linalg.norm(Ja-Jn)); print(Ja)"
+python lab04_jacobian_singularities/src/singularity_scan.py
 ```
 
-Do not proceed until the analytical/numerical error is small and decreases appropriately for a reasonable centered-difference step.
+This command is not a required submission.
 
-### Step 3 - Run the supplied scan and guarded motion
+## Explain What You Observed
 
-Use `singularity_scan.py` to report singular values, `sigma_min`, rank, condition number, and manipulability for the instructor-provided well-conditioned and near-singular configurations. Then use the guarded DLS step through the Webots adapter. Keep SI-unit scaling and rank tolerance fixed across comparisons.
+Use the sequence below when interpreting the output:
 
-| Observation | Well conditioned | Near singular |
-|---|---|---|
-| Minimum singular value | clearly above zero | much smaller |
-| Undamped joint-rate norm | moderate | strongly amplified |
-| Damped command | close to request | bounded with visible task error |
-| Analytical/numerical agreement | close | still close |
+1. Compare Trial 1 with Trials 2 and 3 using the minimum singular value and condition number. This establishes that the change comes from the robot configuration.
+2. Compare the raw undamped rate in Trials 1 and 2. This shows amplification near the singularity.
+3. Compare Trials 2 and 3. Trial 2 shows the rate-limited undamped behavior; Trial 3 shows how damping reduces joint motion but accepts tool-motion error.
 
-## Part 3 - Robot Experiment
+The safety limit and damping solve different problems. The safety limit scales an already excessive command so it can be executed. Damping changes the inverse calculation itself so that the difficult singular direction is not amplified as strongly.
 
-> **Why this part matters:** Moving the robot makes the local velocity prediction visible and shows physically why Cartesian motion becomes difficult near a singularity.
+## Questions
 
-1. Select a well-conditioned starting pose.
-2. Command a small tool displacement or velocity along the assigned Cartesian direction.
-3. Log requested, predicted, and measured motion.
-4. Approach an instructor-approved near-singular configuration in conservative increments.
-5. Repeat a comparable Cartesian request.
-6. Stop before rate/conditioning thresholds are violated.
-7. Repeat near-singular motion with damping and compare behavior.
+Answer each question in two or three sentences.
 
-The final robotic outcome is a visible Cartesian-direction motion whose degradation near singularity is predicted by your metrics.
-
-## Part 4 - Quantitative Analysis
-
-> **Why this part matters:** Singular values, condition number, tracking error, and joint-rate amplification distinguish a real loss of mobility from an implementation or visualization problem.
-
-- Plot finite-difference Jacobian error versus perturbation size.
-- Plot `sigma_min` and condition number versus time or approach parameter.
-- Compare normal and near-singular joint-rate norm.
-- Compare predicted and measured Cartesian velocity/displacement.
-- Compare damped and undamped tracking error and command magnitude.
-- Identify the singular-vector direction associated with degraded mobility.
-
-## Engineering Question
-
-Answer in 2-3 sentences.
-
-As the minimum singular value decreases, what happens to the required joint-rate magnitude, and how does damping change the commanded motion? Refer to your measured results.
+1. Which configuration was closer to a singularity? Support your answer using the minimum singular value and condition number.
+2. In Trial 2, why did the raw undamped inverse request large joint rates even though the requested tool translation was only 6 cm?
+3. Compare Trials 2 and 3. How did damping change the applied joint motion and measured tool displacement?
+4. Why was it necessary to rate-limit Trial 2 instead of sending the raw undamped command directly to Webots?
 
 ## What to Submit
 
-1. The completed DLS equation line in `cartesian_direction_motion.py`.
-2. Completed `Lab04_Report_Template.docx` containing finite-difference validation, the normal/near-singular comparison, the damped/undamped result and plot, and the Engineering Question response.
+Submit the completed `Lab04_Report_Template.docx` containing:
 
-Do not submit supplied helper code, `lab04_work.wbt`, vendor assets, or caches unless requested.
+- your prediction;
+- the six recorded quantities for all three trials;
+- one screenshot from each trial; and
+- answers to the four questions.
+
+No Python files or Webots world files are submitted.
 
 ## Troubleshooting
 
-Validate FK first, then one Jacobian column, then all columns, then a tiny Cartesian command. A sudden sign/frame discrepancy is not evidence of singularity. Stop if joint-rate, joint-limit, or conditioning thresholds are exceeded. Recover from `lab04_starter.wbt` after world/controller failures.
+| Problem | Action |
+|---|---|
+| The controller does not appear in Webots | Close and reopen the world after updating the repository. |
+| The robot does not move | Confirm that the UR5e controller is `singularity_demo`, reset, and click Run. |
+| Only one or two trials appear | Let the simulation run until `[DEMONSTRATION COMPLETE]` appears. |
+| Trial 2 prints a safety scale below 1 | This is expected; it prevents the excessive raw inverse rate from being commanded directly. |
+| The terminal scan reports an unfinished Lab 2 function | Complete the required Lab 2 FK equations before running Lab 4. |
+| The world or robot pose becomes corrupted | Close without saving and make a fresh copy of `lab04_starter.wbt`. |

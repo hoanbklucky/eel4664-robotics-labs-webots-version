@@ -16,7 +16,7 @@ class DifferentialStep:
 
 def safe_differential_step(q, desired_twist, jacobian, damping,
                            max_joint_rate, min_sigma_stop):
-    """Compute one guarded DLS step; students complete only the marked equation."""
+    """Compute one supplied guarded damped-least-squares step."""
     q = np.asarray(q, dtype=float)
     desired_twist = np.asarray(desired_twist, dtype=float)
     J = np.asarray(jacobian(q), dtype=float)
@@ -38,9 +38,7 @@ def safe_differential_step(q, desired_twist, jacobian, damping,
         )
 
     system = J @ J.T + damping**2 * np.eye(J.shape[0])
-    qdot = None  # TODO 1: J.T @ np.linalg.solve(system, desired_twist)
-    if qdot is None:
-        raise NotImplementedError("Complete TODO 1: the DLS joint-rate equation")
+    qdot = J.T @ np.linalg.solve(system, desired_twist)
 
     qdot = np.asarray(qdot, dtype=float)
     peak = float(np.max(np.abs(qdot)))
