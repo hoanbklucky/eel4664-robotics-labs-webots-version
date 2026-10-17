@@ -48,7 +48,7 @@ Complete Lab 3 and the [setup prerequisites](../lab00_setup/README.md). Bring th
 
 The Jacobian is the local derivative of forward kinematics: it maps small joint motion to small tool motion. A singularity occurs when that mapping loses a task-space direction. Near such a configuration, a pseudoinverse can request very large joint rates, while damped least squares limits amplification by accepting some tracking error.
 
-For a concepts-first explanation of geometric Jacobian columns, SVD, singular directions, conditioning metrics, damped least squares, unit scaling, and finite-difference validation, read [Lab 4 Optional Background](OPTIONAL_BACKGROUND.md).
+For a concepts-first explanation that begins with a planar 2R derivation and then develops geometric Jacobian columns, singular directions, SVD, conditioning metrics, damped least squares, unit scaling, and finite-difference validation, read [Lab 4 Optional Background](OPTIONAL_BACKGROUND.md).
 
 The required implementation uses the base/world frame and the same endpoint in both analytical and numerical Jacobians. The supplied modified-DH helper handles joint-axis bookkeeping; students enter only the two geometric column equations and one DLS equation.
 
