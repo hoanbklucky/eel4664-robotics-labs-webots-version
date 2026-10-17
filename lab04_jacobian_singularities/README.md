@@ -30,7 +30,7 @@ You have completed the mission when:
 
 ## Learning Objectives
 
-- Derive and implement the UR5e geometric Jacobian.
+- Explain and verify the supplied UR5e geometric Jacobian.
 - Verify `twist = J(q) qdot` using finite differences and Webots motion.
 - Implement pseudoinverse and damped least-squares Cartesian motion.
 - Measure minimum singular value, rank, condition number, and manipulability.
@@ -90,14 +90,45 @@ Import your Lab 2 FK rather than duplicating it. Establish conservative joint-ra
 
 ## Part 2 - Core Implementation
 
-> **Why this part matters:** Three equations connect joint geometry, local Cartesian motion, and safe inverse differential motion. The scan, logging, validation, and saturation infrastructure is supplied.
+> **Why this part matters:** You will connect a supplied geometric-Jacobian implementation to its physical meaning, then enter one damped-least-squares equation that converts a desired Cartesian velocity into joint rates. The scan, logging, validation, and saturation infrastructure is supplied.
 
-### Step 1 - Complete the three marked equations
+### Step 1 - Understand the supplied Jacobian and complete one equation
 
-1. In `src/jacobian_starter.py`, complete `TODO 1` for the linear column and `TODO 2` for the angular column.
-2. In `src/cartesian_direction_motion.py`, complete `TODO 3` for the damped-least-squares joint-rate equation using the supplied `system` and `desired_twist`.
+1. Read the supplied geometric-Jacobian loop in `src/jacobian_starter.py` and connect each code line to the diagram and equations below.
+2. In `src/cartesian_direction_motion.py`, complete `TODO 1` for the damped-least-squares joint-rate equation using the supplied `system` and `desired_twist`.
+
+The geometric Jacobian was not assumed from lecture, so its implementation is provided. It is the 3D version of the endpoint partial derivatives used for a planar 2R robot. For joint $i$, the supplied modified-DH code first returns the joint-axis direction $\mathbf z_i$, a point $\mathbf p_i$ on that axis, and the endpoint position $\mathbf p_e$, all in the base frame. The loop then executes:
+
+```python
+lever_arm = p_endpoint - origin
+linear_column = np.cross(axis, lever_arm)
+angular_column = axis
+
+J[:3, joint] = linear_column
+J[3:, joint] = angular_column
+```
+
+Interpret the lines in this order:
+
+1. `lever_arm` is the vector $\mathbf p_e-\mathbf p_i$ from the joint axis to the endpoint.
+2. `np.cross(axis, lever_arm)` gives the tangent direction in which that joint moves the endpoint. It is the position derivative $\partial\mathbf p_e/\partial q_i$.
+3. A revolute joint's angular-velocity contribution points along its own axis, so the lower column is `axis`.
+4. The two three-element vectors become one six-element Jacobian column.
+
+The loop repeats for all six joints. Read the expanded derivation, planar check, figure, and code walkthrough in [Optional Background, Section 3](OPTIONAL_BACKGROUND.md#from-the-2r-partial-derivatives-to-a-3d-geometric-jacobian). You are responsible for explaining what the supplied code calculates, but you do not have to reproduce this unfamiliar derivation from memory.
 
 Do not rewrite the supplied modified-DH bookkeeping, SVD metrics, scan loop, rate saturation, logging loop, or stop logic.
+
+<details>
+<summary>Stuck? Reveal the DLS equation</summary>
+
+```python
+qdot = J.T @ np.linalg.solve(system, desired_twist)
+```
+
+Use this only after you have identified the roles of `J.T`, `system`, and `desired_twist` from the surrounding code and the optional background.
+
+</details>
 
 ### Step 2 - Verify before inverse motion
 
@@ -153,7 +184,7 @@ As the minimum singular value decreases, what happens to the required joint-rate
 
 ## What to Submit
 
-1. The three completed equation lines in `jacobian_starter.py` and `cartesian_direction_motion.py`.
+1. The completed DLS equation line in `cartesian_direction_motion.py`.
 2. Completed `Lab04_Report_Template.docx` containing finite-difference validation, the normal/near-singular comparison, the damped/undamped result and plot, and the Engineering Question response.
 
 Do not submit supplied helper code, `lab04_work.wbt`, vendor assets, or caches unless requested.

@@ -84,12 +84,12 @@ def analytic_jacobian(q, endpoint_fk=forward_kinematics):
     J = np.zeros((6, 6))
 
     for joint, (origin, axis) in enumerate(zip(origins, axes)):
-        # Fill only these two repeated geometric-Jacobian relationships.
-        linear_column = None   # TODO 1: use axis, origin, and p_endpoint
-        angular_column = None  # TODO 2: use the revolute-joint axis
-
-        if linear_column is None or angular_column is None:
-            raise NotImplementedError("Complete the two marked Jacobian expressions")
+        # For a revolute joint, axis x lever_arm is the endpoint's
+        # translational partial derivative with respect to that joint angle.
+        # The angular-velocity contribution points along the same joint axis.
+        lever_arm = p_endpoint - origin
+        linear_column = np.cross(axis, lever_arm)
+        angular_column = axis
 
         J[:3, joint] = linear_column
         J[3:, joint] = angular_column

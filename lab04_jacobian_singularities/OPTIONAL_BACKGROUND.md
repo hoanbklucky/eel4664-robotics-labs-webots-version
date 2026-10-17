@@ -21,7 +21,11 @@ $$
 Dividing by a small time interval gives the velocity form:
 
 $$
-\begin{bmatrix}\mathbf v\\\boldsymbol\omega\end{bmatrix}
+\begin{bmatrix}
+\mathbf v
+\\
+\boldsymbol\omega
+\end{bmatrix}
 =J(\mathbf q)\dot{\mathbf q}.
 $$
 
@@ -42,9 +46,17 @@ $$
 Differentiate these forward-kinematics equations with respect to time. Collecting the coefficients of $\dot\theta_1$ and $\dot\theta_2$ gives
 
 $$
-\begin{bmatrix}\dot x\\\dot y\end{bmatrix}
+\begin{bmatrix}
+\dot{x}
+\\
+\dot{y}
+\end{bmatrix}
 =J(\mathbf q)
-\begin{bmatrix}\dot\theta_1\\\dot\theta_2\end{bmatrix}.
+\begin{bmatrix}
+\dot{\theta}_1
+\\
+\dot{\theta}_2
+\end{bmatrix}.
 $$
 
 where
@@ -106,7 +118,153 @@ $$
 
 The two columns are parallel, the rank falls from two to one, and $\det(J)=0$. The arm can create vertical endpoint velocity but cannot create horizontal endpoint velocity at that instant. For this square 2R example, a zero determinant identifies singularity. For general robot tasks, the Jacobian may be nonsquare, so rank and singular values are the more useful tests.
 
-## 3. Why one revolute-joint column contains a cross product
+## 3. From the 2R partial derivatives to a 3D geometric Jacobian
+
+In class, the planar 2R Jacobian was found by differentiating the endpoint coordinates with respect to the joint angles. The geometric method below computes those same partial derivatives from the joint geometry. It is convenient for a spatial robot such as the UR5e because every revolute joint can be treated in the same way.
+
+![Geometry of one revolute-joint Jacobian column](figures/revolute_joint_cross_product.svg)
+
+*One revolute joint rotates the endpoint around its axis. The instantaneous endpoint velocity is tangent to the circular path, so it is perpendicular to both the joint axis and the lever arm.*
+
+### Build one column step by step
+
+For joint $i$, all of the following vectors and points must be expressed in the robot base frame:
+
+- $\mathbf z_i$ is a unit vector along the joint's positive rotation axis;
+- $\mathbf p_i$ is a point on that axis, normally the joint-frame origin; and
+- $\mathbf p_e$ is the endpoint position.
+
+First form the lever arm from the joint axis to the endpoint:
+
+$$
+\mathbf r_i=\mathbf p_e-\mathbf p_i.
+$$
+
+Think of a door rotating about its hinge. The hinge is $\mathbf p_i$, the endpoint is $\mathbf p_e$, and $\mathbf r_i$ points from the hinge to the endpoint. A point farther from the hinge travels faster for the same angular speed.
+
+A small positive joint rotation moves the endpoint along the tangent to its circular path. The cross product gives that tangent direction:
+
+$$
+\mathbf z_i\times\mathbf r_i.
+$$
+
+The right-hand rule determines the positive direction. The order matters: $\mathbf r_i\times\mathbf z_i$ points in the opposite direction.
+
+For a small joint-angle change $\Delta q_i$,
+
+$$
+\Delta\mathbf p_e
+\approx
+(\mathbf z_i\times\mathbf r_i)\Delta q_i.
+$$
+
+Divide by $\Delta q_i$ to obtain the endpoint position derivative:
+
+$$
+\frac{\partial\mathbf p_e}{\partial q_i}
+=
+\mathbf z_i\times(\mathbf p_e-\mathbf p_i).
+$$
+
+Thus, the cross product is not a different idea from the partial-derivative method. It is a geometric way to calculate the same derivative.
+
+### Check it against a planar derivative
+
+For a planar robot, the rotation axis points out of the page and the lever arm lies in the page:
+
+$$
+\mathbf z_i=
+\begin{bmatrix}
+0\\
+0\\
+1
+\end{bmatrix},
+\qquad
+\mathbf r_i=
+\begin{bmatrix}
+r_x\\
+r_y\\
+0
+\end{bmatrix}.
+$$
+
+Their cross product is
+
+$$
+\mathbf z_i\times\mathbf r_i=
+\begin{bmatrix}
+-r_y\\
+r_x\\
+0
+\end{bmatrix}.
+$$
+
+The vector $[-r_y,\ r_x]^T$ is the lever arm turned 90 degrees counterclockwise, exactly the tangent direction. For example, if
+
+$$
+\mathbf r_i=
+\begin{bmatrix}
+L\cos q_i\\
+L\sin q_i\\
+0
+\end{bmatrix},
+$$
+
+then ordinary differentiation gives
+
+$$
+\frac{\partial\mathbf r_i}{\partial q_i}=
+\begin{bmatrix}
+-L\sin q_i\\
+L\cos q_i\\
+0
+\end{bmatrix}
+=
+\mathbf z_i\times\mathbf r_i.
+$$
+
+The same joint also gives the tool angular velocity $\boldsymbol\omega_i=\mathbf z_i\dot q_i$. Therefore, the six entries in one geometric-Jacobian column are
+
+$$
+\mathbf J_i=
+\begin{bmatrix}
+\mathbf z_i\times(\mathbf p_e-\mathbf p_i)\\
+\mathbf z_i
+\end{bmatrix}.
+$$
+
+The top three entries describe endpoint linear velocity, and the bottom three describe angular velocity. Each column answers: “If only this joint moves at one radian per second, what instantaneous tool velocity results?”
+
+### Walk through the supplied implementation
+
+Students do not have to derive or write the UR5e geometric-Jacobian code in this lab. The supplied modified-DH bookkeeping has already expressed every joint origin and axis in the base frame. Read these lines inside `analytic_jacobian`:
+
+```python
+lever_arm = p_endpoint - origin
+linear_column = np.cross(axis, lever_arm)
+angular_column = axis
+
+J[:3, joint] = linear_column
+J[3:, joint] = angular_column
+```
+
+Line by line:
+
+1. `lever_arm` is $\mathbf p_e-\mathbf p_i$.
+2. `linear_column` is the endpoint derivative $\partial\mathbf p_e/\partial q_i$.
+3. `angular_column` is the joint's angular-velocity direction.
+4. The two vectors are stored in the top and bottom halves of Jacobian column $i$.
+
+The loop repeats these operations for all six joints. Do not apply another Webots sign correction in these lines; the supplied axis bookkeeping already includes the required joint conventions.
+
+Useful checks are:
+
+- reversing the cross-product order reverses the predicted linear velocity;
+- if the endpoint lies on the joint axis, that joint produces no instantaneous endpoint translation;
+- a point farther from the axis has a larger linear speed for the same joint rate; and
+- mixing vectors expressed in different frames produces an incorrect column.
+
+### Compact summary
 
 For revolute joint $i$, let $\mathbf z_i$ be its axis direction, $\mathbf p_i$ a point on the axis, and $\mathbf p_e$ the endpoint position, all expressed in the base frame.
 

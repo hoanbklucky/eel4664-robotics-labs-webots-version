@@ -38,9 +38,9 @@ def safe_differential_step(q, desired_twist, jacobian, damping,
         )
 
     system = J @ J.T + damping**2 * np.eye(J.shape[0])
-    qdot = None  # TODO 3: J.T @ np.linalg.solve(system, desired_twist)
+    qdot = None  # TODO 1: J.T @ np.linalg.solve(system, desired_twist)
     if qdot is None:
-        raise NotImplementedError("Complete TODO 3: the DLS joint-rate equation")
+        raise NotImplementedError("Complete TODO 1: the DLS joint-rate equation")
 
     qdot = np.asarray(qdot, dtype=float)
     peak = float(np.max(np.abs(qdot)))

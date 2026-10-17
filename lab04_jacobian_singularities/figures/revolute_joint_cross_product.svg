@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560" role="img" aria-labelledby="title desc">
+  <title id="title">Geometry of one revolute-joint Jacobian column</title>
+  <desc id="desc">A joint axis points out of the page at p sub i. A lever arm points from p sub i to endpoint p sub e. The endpoint velocity is tangent to the circular path and perpendicular to the lever arm.</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1769aa"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#d95f02"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#238b45"/>
+    </marker>
+    <style>
+      .label { font: 24px Arial, sans-serif; fill: #17202a; }
+      .small { font: 20px Arial, sans-serif; fill: #34495e; }
+      .math { font: italic 25px Georgia, serif; fill: #17202a; }
+    </style>
+  </defs>
+
+  <rect x="1" y="1" width="1098" height="558" rx="16" fill="#ffffff" stroke="#d5dbe3" stroke-width="2"/>
+  <text x="550" y="45" text-anchor="middle" class="label" font-weight="bold">One revolute joint: rotation produces tangential motion</text>
+
+  <!-- Circular path and positive rotation -->
+  <path d="M145 315 A250 250 0 0 1 471 111" fill="none" stroke="#aeb8c4" stroke-width="3" stroke-dasharray="9 8"/>
+  <path d="M180 180 A185 185 0 0 1 320 108" fill="none" stroke="#238b45" stroke-width="5" marker-end="url(#arrow-green)"/>
+  <text x="148" y="142" class="small" fill="#238b45">positive rotation</text>
+
+  <!-- Joint axis out of page -->
+  <circle cx="210" cy="360" r="23" fill="#ffffff" stroke="#238b45" stroke-width="4"/>
+  <circle cx="210" cy="360" r="7" fill="#238b45"/>
+  <text x="105" y="415" class="math">pᵢ</text>
+  <text x="82" y="449" class="small">joint-axis point</text>
+  <text x="128" y="337" class="math" fill="#238b45">zᵢ</text>
+  <text x="75" y="307" class="small" fill="#238b45">out of page</text>
+
+  <!-- Lever arm -->
+  <line x1="226" y1="345" x2="550" y2="147" stroke="#1769aa" stroke-width="7" marker-end="url(#arrow-blue)"/>
+  <text x="332" y="216" class="math" fill="#1769aa">rᵢ = pₑ − pᵢ</text>
+  <text x="321" y="248" class="small" fill="#1769aa">lever arm</text>
+
+  <!-- Endpoint and tangent -->
+  <circle cx="568" cy="136" r="12" fill="#17202a"/>
+  <text x="592" y="125" class="math">pₑ</text>
+  <text x="592" y="155" class="small">endpoint</text>
+  <line x1="568" y1="136" x2="530" y2="75" stroke="#d95f02" stroke-width="7" marker-end="url(#arrow-orange)"/>
+  <text x="690" y="82" class="math" fill="#d95f02">vᵢ = (zᵢ × rᵢ) q̇ᵢ</text>
+  <text x="748" y="114" class="small" fill="#d95f02">tangent velocity</text>
+
+  <!-- Right-angle cue -->
+  <path d="M532 159 L510 123 L546 101" fill="none" stroke="#59636e" stroke-width="3"/>
+
+  <!-- Planar cross-product inset -->
+  <rect x="675" y="195" width="370" height="300" rx="12" fill="#f5f8fb" stroke="#c8d2dc" stroke-width="2"/>
+  <text x="860" y="235" text-anchor="middle" class="label" font-weight="bold">Planar check</text>
+  <text x="715" y="285" class="math">zᵢ = [0, 0, 1]ᵀ</text>
+  <text x="715" y="330" class="math">rᵢ = [rₓ, rᵧ, 0]ᵀ</text>
+  <line x1="710" y1="352" x2="1010" y2="352" stroke="#c8d2dc" stroke-width="2"/>
+  <text x="715" y="405" class="math">zᵢ × rᵢ = [−rᵧ, rₓ, 0]ᵀ</text>
+  <text x="715" y="450" class="small">The lever arm is turned 90°</text>
+  <text x="715" y="478" class="small">into the tangent direction.</text>
+
+  <text x="70" y="525" class="small">Cross-product order matters: zᵢ × rᵢ gives the positive tangent; rᵢ × zᵢ gives the opposite direction.</text>
+</svg>
