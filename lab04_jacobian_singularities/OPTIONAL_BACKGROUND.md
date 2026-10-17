@@ -161,9 +161,7 @@ $$
 Divide by $\Delta q_i$ to obtain the endpoint position derivative:
 
 $$
-\frac{\partial\mathbf p_e}{\partial q_i}
-=
-\mathbf z_i\times(\mathbf p_e-\mathbf p_i).
+\frac{\partial\mathbf p_e}{\partial q_i}=\mathbf z_i\times(\mathbf p_e-\mathbf p_i).
 $$
 
 Thus, the cross product is not a different idea from the partial-derivative method. It is a geometric way to calculate the same derivative.
@@ -218,9 +216,7 @@ $$
 -L\sin q_i\\
 L\cos q_i\\
 0
-\end{bmatrix}
-=
-\mathbf z_i\times\mathbf r_i.
+\end{bmatrix}=\mathbf z_i\times\mathbf r_i.
 $$
 
 The same joint also gives the tool angular velocity $\boldsymbol\omega_i=\mathbf z_i\dot q_i$. Therefore, the six entries in one geometric-Jacobian column are

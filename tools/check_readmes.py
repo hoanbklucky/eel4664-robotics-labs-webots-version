@@ -28,6 +28,11 @@ def check_file(path):
         errors.append("has an unmatched display-math delimiter")
     if re.search(r"\$\$\S|\S\$\$", text):
         errors.append("has display math sharing a line with content")
+    for match in re.finditer(r"(?m)^\s*=\s*$", text):
+        line_number = text.count("\n", 0, match.start()) + 1
+        errors.append(
+            f"line {line_number}: standalone '=' can become a Markdown heading"
+        )
     if len(re.findall(r"(?m)^```", text)) % 2:
         errors.append("has an unmatched fenced-code delimiter")
     lines = text.splitlines()
