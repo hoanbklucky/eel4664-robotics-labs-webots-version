@@ -158,7 +158,7 @@ python lab04_singularities/src/singularity_scan.py
 
 This command is not a required submission.
 
-## Explain What You Observed
+## How to Interpret the Results
 
 Use the sequence below when interpreting the output:
 
