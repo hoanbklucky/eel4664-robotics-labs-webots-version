@@ -12,6 +12,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from lab04_singularities.src.jacobian_starter import analytic_jacobian
+from lab04_singularities.src.jacobian_starter import modified_dh_joint_axes
 from lab02_webots_ur5e_frames.src.ur5e_fk_starter import (
     T_6_TOOL,
     forward_kinematics,
@@ -23,7 +24,16 @@ DEMO_CONFIGURATIONS = {
         [0.20, -0.80, 1.40, -1.10, -0.70, 0.30]
     ),
     "representative straight-elbow endpoint / near singular": np.array(
-        [0.154, -0.125, 0.045, -0.395, -0.741, 0.267]
+        [0.153691, -0.095845, -0.016114, -0.363319, -0.740916, 0.267112]
+    ),
+    "shoulder-test starting pose / well conditioned": np.array(
+        [-1.971137, -2.076381, 0.639429, 1.329040, 1.291846, -0.601321]
+    ),
+    "representative shoulder midpoint / near singular": np.array(
+        [-1.804500, -1.948532, 0.748482, 1.095687, 1.457550, -0.619310]
+    ),
+    "representative shoulder endpoint / recovered": np.array(
+        [-1.992100, -1.801000, 0.716000, 0.976400, 1.271000, -0.599000]
     ),
 }
 
@@ -59,6 +69,12 @@ def singularity_metrics(J, rank_tolerance=1e-6):
     }
 
 
+def shoulder_radius(q):
+    """Return horizontal distance from the wrist center to the base axis."""
+    origins, _, _ = modified_dh_joint_axes(q)
+    return float(np.linalg.norm(origins[3, :2]))
+
+
 def scan_configurations(configurations, jacobian_fn, rank_tolerance=1e-6):
     """Evaluate a sequence of joint configurations."""
     rows = []
@@ -82,6 +98,8 @@ def main():
         print(f"sigma_min: {metrics['sigma_min']:.6f}")
         print(f"rank: {metrics['rank']}")
         print(f"condition number: {metrics['condition_number']:.1f}")
+        if "shoulder" in label:
+            print(f"wrist-center radius: {100.0 * shoulder_radius(q):.1f} cm")
 
 
 if __name__ == "__main__":

@@ -17,7 +17,11 @@ from lab02_webots_ur5e_frames.src.ur5e_fk_starter import (  # noqa: E402
 )
 from lab04_singularities.src.jacobian_starter import (  # noqa: E402
     analytic_jacobian,
+    modified_dh_joint_axes,
     pose_difference,
+)
+from lab04_singularities.src.cartesian_path_controller import (  # noqa: E402
+    cartesian_path_controller,
 )
 
 
@@ -30,24 +34,36 @@ JOINT_NAMES = (
     "wrist_3_joint",
 )
 
-# Both trials begin with a visibly bent, well-conditioned elbow. Trial 1 moves
-# away from the straight-elbow singularity. Trial 2 reverses the same
-# horizontal request and approaches the singularity from the safe side.
-START_Q = np.array([0.20, -0.80, 1.40, -1.10, -0.70, 0.30])
+# Trials 1 and 2 demonstrate an elbow singularity. Trial 3 uses a different
+# well-conditioned start and crosses a shoulder-singular region with the elbow
+# still bent and wrist joint 2 away from zero.
+ELBOW_START_Q = np.array([0.20, -0.80, 1.40, -1.10, -0.70, 0.30])
 AWAY_FROM_SINGULARITY = np.array([-1.0, 0.0, 0.0], dtype=float)
 TOWARD_SINGULARITY = np.array([1.0, 0.0, 0.0], dtype=float)
+SHOULDER_START_Q = np.array(
+    [-1.971137, -2.076381, 0.639429, 1.329040, 1.291846, -0.601321]
+)
+SHOULDER_DIRECTION = np.array([-0.39757, -0.91757, 0.00040], dtype=float)
+SHOULDER_DIRECTION /= np.linalg.norm(SHOULDER_DIRECTION)
 REQUESTED_SPEED = 0.02  # m/s; slow enough to watch conditioning deteriorate
-PATH_LENGTH = 0.20  # m
-NOMINAL_DURATION = PATH_LENGTH / REQUESTED_SPEED
+ELBOW_PATH_LENGTH = 0.2006  # m; finishes about 1 degree past straight
+SHOULDER_PATH_LENGTH = 0.242  # m; crosses the near-singular region
 COMPLETION_ALLOWANCE = 3.0  # s; brief feedback-only finish after path motion
 TARGET_TOLERANCE = 0.001  # m
-SINGULARITY_CONDITION_THRESHOLD = 200.0
+ELBOW_CONDITION_THRESHOLD = 200.0
+SHOULDER_CONDITION_THRESHOLD = 500.0
+SHOULDER_BRANCH_SPEED = 5.0  # rad/s along the weak direction before limiting
 DAMPING = 0.05
 MAX_COMMANDED_JOINT_RATE = 3.00  # rad/s; below the Webots model's 3.14 limit
-POSITION_FEEDBACK_GAIN = 2.0  # 1/s
-ORIENTATION_FEEDBACK_GAIN = 2.0  # 1/s
-MOVE_DURATION = 2.5  # s; short reset between the two trials
+TRACKING_GAIN = 2.0  # 1/s; proportional pose-error correction
+MOVE_DURATION = 2.5  # s; short reset between trials
 SETTLE_DURATION = 0.25  # s
+BOTTOM_PRIMARY_FONT = 0.075
+BOTTOM_SECONDARY_FONT = BOTTOM_PRIMARY_FONT
+BOTTOM_TEXT_COLOR = 0xFFF1A8
+BOTTOM_SECONDARY_COLOR = 0xD00000
+CORE_IDEA_TEXT = "SINGULARITY: SMALL CARTESIAN MOTION = LARGE JOINT MOTION"
+CORE_IDEA_COLOR = 0x7A2600
 RATE_PLOT_PATH = REPO_ROOT / "lab04_singularities" / "joint_rate_comparison.svg"
 RATE_HISTORIES = {}
 SINGULARITY_TIMES = {}
@@ -129,26 +145,42 @@ def update_actual_trace(start):
     actual_end_marker.setSFVec3f(current.tolist())
 
 
-def show_preparing_label(label):
-    robot.setLabel(0, label, 0.02, 0.02, 0.075, 0x102030, 0.0, "Arial")
+def show_core_idea(enabled=True):
+    """Show the central physical meaning only during singularity trials."""
+    if enabled:
+        robot.setLabel(
+            6, CORE_IDEA_TEXT, 0.02, 0.105, 0.06,
+            CORE_IDEA_COLOR, 0.0, "Arial"
+        )
+    else:
+        robot.setLabel(6, "", 0, 0, 0.01, 0x000000, 0.0, "Arial")
+
+
+def show_preparing_label(label, pose_name):
+    show_core_idea()
+    robot.setLabel(0, label, 0.02, 0.02, 0.065, 0x102030, 0.0, "Arial")
     robot.setLabel(
-        1, "MOVING TO THE BENT START POSE", 0.02, 0.115, 0.07,
+        1, f"MOVING TO THE {pose_name} START POSE", 0.02, 0.18, 0.06,
         0x087830, 0.0, "Arial"
     )
-    for label_id in (2, 3, 4, 5, 6, 7):
+    for label_id in (2, 3, 4, 5, 7):
         robot.setLabel(label_id, "", 0, 0, 0.01, 0x000000, 0.0, "Arial")
 
 
 def show_trial_label(
-        label, sigma_min, condition_number, inverse_method, elbow_angle,
-        approach_singularity):
-    robot.setLabel(0, label, 0.02, 0.02, 0.075, 0x102030, 0.0, "Arial")
+        label, sigma_min, condition_number, configuration_text, request_text,
+        show_banner):
+    show_core_idea(show_banner)
+    robot.setLabel(0, label, 0.02, 0.02, 0.065, 0x102030, 0.0, "Arial")
+    status_y = 0.18 if show_banner else 0.115
+    metrics_y = 0.255 if show_banner else 0.205
+    request_y = 0.325 if show_banner else 0.275
     robot.setLabel(
         1,
-        ">>> WELL-CONDITIONED START: ELBOW IS BENT <<<",
+        ">>> WELL-CONDITIONED START POSE <<<",
         0.02,
-        0.115,
-        0.07,
+        status_y,
+        0.06,
         0x087830,
         0.0,
         "Arial",
@@ -156,71 +188,77 @@ def show_trial_label(
     robot.setLabel(
         2,
         (f"START: sigma_min={sigma_min:.3f} | condition={condition_number:.1f} | "
-         f"elbow={np.degrees(elbow_angle):.1f} deg"),
+         f"{configuration_text}"),
         0.02,
-        0.205,
-        0.055,
+        metrics_y,
+        0.05,
         0x202020,
         0.0,
         "Arial",
     )
     robot.setLabel(
         3,
-        (f"20 cm {'TOWARD' if approach_singularity else 'AWAY FROM'} STRAIGHT ELBOW | "
-         f"{inverse_method}"),
+        request_text,
         0.02,
-        0.275,
-        0.055,
+        request_y,
+        0.05,
         0x5C4800,
         0.0,
         "Arial",
     )
-    for label_id in (4, 5, 6, 7):
+    for label_id in (4, 5, 7):
         robot.setLabel(label_id, "", 0, 0, 0.01, 0x000000, 0.0, "Arial")
 
 
 def show_singularity_checkpoint(
-        sigma_min, condition_number, elbow_angle, applied_rate, raw_rate):
+        family, sigma_min, condition_number, configuration_text,
+        peak_applied_rate, peak_raw_rate):
     """Replace the compact HUD with the metrics at the singularity threshold."""
+    show_core_idea()
     robot.setLabel(
-        1, ">>> SINGULARITY THRESHOLD REACHED <<<", 0.02, 0.115, 0.075,
+        1, f">>> {family.upper()} SINGULARITY THRESHOLD REACHED <<<",
+        0.02, 0.18, 0.065,
         0xD00000, 0.0, "Arial"
     )
     robot.setLabel(
         2,
         (f"NOW: sigma_min={sigma_min:.4f} | condition={condition_number:.0f} | "
-         f"elbow={np.degrees(elbow_angle):.1f} deg"),
-        0.02, 0.205, 0.055, 0x202020, 0.0, "Arial"
+         f"{configuration_text}"),
+        0.02, 0.255, 0.05, 0x202020, 0.0, "Arial"
     )
     robot.setLabel(
         3,
-        (f"JOINT RATE NOW = {applied_rate:.2f} rad/s | "
-         f"RAW REQUEST = {raw_rate:.2f} rad/s | LIMIT = 3.00"),
-        0.02, 0.275, 0.06, 0xD00000, 0.0, "Arial"
+        (f"PEAK RAW REQUEST = {peak_raw_rate:.2f} rad/s | "
+         f"PEAK AFTER LIMIT = {peak_applied_rate:.2f} rad/s"),
+        0.02, 0.325, 0.052, 0xD00000, 0.0, "Arial"
     )
 
 
 def show_approach_result(
-        sigma_min, condition_number, elbow_angle, peak_rate, reached_target):
+        family, sigma_min, condition_number, configuration_text,
+        peak_applied_rate, peak_raw_rate, reached_target):
     """Show the final near-singular metrics without adding more overlay lines."""
     status = (
-        ">>> NEAR-SINGULAR ENDPOINT REACHED <<<"
+        f">>> {family.upper()} NEAR-SINGULAR ENDPOINT REACHED <<<"
         if reached_target else
-        ">>> RATE-LIMITED NEAR SINGULARITY - TARGET NOT REACHED <<<"
+        f">>> {family.upper()} APPROACH ENDED - TARGET NOT REACHED <<<"
     )
+    show_core_idea()
     robot.setLabel(
-        1, status, 0.02, 0.115, 0.065,
+        1, status, 0.02, 0.18, 0.06,
         0xD00000, 0.0, "Arial"
     )
     robot.setLabel(
         2,
         (f"END: sigma_min={sigma_min:.4f} | condition={condition_number:.0f} | "
-         f"elbow={np.degrees(elbow_angle):.1f} deg"),
-        0.02, 0.205, 0.055, 0x202020, 0.0, "Arial"
+         f"{configuration_text}"),
+        0.02, 0.255, 0.05, 0x202020, 0.0, "Arial"
     )
     robot.setLabel(
-        3, f"PEAK COMMANDED JOINT RATE = {peak_rate:.2f} rad/s",
-        0.02, 0.275, 0.055, 0xD00000, 0.0, "Arial"
+        3,
+        (f"PEAK RAW REQUEST = {peak_raw_rate:.2f} rad/s | "
+         f"PEAK AFTER LIMIT = {peak_applied_rate:.2f} rad/s"),
+        0.02, 0.325, 0.052, 0xD00000, 0.0, "Arial"
     )
 
 
@@ -246,10 +284,22 @@ def hold(q, duration):
         command_joints(q)
 
 
-def wait_for_space(q, message, hint=""):
+def wait_for_space(q, message, hint="", extra_hint=""):
     """Hold the robot until the student presses Space in the 3D view."""
-    robot.setLabel(4, message, 0.02, 0.81, 0.06, 0xFFF1A8, 0.0, "Arial")
-    robot.setLabel(5, hint, 0.02, 0.89, 0.052, 0xF1C4FF, 0.0, "Arial")
+    robot.setLabel(
+        7, extra_hint, 0.02, 0.70, 0.06,
+        BOTTOM_TEXT_COLOR, 0.0, "Arial"
+    )
+    robot.setLabel(
+        4, message, 0.02, 0.80, BOTTOM_PRIMARY_FONT,
+        BOTTOM_TEXT_COLOR, 0.0, "Arial"
+    )
+    robot.setLabel(
+        5, hint, 0.02, 0.90, BOTTOM_SECONDARY_FONT,
+        BOTTOM_SECONDARY_COLOR, 0.0, "Arial"
+    )
+    if extra_hint:
+        print(extra_hint)
     print(message)
     if hint:
         print(hint)
@@ -261,6 +311,7 @@ def wait_for_space(q, message, hint=""):
         key = keyboard.getKey()
         while key != -1:
             if key & 0xFFFF == ord(" "):
+                robot.setLabel(7, "", 0, 0, 0.01, 0x000000, 0.0, "Arial")
                 return
             key = keyboard.getKey()
 
@@ -283,16 +334,30 @@ def stylus_fk(q):
     return T_tip
 
 
+def shoulder_radius(q):
+    """Return horizontal distance from the wrist center to the base axis."""
+    origins, _, _ = modified_dh_joint_axes(q)
+    return float(np.linalg.norm(origins[3, :2]))
+
+
+def configuration_text(q, family):
+    """Return the geometry students should watch for this singularity."""
+    if family == "shoulder":
+        return f"wrist-center radius={100.0 * shoulder_radius(q):.1f} cm"
+    return f"elbow={np.degrees(q[2]):.1f} deg"
+
+
 def write_rate_plot():
     """Write a dependency-free SVG comparing peak joint rate over time."""
     width, height = 1000, 650
     left, right, top, bottom = 95, 35, 70, 80
     plot_width = width - left - right
     plot_height = height - top - bottom
+    default_duration = ELBOW_PATH_LENGTH / REQUESTED_SPEED
     maximum_time = max(
-        NOMINAL_DURATION,
+        default_duration,
         max((samples[-1][0] for samples in RATE_HISTORIES.values() if samples),
-            default=NOMINAL_DURATION),
+            default=default_duration),
     )
     maximum_rate = max(
         MAX_COMMANDED_JOINT_RATE * 1.08,
@@ -347,7 +412,8 @@ def write_rate_plot():
         f'<text x="{width-right-4}" y="{limit_y-8:.1f}" text-anchor="end" '
         'font-family="Arial" font-size="14">3.00 rad/s safety limit</text>',
     ])
-    for index, (name, event_time) in enumerate(SINGULARITY_TIMES.items()):
+    for index, (name, (event_time, threshold)) in enumerate(
+            SINGULARITY_TIMES.items()):
         event_x = x_pixel(event_time)
         svg.extend([
             f'<line x1="{event_x:.1f}" y1="{top}" x2="{event_x:.1f}" '
@@ -355,7 +421,7 @@ def write_rate_plot():
             'stroke-dasharray="5 5"/>',
             f'<text x="{event_x+7:.1f}" y="{top+42+18*index}" font-family="Arial" '
             f'font-size="13" fill="#7a5c00">{name}: condition = '
-            f'{SINGULARITY_CONDITION_THRESHOLD:.0f}</text>',
+            f'{threshold:.0f}</text>',
         ])
     for (name, samples), color in zip(RATE_HISTORIES.items(), colors):
         points = " ".join(
@@ -402,12 +468,14 @@ def inverse_rate(J, desired_twist, inverse_method):
 
 def execute_cartesian_motion(
         q_start, direction, inverse_method, measured_start, requested_target,
-        approach_singularity):
+        path_length, singularity_family=None, condition_threshold=None):
     """Track the line and pause when an approaching trial becomes ill conditioned."""
+    nominal_duration = path_length / REQUESTED_SPEED
     q_command = q_start.copy()
     starting_pose = stylus_fk(q_start)
     previous_time = robot.getTime()
     motion_time = 0.0
+    peak_raw_rate = 0.0
     peak_commanded_rate = 0.0
     minimum_safety_scale = 1.0
     rate_history = []
@@ -425,69 +493,85 @@ def execute_cartesian_motion(
         current_q = measured_joints()
         current_pose = stylus_fk(current_q)
         J = analytic_jacobian(current_q, endpoint_fk=stylus_fk)
-        singular_values = np.linalg.svd(J, compute_uv=False)
+        _, singular_values, v_transpose = np.linalg.svd(J, full_matrices=False)
         sigma_min = float(singular_values[-1])
         condition_number = float(singular_values[0] / sigma_min)
 
-        if motion_time >= NOMINAL_DURATION:
+        if motion_time >= nominal_duration:
             target_error = np.linalg.norm(requested_target - current_position)
             if target_error < TARGET_TOLERANCE:
                 reached_target = True
                 break
-            if motion_time >= NOMINAL_DURATION + COMPLETION_ALLOWANCE:
+            if motion_time >= nominal_duration + COMPLETION_ALLOWANCE:
                 break
 
         # Follow a moving reference on the yellow line. Feedback removes both
         # along-path lag and cross-track error while holding orientation.
         reference_pose = starting_pose.copy()
-        reference_distance = min(REQUESTED_SPEED * motion_time, PATH_LENGTH)
+        reference_distance = min(REQUESTED_SPEED * motion_time, path_length)
         reference_pose[:3, 3] = measured_start + reference_distance * direction
         pose_error = pose_difference(current_pose, reference_pose)
-        tracking_twist = np.zeros(6)
-        if motion_time < NOMINAL_DURATION:
-            tracking_twist[:3] = REQUESTED_SPEED * direction
-        tracking_twist[:3] += POSITION_FEEDBACK_GAIN * pose_error[:3]
-        tracking_twist[3:] = ORIENTATION_FEEDBACK_GAIN * pose_error[3:]
-
-        proposed_qdot = inverse_rate(J, tracking_twist, inverse_method)
+        feedforward_twist = np.zeros(6)
+        if motion_time < nominal_duration:
+            feedforward_twist[:3] = REQUESTED_SPEED * direction
+        if inverse_method == "undamped":
+            proposed_qdot = cartesian_path_controller(
+                J, pose_error, feedforward_twist, TRACKING_GAIN
+            )
+        else:
+            desired_twist = feedforward_twist + TRACKING_GAIN * pose_error
+            proposed_qdot = inverse_rate(J, desired_twist, inverse_method)
+        if (singularity_family == "shoulder" and
+                condition_number >= SHOULDER_CONDITION_THRESHOLD):
+            # At the shoulder singularity, two IK branches meet. Numerical and
+            # physics noise can otherwise select either branch from run to run.
+            # Orient the weakest joint-space direction toward decreasing joint
+            # 1 and require a consistent component along it. Because J maps
+            # this direction to almost zero Cartesian motion, the bias selects
+            # the visibly large shoulder-rotation branch without changing the
+            # requested straight Cartesian path.
+            weak_direction = v_transpose[-1].copy()
+            if weak_direction[0] > 0.0:
+                weak_direction *= -1.0
+            weak_component = float(proposed_qdot @ weak_direction)
+            proposed_qdot += (
+                max(SHOULDER_BRANCH_SPEED, weak_component) - weak_component
+            ) * weak_direction
         applied_qdot, safety_scale = rate_limit(proposed_qdot)
         raw_peak = float(np.max(np.abs(proposed_qdot)))
         commanded_peak = float(np.max(np.abs(applied_qdot)))
+        peak_raw_rate = max(peak_raw_rate, raw_peak)
         peak_commanded_rate = max(peak_commanded_rate, commanded_peak)
+        if singularity_family == "shoulder":
+            robot.setLabel(
+                4,
+                "WATCH: RATE SPIKE, LIMITING, AND LARGE SHOULDER ROTATION",
+                0.02, 0.80, BOTTOM_PRIMARY_FONT,
+                BOTTOM_TEXT_COLOR, 0.0, "Arial"
+            )
         robot.setLabel(
             5,
-            (f"JOINT RATE NOW = {commanded_peak:.2f} rad/s | "
-             f"PEAK SO FAR = {peak_commanded_rate:.2f} rad/s"),
-            0.02, 0.89, 0.06, 0x6A1B9A, 0.0, "Arial",
+            (f"CURRENT = {commanded_peak:.2f} | PEAK RAW = {peak_raw_rate:.2f} | "
+             f"PEAK LIMITED = {peak_commanded_rate:.2f} rad/s"),
+            0.02, 0.90, BOTTOM_SECONDARY_FONT,
+            BOTTOM_SECONDARY_COLOR, 0.0, "Arial",
         )
 
-        if (approach_singularity and singularity_time is None and
-                condition_number >= SINGULARITY_CONDITION_THRESHOLD):
+        if (singularity_family is not None and singularity_time is None and
+                condition_number >= condition_threshold):
             singularity_time = motion_time
             print("SINGULARITY CHECKPOINT")
             print(f"  active motion time: {motion_time:.3f} s")
             print(f"  minimum singular value: {sigma_min:.6f}")
             print(f"  condition number: {condition_number:.1f}")
-            print(f"  elbow angle: {np.degrees(current_q[2]):.2f} deg")
-            print(f"  raw requested peak joint rate: {raw_peak:.3f} rad/s")
-            print(f"  applied peak joint rate: {commanded_peak:.3f} rad/s")
-            print(f"  peak commanded joint rate so far: {peak_commanded_rate:.3f} rad/s")
+            print(f"  {configuration_text(current_q, singularity_family)}")
+            print(f"  peak raw requested joint rate so far: {peak_raw_rate:.3f} rad/s")
+            print(f"  peak joint rate after limit so far: {peak_commanded_rate:.3f} rad/s")
             show_singularity_checkpoint(
-                sigma_min, condition_number, current_q[2], commanded_peak,
-                raw_peak,
+                singularity_family, sigma_min, condition_number,
+                configuration_text(current_q, singularity_family),
+                peak_commanded_rate, peak_raw_rate,
             )
-            wait_for_space(
-                q_command,
-                f"PAUSED AT CONDITION = {SINGULARITY_CONDITION_THRESHOLD:.0f}",
-                "READ THE JOINT RATE ABOVE, THEN PRESS SPACE TO CONTINUE.",
-            )
-            robot.setLabel(
-                4, "RUNNING TOWARD THE GREEN SINGULARITY TARGET", 0.02, 0.81,
-                0.06, 0xFFF1A8, 0.0, "Arial"
-            )
-            robot.setLabel(5, "", 0, 0, 0.01, 0x000000, 0.0, "Arial")
-            previous_time = robot.getTime()
-
         q_command += applied_qdot * dt
         command_joints(q_command)
         update_actual_trace(measured_start)
@@ -496,6 +580,7 @@ def execute_cartesian_motion(
 
     return (
         q_command,
+        peak_raw_rate,
         peak_commanded_rate,
         minimum_safety_scale,
         reached_target,
@@ -505,15 +590,18 @@ def execute_cartesian_motion(
 
 
 def run_trial(
-        label, direction, inverse_method, approach_singularity, reposition=True):
+        label, q_pose, direction, path_length, inverse_method,
+        singularity_family=None, condition_threshold=None, next_hint="",
+        reposition=True):
     print(f"\n=== {label} ===")
     if reposition:
         print("Moving to the test pose...")
-        show_preparing_label(label)
-        move_smoothly(START_Q, MOVE_DURATION)
+        pose_name = "SHOULDER-TEST" if singularity_family == "shoulder" else "BENT-ELBOW"
+        show_preparing_label(label, pose_name)
+        move_smoothly(q_pose, MOVE_DURATION)
     else:
         print("The world starts at the bent-elbow Trial 1 pose.")
-    hold(START_Q, SETTLE_DURATION)
+    hold(q_pose, SETTLE_DURATION)
 
     q_start = measured_joints()
     J = analytic_jacobian(q_start, endpoint_fk=stylus_fk)
@@ -524,7 +612,9 @@ def run_trial(
     desired_twist = np.zeros(6)
     desired_twist[:3] = REQUESTED_SPEED * direction
 
-    undamped_qdot = np.linalg.solve(J, desired_twist)
+    undamped_qdot = cartesian_path_controller(
+        J, np.zeros(6), desired_twist, TRACKING_GAIN
+    )
     damped_qdot = inverse_rate(J, desired_twist, "damped")
     proposed_qdot = inverse_rate(J, desired_twist, inverse_method)
     method_description = (
@@ -536,32 +626,61 @@ def run_trial(
     predicted_twist = J @ applied_qdot
 
     measured_start = np.array(tool_position.getValues(), dtype=float)
-    requested_translation = PATH_LENGTH * direction
+    requested_translation = path_length * direction
     requested_target = measured_start + requested_translation
     show_request(measured_start, requested_target)
+    geometry_family = singularity_family or "elbow"
+    if singularity_family == "shoulder":
+        request_text = (
+            f"{100 * path_length:.1f} cm THROUGH SHOULDER REGION | undamped inverse"
+        )
+    elif singularity_family == "elbow":
+        request_text = (
+            f"{100 * path_length:.0f} cm TOWARD STRAIGHT ELBOW | undamped inverse"
+        )
+    else:
+        request_text = (
+            f"{100 * path_length:.0f} cm AWAY FROM STRAIGHT ELBOW | undamped inverse"
+        )
     show_trial_label(
-        label, sigma_min, condition_number, method_description, q_start[2],
-        approach_singularity,
+        label, sigma_min, condition_number,
+        configuration_text(q_start, geometry_family), request_text,
+        singularity_family is not None,
     )
-    wait_for_space(
-        q_start,
-        "PRESS SPACE TO RUN THIS TRIAL",
-        (
-            ("WATCH JOINT RATE GROW; PAUSE WHEN CONDITION REACHES "
-             f"{SINGULARITY_CONDITION_THRESHOLD:.0f}")
-            if approach_singularity
-            else "BASELINE MOVES AWAY FROM THE SINGULARITY"
-        ),
-    )
+    if singularity_family == "elbow":
+        wait_for_space(
+            q_start,
+            "WATCH: CURRENT AND PEAK JOINT RATES RISE NEAR THE GREEN TARGET",
+            "MOTION WILL NOT PAUSE | PRESS SPACE TO RUN TRIAL 2",
+            "ELBOW STRAIGHTENS; sigma_min FALLS AND CONDITION NUMBER RISES",
+        )
+    elif singularity_family == "shoulder":
+        wait_for_space(
+            q_start,
+            "WATCH: RAW RATE SPIKES AS THE WRIST CENTER CROSSES THE BASE AXIS",
+            "3 rad/s LIMIT CAUSES JERK + LARGE SHOULDER TURN | PRESS SPACE TO RUN",
+            "FIRST HALF APPROACHES THE AXIS; SECOND HALF CROSSES AND MOVES AWAY",
+        )
+    else:
+        wait_for_space(
+            q_start,
+            "PRESS SPACE TO RUN THIS TRIAL",
+            (
+                (f"WATCH {singularity_family.upper()} SINGULARITY; PAUSE AT "
+                 f"CONDITION {condition_threshold:.0f}")
+                if singularity_family is not None
+                else "BASELINE MOVES AWAY FROM THE SINGULARITY"
+            ),
+        )
     robot.setLabel(
         4,
-        ("RUNNING TOWARD STRAIGHT ELBOW - WATCH THE RATE GROW"
-         if approach_singularity else
+        (f"RUNNING TOWARD {singularity_family.upper()} SINGULARITY - WATCH THE RATE"
+         if singularity_family is not None else
          "RUNNING AWAY FROM STRAIGHT ELBOW - MODERATE RATE"),
         0.02,
-        0.81,
-        0.06,
-        0xFFF1A8,
+        0.80,
+        BOTTOM_PRIMARY_FONT,
+        BOTTOM_TEXT_COLOR,
         0.0,
         "Arial",
     )
@@ -583,17 +702,19 @@ def run_trial(
     print("Initial locally predicted velocity [m/s]:",
           np.array2string(predicted_twist[:3], precision=4))
 
-    (q_goal, peak_commanded_rate, minimum_safety_scale, reached_target,
-     rate_history, singularity_time) = (
+    (q_goal, peak_raw_rate, peak_commanded_rate, minimum_safety_scale,
+     reached_target, rate_history, singularity_time) = (
         execute_cartesian_motion(
             q_start, direction, inverse_method, measured_start, requested_target,
-            approach_singularity,
+            path_length, singularity_family, condition_threshold,
         )
     )
     short_label = label.split(":", 1)[0]
     RATE_HISTORIES[short_label] = rate_history
     if singularity_time is not None:
-        SINGULARITY_TIMES[short_label] = singularity_time
+        SINGULARITY_TIMES[short_label] = (
+            singularity_time, condition_threshold
+        )
     try:
         write_rate_plot()
         print(f"Joint-rate plot saved to: {RATE_PLOT_PATH}")
@@ -609,62 +730,79 @@ def run_trial(
     )
     final_sigma_min = float(final_singular_values[-1])
     final_condition_number = float(final_singular_values[0] / final_sigma_min)
-    if approach_singularity:
+    if singularity_family is not None:
         show_approach_result(
-            final_sigma_min, final_condition_number, final_q[2],
-            peak_commanded_rate, reached_target,
+            singularity_family, final_sigma_min, final_condition_number,
+            configuration_text(final_q, singularity_family),
+            peak_commanded_rate, peak_raw_rate, reached_target,
         )
     print("Webots-measured translation [m]:",
           np.array2string(measured_displacement, precision=4))
     print(f"Measured translation magnitude: {np.linalg.norm(measured_displacement):.4f} m")
-    print(f"Peak commanded joint rate during trial: {peak_commanded_rate:.3f} rad/s")
+    print(f"Peak raw requested joint rate during trial: {peak_raw_rate:.3f} rad/s")
+    print(f"Peak joint rate after limit during trial: {peak_commanded_rate:.3f} rad/s")
     print(f"Minimum safety scale during trial: {minimum_safety_scale:.3f}")
     print(f"Final minimum singular value: {final_sigma_min:.6f}")
     print(f"Final condition number: {final_condition_number:.1f}")
-    print(f"Final elbow angle: {np.degrees(final_q[2]):.2f} deg")
+    print(f"Final {configuration_text(final_q, geometry_family)}")
     print("Target reached:", "YES" if reached_target else "NO (completion allowance ended)")
     if not reached_target:
-        print(
-            "The red trace stopped short because the requested constant-speed "
-            "path reaches the straight-elbow workspace boundary. The finite "
-            "joint-rate limit prevents the unbounded undamped rate demand."
-        )
-    if not approach_singularity:
+        print("The finite joint-rate limit prevented full tracking before the completion allowance ended.")
+    if next_hint:
+        result_y = 0.18 if singularity_family is not None else 0.115
+        rate_y = 0.325 if singularity_family is not None else 0.275
         robot.setLabel(
-            1, ">>> TRIAL 1 COMPLETE - BASELINE RECORDED <<<",
-            0.02, 0.115, 0.065, 0x087830, 0.0, "Arial",
+            1, f">>> {short_label} COMPLETE - RECORD THE RESULT <<<",
+            0.02, result_y, 0.06, 0x087830, 0.0, "Arial",
         )
         robot.setLabel(
-            3, f"TRIAL 1 PEAK COMMANDED JOINT RATE = {peak_commanded_rate:.2f} rad/s",
-            0.02, 0.275, 0.06, 0xD00000, 0.0, "Arial",
+            3,
+            (f"PEAK RAW REQUEST = {peak_raw_rate:.2f} rad/s | "
+             f"PEAK AFTER LIMIT = {peak_commanded_rate:.2f} rad/s"),
+            0.02, rate_y, 0.052, 0xD00000, 0.0, "Arial",
         )
         wait_for_space(
             q_goal,
-            "PRESS SPACE TO RETURN TO THE BENT START POSE",
-            "NEXT: TRIAL 2 APPROACHES THE SINGULARITY",
+            "PRESS SPACE TO MOVE TO THE NEXT TRIAL",
+            next_hint,
         )
 
 
 step_or_exit()
 print("[LAB 4 SINGULARITY DEMONSTRATION]")
-print("Both trials start from the same bent, well-conditioned pose.")
-print("Trial 1 moves away; Trial 2 moves 20 cm toward a singularity.")
+print("Trial 1 is a baseline. Trial 2 approaches an elbow singularity.")
+print("Trial 3 crosses a shoulder-singular region with the elbow still bent.")
 run_trial(
     "TRIAL 1: MOVE AWAY / UNDAMPED BASELINE",
+    ELBOW_START_Q,
     AWAY_FROM_SINGULARITY,
+    ELBOW_PATH_LENGTH,
     "undamped",
-    approach_singularity=False,
+    next_hint="NEXT: TRIAL 2 APPROACHES AN ELBOW SINGULARITY",
     reposition=False,
 )
 run_trial(
-    "TRIAL 2: APPROACH SINGULARITY / UNDAMPED",
+    "TRIAL 2: APPROACH ELBOW SINGULARITY / UNDAMPED",
+    ELBOW_START_Q,
     TOWARD_SINGULARITY,
+    ELBOW_PATH_LENGTH,
     "undamped",
-    approach_singularity=True,
+    singularity_family="elbow",
+    condition_threshold=ELBOW_CONDITION_THRESHOLD,
+    next_hint="NEXT: TRIAL 3 APPROACHES A SHOULDER SINGULARITY",
+)
+run_trial(
+    "TRIAL 3: APPROACH SHOULDER SINGULARITY / UNDAMPED",
+    SHOULDER_START_Q,
+    SHOULDER_DIRECTION,
+    SHOULDER_PATH_LENGTH,
+    "undamped",
+    singularity_family="shoulder",
+    condition_threshold=SHOULDER_CONDITION_THRESHOLD,
 )
 
 print("\n[DEMONSTRATION COMPLETE]")
-print("Compare the moderate Trial 1 rate with the sharp Trial 2 increase.")
+print("Compare the baseline with the elbow and shoulder singularity trials.")
 print(f"Joint-rate comparison plot: {RATE_PLOT_PATH}")
 print("Reset Webots to run the demonstration again.")
 
