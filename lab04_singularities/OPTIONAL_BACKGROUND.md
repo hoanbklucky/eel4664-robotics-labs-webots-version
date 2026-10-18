@@ -397,3 +397,25 @@ verify FK
     -> command a very small differential motion
     -> approach the singularity conservatively
 ```
+
+## 11. Via points and robot motion time
+
+More Cartesian via points make a path smoother, but they do not remove singularity-induced rate amplification. If neighboring path points are scheduled `dt` seconds apart, the physical joint rate is approximately
+
+$$
+\dot{\mathbf q}\approx\frac{\mathbf q_{k+1}-\mathbf q_k}{dt},
+$$
+
+and the local joint change satisfies
+
+$$
+\mathbf q_{k+1}-\mathbf q_k\approx J^{-1}(\mathbf x_{k+1}-\mathbf x_k).
+$$
+
+Near a singularity, $J^{-1}$ becomes very large in the weak direction. Two nearby Cartesian points can therefore require relatively distant joint configurations. Numerical IK may use more internal iterations to find those configurations, but computation time does not change the time available for the physical robot to move between them. Keeping joint rates bounded requires slowing the Cartesian trajectory or accepting tracking error through damping or rate limiting.
+
+## 12. Rate limiting and branch selection in the supplied simulation
+
+Trials 2 and 3 uniformly scale each joint-rate vector so no joint exceeds 3.00 rad/s, just below the Webots UR5e model's 3.14 rad/s limit. The controller then allows a short feedback-only completion period and accepts the endpoint when the stylus is within 5 mm of the target. These choices make the singularity visible without sending the full undamped request to the simulated robot; they are not recommended hardware settings.
+
+At the shoulder singularity, two inverse-kinematic branches meet. Both can produce high instantaneous rates, but one may show little net shoulder rotation. After the condition number reaches 500, the supplied controller adds motion along the Jacobian's weak joint-space direction to select the higher-rate branch consistently. Near the singularity, this extra joint motion produces little Cartesian motion but makes the shoulder reconfiguration much easier to observe.

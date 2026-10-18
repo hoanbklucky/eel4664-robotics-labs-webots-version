@@ -74,16 +74,14 @@ return np.linalg.solve(J, desired_twist)
 
 These two lines are deliberately undamped. Near a singularity, the Cartesian command can remain small while `np.linalg.solve` returns very large joint rates. The supplied 3.00 rad/s limiter makes that consequence visible without sending the raw request directly to Webots.
 
-Trials 1 and 2 begin at the same visibly bent, well-conditioned pose. Trial 1 moves the stylus about 20 cm away from the straight-elbow singularity. Trial 2 reverses direction and moves 20.06 cm, ending with the elbow about 1 degree from straight after crossing the singular neighborhood. Trial 3 moves to a different well-conditioned pose, keeps the elbow bent, and translates the stylus 24.2 cm through the shoulder-singular region. The first half approaches the singularity and the second half moves away from it. Every trial holds tool orientation fixed and uses the same slow 2 cm/s Cartesian speed.
+All three trials hold tool orientation fixed and use the same slow 2 cm/s Cartesian speed. This makes robot configuration, rather than requested speed, the main difference between the trials.
 
-A Jacobian maps joint rates to instantaneous tool motion. At the bent-elbow pose, its motion directions are sufficiently independent, so the inverse can produce the request with moderate joint rates. Near the straight-elbow singularity, one singular value becomes very small. Producing motion along the corresponding difficult Cartesian direction then requires a combination of large, opposing joint rates.
+A Jacobian maps joint rates to instantaneous tool motion. Near a singularity, the robot has little leverage in one direction, so the inverse requests large joint rates to maintain even a small tool velocity.
 
 Two displayed numbers summarize this behavior:
 
 - **Minimum singular value:** measures the robot's weakest instantaneous motion direction. **Larger is better; zero means singular.** A small value means substantial joint speed produces very little tool speed in one direction.
 - **Condition number:** is the largest singular value divided by the smallest. **Smaller is better; 1 is ideal.** A very large value means the inverse is sensitive and strongly amplifies some commands.
-
-These values should be compared using the same Jacobian units and scaling, as done in all three trials.
 
 The three trials isolate these effects:
 
@@ -93,7 +91,7 @@ The three trials isolate these effects:
 | 2 | Approach elbow singularity, undamped | The elbow reaches about 1 degree from straight and joint rates rise sharply | The two elbow IK branches meet near the straight configuration. |
 | 3 | Approach shoulder singularity, undamped | The elbow stays bent while the wrist center approaches the base axis and the base joint rotates rapidly | Joint 1 loses Cartesian leverage near the base axis. |
 
-Trial 2 marks condition number 200 while continuing toward the straight elbow. Trial 3 marks condition number 500 while continuing through the shoulder-singular region so students can watch the complete rise-and-fall event. At each checkpoint, the display reports the minimum singular value, condition number, relevant geometric distance or angle, raw requested peak joint rate, and applied peak joint rate. These thresholds are observation points for the supplied paths, not universal definitions of singularity.
+The condition-number markers in Trials 2 and 3 are observation points for these supplied paths, not universal definitions of singularity.
 
 ### What the Webots display shows
 
@@ -106,39 +104,21 @@ You do not need to infer the intended tool motion from the joint motion. During 
 - a **red line and sphere** showing the translation the stylus tip actually completed; and
 - a compact status panel at the top and short instructions at the bottom, with the lower joint-rate or action line emphasized in red.
 
-The singularity is not a place in the room; it is a robot configuration. An exactly straight elbow is at 0 degrees, where two elbow inverse-kinematic branches meet and the Jacobian loses a motion direction. Trial 2 continues only 0.6 mm beyond the original 20 cm request, allowing the simulated arm to finish about 1 degree from straight on the other elbow branch. It cannot maintain the requested constant Cartesian speed at the exact singular configuration; the large joint-rate request and rate limiting reveal that loss of leverage.
+### What happens in Trial 2: elbow singularity
 
-### Why Trial 2 is rate limited
+Trial 2 moves from a bent elbow toward a straight elbow at constant tool speed. As the elbow angle approaches zero, `sigma_min` falls, the condition number rises, and the inverse requests rapidly increasing joint rates. At the singular configuration, the arm cannot maintain the requested velocity in its weak direction, so rate limiting may make the stylus briefly lag.
 
-The undamped rate is moderate at the beginning of Trial 2 because the elbow is still bent. It grows rapidly only as the robot approaches the straight-elbow endpoint. The controller uniformly scales each updated joint-rate vector so no joint exceeds 3.00 rad/s, just below the Webots UR5e model's 3.14 rad/s joint limit. This higher simulation-only limit makes the rapid joint motion visible while still respecting the model limit; it is not a recommended hardware setting.
+### What happens in Trial 3: shoulder singularity
 
-The controller recomputes the stylus-tip Jacobian and pose error at every simulation step. This keeps the stylus on the yellow line while preserving the increasing rate demand caused by the changing configuration.
+Trial 3 keeps the elbow bent while the wrist center crosses the vertical base axis. Joint 1 loses leverage near that axis, so its requested rate rises and then falls after the crossing. Both IK branches can produce high rates; the supplied controller encourages the higher-rate branch so the large shoulder movement is easy to see.
 
-### Why Cartesian via points still produce large joint rates
+### Why both singularity trials are rate limited
 
-It is helpful to separate **IK computation time** from **robot motion time**. Suppose two neighboring points on the straight path are scheduled `dt` seconds apart. Numerical IK may take several internal iterations to find their joint configurations `q_k` and `q_(k+1)`, but the robot must still move between those configurations during the scheduled `dt`. Its physical joint rate is therefore approximately
+Trials 2 and 3 limit every joint to 3.00 rad/s, just below the Webots model's 3.14 rad/s limit. The limiter prevents an excessive command while preserving the visible rate spike; brief lag or jerk is therefore expected. This is a simulation setting, not a recommended hardware limit.
 
-`joint rate = (q_(k+1) - q_k) / dt`,
+### Why more via points do not remove high joint rates
 
-and locally the joint change satisfies
-
-`q_(k+1) - q_k ~= inverse(J) * (x_(k+1) - x_k)`.
-
-Near the singular configuration, the inverse Jacobian becomes very large in the weak direction. Consequently, two nearby Cartesian via points can correspond to joint configurations that are relatively far apart. If those points must still be reached within the same `dt`, the required joint rate becomes large.
-
-Adding more via points makes the Cartesian path smoother, but it does not remove this amplification. To keep joint rates bounded, the Cartesian motion must slow down near the singularity.
-
-At the exactly straight configuration, the Jacobian loses a motion direction and maintaining the requested Cartesian velocity would require unbounded joint rates. With the finite 3.00 rad/s simulation limit, the robot falls briefly behind the moving reference while it changes elbow branch. After the scheduled path motion, the controller therefore allows up to three additional seconds of feedback-only motion and stops when the stylus is within 5 mm of the target. This tolerance is much smaller than the visible endpoint markers. More IK iterations or more via points do not remove the instantaneous rate amplification; the commanded Cartesian motion must slow near the singularity.
-
-### What happens in the shoulder trial
-
-Trial 3 starts with the wrist center about 15 cm from the vertical base axis, moves close to that axis near the middle of the path, and then moves away while the elbow remains bent. Near the shoulder singularity, rotating joint 1 produces less useful Cartesian motion in the requested direction. The inverse therefore asks joint 1 to rotate increasingly fast. This distinguishes the shoulder singularity from Trial 2: the arm does not need to be straight for the Jacobian to become ill conditioned.
-
-The requested path continues well beyond its closest near-singular point, so the joint-rate plot can show the rate rising sharply and then falling. At the exact singular configuration, maintaining the unchanged Cartesian speed would require an unbounded joint rate and the inverse solution changes branch. The 3.00 rad/s limit therefore makes the stylus slow or lag briefly while the joints execute the rapid reconfiguration; after crossing the region, feedback lets it catch up to the reachable target.
-
-The visible jerk near the middle of Trial 3 is expected. It occurs when the inverse requests more than the 3.00 rad/s simulation limit and the supplied limiter scales the joint command. The current, peak raw, and peak limited rates remain visible at the bottom of the scene. This is the physical symptom to remember: the requested Cartesian motion remains small and smooth, but producing it near the singular configuration demands very large joint motion.
-
-At the shoulder singularity, two inverse-kinematic branches meet. Both branches can produce high instantaneous joint rates because the Jacobian has very little leverage near the singular configuration. However, tiny numerical or physics differences may select a branch with only a small net shoulder rotation, making the effect difficult to see. For a repeatable classroom demonstration, the supplied controller encourages the large-rotation branch after the condition number reaches 500 by adding motion along the Jacobian's weak joint-space direction. This branch produces a higher joint rate and therefore more visible shoulder movement, while the extra joint motion produces almost no Cartesian motion near the singularity. Both branches can reach the Cartesian points because joint configurations are not unique.
+Locally, `joint rate = inverse(J) * Cartesian velocity`. Near a singularity, the inverse strongly amplifies motion in the weak direction. More via points make the path smoother, but they do not reduce the joint speed needed to follow it at the same Cartesian speed. The robot must slow down or use a method such as damping that accepts some tracking error. See [Optional Background](OPTIONAL_BACKGROUND.md#11-via-points-and-robot-motion-time) for the detailed explanation.
 
 Before running, write one prediction: Which joints or visible robot features will change most near the elbow and shoulder singularities?
 
