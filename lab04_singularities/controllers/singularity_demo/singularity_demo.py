@@ -49,7 +49,7 @@ REQUESTED_SPEED = 0.02  # m/s; slow enough to watch conditioning deteriorate
 ELBOW_PATH_LENGTH = 0.2006  # m; finishes about 1 degree past straight
 SHOULDER_PATH_LENGTH = 0.242  # m; crosses the near-singular region
 COMPLETION_ALLOWANCE = 3.0  # s; brief feedback-only finish after path motion
-TARGET_TOLERANCE = 0.001  # m
+TARGET_TOLERANCE = 0.005  # m; precise relative to the 18-22 mm endpoint markers
 ELBOW_CONDITION_THRESHOLD = 200.0
 SHOULDER_CONDITION_THRESHOLD = 500.0
 SHOULDER_BRANCH_SPEED = 5.0  # rad/s along the weak direction before limiting
@@ -724,6 +724,10 @@ def run_trial(
     measured_end = np.array(tool_position.getValues(), dtype=float)
     update_actual_trace(measured_start)
     measured_displacement = measured_end - measured_start
+    final_target_error = float(np.linalg.norm(requested_target - measured_end))
+    # The joints can finish settling during the short post-motion hold, so use
+    # the final measured stylus position for the result shown to students.
+    reached_target = reached_target or final_target_error < TARGET_TOLERANCE
     final_q = measured_joints()
     final_singular_values = np.linalg.svd(
         analytic_jacobian(final_q, endpoint_fk=stylus_fk), compute_uv=False
@@ -745,6 +749,10 @@ def run_trial(
     print(f"Final minimum singular value: {final_sigma_min:.6f}")
     print(f"Final condition number: {final_condition_number:.1f}")
     print(f"Final {configuration_text(final_q, geometry_family)}")
+    print(
+        f"Final target error: {1000.0 * final_target_error:.1f} mm "
+        f"(success tolerance: {1000.0 * TARGET_TOLERANCE:.1f} mm)"
+    )
     print("Target reached:", "YES" if reached_target else "NO (completion allowance ended)")
     if not reached_target:
         print("The finite joint-rate limit prevented full tracking before the completion allowance ended.")

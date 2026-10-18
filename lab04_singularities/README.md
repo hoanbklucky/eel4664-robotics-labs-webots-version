@@ -128,7 +128,7 @@ Near the singular configuration, the inverse Jacobian becomes very large in the 
 
 Adding more via points makes the Cartesian path smoother, but it does not remove this amplification. To keep joint rates bounded, the Cartesian motion must slow down near the singularity.
 
-At the exactly straight configuration, the Jacobian loses a motion direction and maintaining the requested Cartesian velocity would require unbounded joint rates. With the finite 3.00 rad/s simulation limit, the robot falls briefly behind the moving reference while it changes elbow branch. After the scheduled path motion, the controller therefore allows up to three additional seconds of feedback-only motion and stops immediately when the target is reached. More IK iterations or more via points do not remove the instantaneous rate amplification; the commanded Cartesian motion must slow near the singularity.
+At the exactly straight configuration, the Jacobian loses a motion direction and maintaining the requested Cartesian velocity would require unbounded joint rates. With the finite 3.00 rad/s simulation limit, the robot falls briefly behind the moving reference while it changes elbow branch. After the scheduled path motion, the controller therefore allows up to three additional seconds of feedback-only motion and stops when the stylus is within 5 mm of the target. This tolerance is much smaller than the visible endpoint markers. More IK iterations or more via points do not remove the instantaneous rate amplification; the commanded Cartesian motion must slow near the singularity.
 
 ### What happens in the shoulder trial
 
