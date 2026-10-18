@@ -23,20 +23,6 @@ The shoulder singularity connects two valid inverse-kinematic branches. A run wi
 
 The generated SVG should show a moderate green Trial 1 curve, a sharply rising red Trial 2 elbow-singularity curve, and a purple Trial 3 curve that rises near the middle and falls after crossing the shoulder-singular region.
 
-## Question 1
+## Singularity question
 
-During Trial 2, the minimum singular value decreases toward zero while the condition number grows from a moderate value to 200 and beyond. The nearly straight elbow makes the Jacobian poorly conditioned and the inverse highly sensitive.
-
-## Question 2
-
-The Cartesian speed remains constant, but the undamped inverse effectively divides the weak-direction component by a singular value that is approaching zero. Consequently, the required joint rates grow rapidly as the elbow straightens.
-
-Equivalently, if neighboring Cartesian via points are scheduled `dt` seconds apart, the physical rate is approximately `(q_(k+1) - q_k) / dt`. Near the singularity, a small Cartesian increment requires a large joint increment, so using more IK iterations or more via points does not eliminate the large rate. The trajectory must instead slow down near the boundary.
-
-## Question 3
-
-Trial 3 is a shoulder singularity because the elbow stays visibly bent while the wrist center approaches the vertical base-joint axis. The small wrist-center radius and rapidly increasing base-joint motion distinguish it from Trial 2's straight-elbow geometry and from a wrist singularity, where wrist joint 2 would approach zero.
-
-## Question 4
-
-Near either singularity, the raw undamped command can grow rapidly and would become unbounded in the lost motion direction at the exact singular configuration. The 3.00 rad/s simulation limit keeps the command below the Webots model's 3.14 rad/s joint limit while preserving clearly visible rapid joint motion. This setting is for the simulation demonstration and is not a recommended hardware limit.
+Near a singularity, the robot has very little leverage in at least one Cartesian direction: moving the joints produces almost no tool motion in that direction. The inverse Jacobian must therefore request a large joint motion to produce even a small Cartesian motion. For example, the requested stylus speed stayed small and constant in Trial 2, but the joint-rate request rose sharply as the elbow became nearly straight.

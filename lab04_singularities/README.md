@@ -20,6 +20,8 @@ After the experiment, you should be able to:
 
 Complete Lab 3 and the [setup prerequisites](../lab00_setup/README.md). Lab 3 already introduced inverse kinematics and damped least squares. This lab focuses only on seeing and explaining a singularity; it does not repeat the damping comparison.
 
+For Jacobian derivations and additional theory, see [Optional Background](OPTIONAL_BACKGROUND.md). It is a reference, not required reading for completing the lab.
+
 Use Webots R2025a. Do not save over the original starter world. Open `worlds/lab04_starter.wbt` while paused and immediately select **File -> Save World As...** to create `worlds/lab04_work.wbt`.
 
 ## Understand the Experiment Before Running It
@@ -188,12 +190,9 @@ The simulation limit scales an already excessive command so it can be displayed 
 
 ## Questions
 
-Answer each question in two or three sentences.
+Answer this question in two to four sentences. Use one observation from the Webots trials in your explanation:
 
-1. What happened to the minimum singular value and condition number as Trial 2 approached the straight-elbow configuration?
-2. Why did the undamped joint rate rise sharply near the end of Trial 2 even though Cartesian speed remained constant?
-3. What visual evidence shows that Trial 3 crosses a shoulder singularity rather than another elbow singularity?
-4. Why was it necessary to rate-limit the singularity trials instead of sending the raw undamped commands directly to Webots?
+1. Why can a small requested Cartesian motion require very large joint motion near a singularity?
 
 ## What to Submit
 
@@ -203,7 +202,7 @@ Submit the completed `Lab04_Report_Template.docx` containing:
 - the three recorded quantities for all three trials;
 - one screenshot from each trial;
 - the generated joint-rate comparison plot; and
-- answers to the four questions.
+- your answer to the singularity question.
 
 Also submit your completed `src/cartesian_path_controller.py`. Do not submit Webots world files.
 
