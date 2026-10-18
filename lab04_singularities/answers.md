@@ -1,5 +1,14 @@
 # Lab 4 Answers
 
+## Cartesian path controller solution
+
+```python
+desired_twist = feedforward_twist + gain * pose_error
+return np.linalg.solve(J, desired_twist)
+```
+
+The feedforward term requests motion along the supplied path, while the proportional error term corrects tracking lag and drift. Solving the Jacobian equation converts that Cartesian command into the undamped joint-rate request whose growth students observe near singularities.
+
 ## Expected observations
 
 Trial 1 moves away from the straight-elbow singularity and maintains moderate joint rates over the 20 cm path.
