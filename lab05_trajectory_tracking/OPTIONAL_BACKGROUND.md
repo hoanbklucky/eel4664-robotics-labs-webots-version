@@ -366,15 +366,19 @@ $$
 
 where $\boldsymbol\tau_{\mathrm{ff}}$ can compensate for gravity, inertia, and other modeled effects. Actual industrial controllers use more detailed proprietary algorithms, but the principle is the same: closely spaced references guide a continuous physical response. If a high-level program supplies only widely spaced points, the robot controller normally interpolates or blends them internally using a linear, polynomial, trapezoidal, or jerk-limited profile.
 
+![A continuous Cartesian line sampled into reference points and the corresponding sampled joint commands.](figures/cartesian_waypoints.png)
+
+*Both panels describe the same continuous Cartesian-sampling process. Left: the orange points sample one Cartesian line. Right: IK converts successive Cartesian samples into joint targets; the dashed staircase, dotted linear interpolation, and solid continuous reference show possible interpretations between deliberately coarse samples.*
+
+Smaller sampling intervals represent the reference path more densely but increase the number of IK solves and commands. Very coarse sampling can produce interpolation error. Very fine sampling does not automatically improve tracking if the controller or simulation step cannot follow the commands.
+
+### User-defined segments and via points
+
 A waypoint can also be a user-specified point that divides a longer path into segments. Each segment needs a geometric interpolation rule, but it does **not** need to be an independent rest-to-rest motion. A practical trajectory generator coordinates the timing of the complete path and sends one continuous stream of references. It may blend or round a corner so velocity and acceleration remain continuous.
 
 If each segment instead receives its own rest-to-rest profile, the commanded speed falls to zero at every waypoint. That behavior is appropriate when a full stop is required, but it produces unnecessary repeated acceleration and deceleration when the robot should pass through continuously.
 
-![A Cartesian line sampled into waypoints and continuous versus stop-at-each-waypoint speed schedules.](figures/cartesian_waypoints.png)
-
-*Left: the orange points are samples of one continuous Cartesian line, not separate motions. Right: independently profiling every segment forces a stop at each boundary, whereas one path-level schedule passes through the sampled references continuously.*
-
-The figure below separates high-rate IK samples from user-defined via points. The construction on the right is the piecewise-polynomial idea often shown in trajectory-planning diagrams: each time interval has its own polynomial, and neighboring polynomials meet at a via point. To pass through smoothly, both segments must give the same joint angle and joint velocity there,
+The piecewise-polynomial construction often shown in trajectory-planning diagrams assigns one polynomial to each interval between user-defined via points. Neighboring polynomials meet at a via point. To pass through smoothly, both segments must give the same joint angle and joint velocity there,
 
 $$
 q_j(t_k^-)=q_j(t_k^+),
@@ -384,11 +388,9 @@ $$
 
 Matching acceleration as well gives still smoother motion. Setting the shared waypoint velocity to zero makes the joint stop there; assigning a nonzero shared velocity lets it pass through continuously. If the polynomials are constructed in joint space after IK, the tool path between Cartesian waypoints is not guaranteed to remain exactly straight. Maintaining a strict Cartesian line requires sampling or controlling the Cartesian path itself.
 
-![Joint commands between IK samples and piecewise cubic segments joined smoothly at user-defined via points.](figures/ik_samples_and_via_points.png)
+![Timing choices and piecewise cubic interpolation for user-defined via-point segments.](figures/via_point_segments.png)
 
-*Left: the dashed staircase is what held position targets look like with deliberately coarse updates. The dotted line shows explicit linear interpolation, and the solid curve shows the continuous reference from which the IK points were sampled. Real control updates are normally much closer together. Right: separate cubic pieces form one smooth joint trajectory because they share the same position and slope at each internal via point.*
-
-Smaller sampling intervals represent the reference path more densely but increase the number of IK solves and commands. Very coarse sampling can produce interpolation error. Very fine sampling does not automatically improve tracking if the controller or simulation step cannot follow the commands.
+*Both panels describe user-defined segmented motion. Left: independent rest-to-rest profiles stop at every boundary, while one coordinated schedule passes through. Right: separate cubic pieces form one smooth joint trajectory because they share the same position and slope at each internal via point.*
 
 ## 10. A generated trajectory is a reference, not a measurement
 
