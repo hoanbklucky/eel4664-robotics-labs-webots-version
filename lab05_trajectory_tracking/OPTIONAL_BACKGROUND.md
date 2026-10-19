@@ -273,7 +273,7 @@ Because forward kinematics is nonlinear, smoothly interpolated joint angles usua
 
 *The joints follow synchronized, smooth profiles, but forward kinematics maps them to a curved tool path. The dashed line is shown only for comparison; MoveJ does not command the tool to follow it.*
 
-## 9. Cartesian motion (MoveL) and waypoints
+## 9. Cartesian motion (MoveL), sampling, and via points
 
 A **MoveL-style motion** commands a Cartesian path: the `L` means **linear**. For a straight position segment,
 
@@ -281,7 +281,7 @@ $$
 \mathbf p(t)=\mathbf p_0+\left(\mathbf p_f-\mathbf p_0\right)s(t).
 $$
 
-The controller evaluates this equation at successive times to obtain Cartesian reference points, often called sampled waypoints, and converts them to joint commands using inverse kinematics or inverse-velocity control. The previous joint solution should seed the next IK solve so the solver tends to remain on the same solution branch.
+The controller evaluates this equation at successive times to obtain **sampled Cartesian references** and converts them to joint commands using inverse kinematics or inverse-velocity control. These dense control samples are different from the user-defined via points introduced later. The previous joint solution should seed the next IK solve so the solver tends to remain on the same solution branch.
 
 A straight Cartesian path can therefore require a complicated joint-space path. Joint limits, singularities, reachability, and discontinuous IK solutions must still be checked.
 
@@ -372,13 +372,13 @@ where $\boldsymbol\tau_{\mathrm{ff}}$ can compensate for gravity, inertia, and o
 
 Smaller sampling intervals represent the reference path more densely but increase the number of IK solves and commands. Very coarse sampling can produce interpolation error. Very fine sampling does not automatically improve tracking if the controller or simulation step cannot follow the commands.
 
-### User-defined segments and via points
+### Segmented motion and user-defined via points
 
-A waypoint can also be a user-specified point that divides a longer path into segments. Each segment needs a geometric interpolation rule, but it does **not** need to be an independent rest-to-rest motion. A practical trajectory generator coordinates the timing of the complete path and sends one continuous stream of references. It may blend or round a corner so velocity and acceleration remain continuous.
+A **user-defined via point** is an intentional point that divides a longer path into segments. Unlike the dense Cartesian references sampled automatically along a line, it specifies path structure chosen by the programmer. Each segment needs a geometric interpolation rule, but it does **not** need to be an independent rest-to-rest motion. A practical trajectory generator coordinates the timing of the complete path and sends one continuous stream of references. It may blend or round a corner so velocity and acceleration remain continuous.
 
-If each segment instead receives its own rest-to-rest profile, the commanded speed falls to zero at every waypoint. That behavior is appropriate when a full stop is required, but it produces unnecessary repeated acceleration and deceleration when the robot should pass through continuously.
+If each segment instead receives its own rest-to-rest profile, the commanded speed falls to zero at every user-defined via point. That behavior is appropriate when a full stop is required, but it produces unnecessary repeated acceleration and deceleration when the robot should pass through continuously.
 
-The piecewise-polynomial construction often shown in trajectory-planning diagrams assigns one polynomial to each interval between user-defined via points. Neighboring polynomials meet at a via point. To pass through smoothly, both segments must give the same joint angle and joint velocity there,
+The piecewise-polynomial construction often shown in trajectory-planning diagrams assigns one polynomial to each interval between user-defined via points. Neighboring polynomials meet at a user-defined via point. To pass through smoothly, both segments must give the same joint angle and joint velocity there,
 
 $$
 q_j(t_k^-)=q_j(t_k^+),
@@ -386,7 +386,7 @@ q_j(t_k^-)=q_j(t_k^+),
 \dot q_j(t_k^-)=\dot q_j(t_k^+).
 $$
 
-Matching acceleration as well gives still smoother motion. Setting the shared waypoint velocity to zero makes the joint stop there; assigning a nonzero shared velocity lets it pass through continuously. If the polynomials are constructed in joint space after IK, the tool path between Cartesian waypoints is not guaranteed to remain exactly straight. Maintaining a strict Cartesian line requires sampling or controlling the Cartesian path itself.
+Matching acceleration as well gives still smoother motion. Setting the shared via-point velocity to zero makes the joint stop there; assigning a nonzero shared velocity lets it pass through continuously. If the polynomials are constructed in joint space after IK, the tool path between user-defined Cartesian via points is not guaranteed to remain exactly straight. Maintaining a strict Cartesian line requires sampling or controlling the Cartesian path itself.
 
 ![Timing choices and piecewise cubic interpolation for user-defined via-point segments.](figures/via_point_segments.png)
 

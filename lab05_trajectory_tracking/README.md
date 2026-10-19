@@ -23,7 +23,7 @@ You succeed when the UR5e safely completes both motions, the point-to-point traj
 By the end of this lab, you should be able to:
 
 1. implement cubic or quintic time scaling with explicit boundary conditions;
-2. generate synchronized joint-space motion and Cartesian waypoint motion;
+2. generate synchronized joint-space motion and Cartesian sampled-reference motion;
 3. reuse your own FK, IK, and Jacobian-related checks from earlier labs;
 4. execute sampled references through a small Webots adapter; and
 5. compare trajectory geometry and tracking performance quantitatively.
@@ -55,7 +55,7 @@ Use that point for both desired and measured Cartesian straightness. The `TRAJEC
 - `controllers/diagnostic_minimal/` and `controllers/diagnostic_devices/`
 - `src/cubic_trajectory.py` - coefficient and sampling starter
 - `src/send_trajectory.py` - Webots execution outline
-- `src/cartesian_line.py` - straight-line waypoint scaffold
+- `src/cartesian_line.py` - straight-line sampling and sequential-IK scaffold
 - `Lab05_Report_Template.docx`
 
 
@@ -100,7 +100,7 @@ Do not call a Webots, SciPy, MoveIt, or other library trajectory solver for the 
 
 The execution loop sends the current joint target once per Webots simulation step. It does not create an independent rest-to-rest motion between every two samples. See [What happens between two IK samples?](OPTIONAL_BACKGROUND.md#what-happens-between-two-ik-samples) for the Webots and physical-robot interpretation.
 
-Do not rewrite the supplied waypoint, line-distance, logging, or execution helpers, and do not call a Webots, SciPy, MoveIt, or other library IK solver for the assigned work.
+Do not rewrite the supplied Cartesian-sampling, line-distance, logging, or execution helpers, and do not call a Webots, SciPy, MoveIt, or other library IK solver for the assigned work.
 
 ## Part 4 - Robot Experiment
 
@@ -109,9 +109,9 @@ Do not rewrite the supplied waypoint, line-distance, logging, or execution helpe
 From the same reset state, execute:
 
 1. a MoveJ-style joint-space motion from `q0` to `qf`; and
-2. a practical MoveL-style Cartesian waypoint motion between the corresponding end-effector poses.
+2. a practical MoveL-style Cartesian sampled-reference motion between the corresponding end-effector poses.
 
-Log simulation time, desired/measured joint position, desired joint velocity, and FK end-effector position. Hold the final command safely. If a waypoint fails IK or a limit check, stop before motion rather than skipping it.
+Log simulation time, desired/measured joint position, desired joint velocity, and FK end-effector position. Hold the final command safely. If a Cartesian sample fails IK or a limit check, stop before motion rather than skipping it.
 
 ## Part 5 - Quantitative Analysis
 
@@ -132,12 +132,12 @@ Plot joint trajectories and the 3-D or projected end-effector paths on common ax
 
 Answer in 2-3 sentences.
 
-Why can a smooth joint-space trajectory produce a curved Cartesian tool path, while a Cartesian waypoint trajectory can remain approximately straight? Refer to your measured paths.
+Why can a smooth joint-space trajectory produce a curved Cartesian tool path, while a Cartesian sampled-reference trajectory can remain approximately straight? Refer to your measured paths.
 
 ## What to Submit
 
 1. Completed `src/cubic_trajectory.py` containing the three equation lines.
-2. Completed `Lab05_Report_Template.docx` containing endpoint checks, MoveJ and Cartesian-waypoint logs and plots, the metric comparison, and the Engineering Question response.
+2. Completed `Lab05_Report_Template.docx` containing endpoint checks, MoveJ and MoveL logs and plots, the metric comparison, and the Engineering Question response.
 
 Do not submit supplied helper code, `lab05_work.wbt`, vendor assets, or caches unless requested.
 

@@ -427,7 +427,10 @@ def save_via_point_segments():
     axes[0].set_ylim(bottom=0.0)
     axes[0].set_xlabel(r"Normalized time  $u=t/T_f$")
     axes[0].set_ylabel("Relative path speed")
-    axes[0].set_title("Stop at or pass through each via point")
+    axes[0].set_title(
+        "Stop at or pass through\nuser-defined via points",
+        fontsize=14,
+    )
     axes[0].legend(fontsize=8.5)
 
     axes[1].plot(spline_time, spline_angle, color=BLUE, linewidth=3.0,
@@ -451,7 +454,10 @@ def save_via_point_segments():
                      color=GRAY, fontsize=9)
     axes[1].set_xlabel("Time")
     axes[1].set_ylabel(r"Joint angle  $q_j$")
-    axes[1].set_title("Polynomial segments joined at via points")
+    axes[1].set_title(
+        "Polynomial segments joined at\nuser-defined via points",
+        fontsize=14,
+    )
     axes[1].legend(fontsize=8.5, loc="lower right")
 
     figure.tight_layout()
