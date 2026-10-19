@@ -1,5 +1,9 @@
 # Lab 4 - Seeing a Robot Singularity in Webots
 
+## Get the Latest Course Files
+
+Before starting, save your work and close Webots. Follow [Updating the Course Repository](../docs/UPDATE_REPOSITORY.md). Do not force an update or discard local work when Git reports a conflict.
+
 ## Mission
 
 Complete two lines of a supplied Cartesian path controller, then run a Webots experiment that compares a well-conditioned baseline with approaches to elbow and shoulder singularities. Watch different parts of the robot produce rapidly growing joint rates even though the stylus follows a simple straight path.
