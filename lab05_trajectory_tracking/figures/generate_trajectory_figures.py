@@ -109,6 +109,125 @@ def save_duration_scaling():
     plt.close(figure)
 
 
+def save_cubic_progress():
+    normalized_time = np.linspace(0.0, 1.0, 501)
+    path_progress = 3.0 * normalized_time**2 - 2.0 * normalized_time**3
+
+    figure, axis = plt.subplots(figsize=(8.2, 4.8))
+    style_axes([axis])
+    axis.plot(normalized_time, path_progress, color=BLUE, linewidth=3.0)
+    axis.scatter([0.0, 0.5, 1.0], [0.0, 0.5, 1.0], color=ORANGE, zorder=3)
+    axis.annotate("start at rest", xy=(0.0, 0.0), xytext=(0.12, 0.12),
+                  arrowprops={"arrowstyle": "->", "color": GRAY}, color=GRAY)
+    axis.annotate("halfway", xy=(0.5, 0.5), xytext=(0.58, 0.36),
+                  arrowprops={"arrowstyle": "->", "color": GRAY}, color=GRAY)
+    axis.annotate("finish at rest", xy=(1.0, 1.0), xytext=(0.68, 0.82),
+                  arrowprops={"arrowstyle": "->", "color": GRAY}, color=GRAY)
+    axis.set_xlim(-0.03, 1.03)
+    axis.set_ylim(-0.03, 1.03)
+    axis.set_xlabel("Normalized time  s = t / Tf")
+    axis.set_ylabel("Path progress  3s² - 2s³")
+    axis.set_title("Cubic path progress starts and ends smoothly")
+    figure.tight_layout()
+    figure.savefig(OUTPUT_DIR / "cubic_progress.png", dpi=180, bbox_inches="tight")
+    plt.close(figure)
+
+
+def save_cubic_derivative_shapes():
+    normalized_time = np.linspace(0.0, 1.0, 501)
+    velocity_factor = 6.0 * normalized_time - 6.0 * normalized_time**2
+    acceleration_factor = 6.0 - 12.0 * normalized_time
+
+    figure, axes = plt.subplots(2, 1, figsize=(8.2, 6.4), sharex=True)
+    style_axes(axes)
+
+    axes[0].plot(normalized_time, velocity_factor, color=BLUE, linewidth=3.0)
+    axes[0].scatter([0.0, 0.5, 1.0], [0.0, 1.5, 0.0], color=ORANGE, zorder=3)
+    axes[0].annotate("maximum = 1.5", xy=(0.5, 1.5), xytext=(0.62, 1.18),
+                     arrowprops={"arrowstyle": "->", "color": GRAY}, color=GRAY)
+    axes[0].set_ylabel(r"Velocity factor  $6s-6s^2$")
+
+    axes[1].plot(normalized_time, acceleration_factor, color=ORANGE, linewidth=3.0)
+    axes[1].axhline(0.0, color=GRAY, linewidth=1.0)
+    axes[1].scatter([0.0, 0.5, 1.0], [6.0, 0.0, -6.0], color=BLUE, zorder=3)
+    axes[1].annotate("sign changes at halfway", xy=(0.5, 0.0),
+                     xytext=(0.58, 2.2),
+                     arrowprops={"arrowstyle": "->", "color": GRAY}, color=GRAY)
+    axes[1].set_ylabel(r"Acceleration factor  $6-12s$")
+    axes[1].set_xlabel(r"Normalized time  $s=t/T_f$")
+
+    figure.suptitle("Normalized velocity and acceleration shapes of the cubic")
+    figure.tight_layout()
+    figure.savefig(
+        OUTPUT_DIR / "cubic_velocity_acceleration_shapes.png",
+        dpi=180,
+        bbox_inches="tight",
+    )
+    plt.close(figure)
+
+
+def save_velocity_profile_comparison():
+    normalized_time = np.linspace(0.0, 1.0, 1001)
+    cubic_velocity = 6.0 * normalized_time - 6.0 * normalized_time**2
+    quintic_velocity = (
+        30.0 * normalized_time**2
+        - 60.0 * normalized_time**3
+        + 30.0 * normalized_time**4
+    )
+
+    acceleration_fraction = 0.25
+    trapezoid_peak = 1.0 / (1.0 - acceleration_fraction)
+    trapezoid_velocity = np.piecewise(
+        normalized_time,
+        [
+            normalized_time < acceleration_fraction,
+            (normalized_time >= acceleration_fraction)
+            & (normalized_time <= 1.0 - acceleration_fraction),
+            normalized_time > 1.0 - acceleration_fraction,
+        ],
+        [
+            lambda value: trapezoid_peak * value / acceleration_fraction,
+            trapezoid_peak,
+            lambda value: trapezoid_peak * (1.0 - value) / acceleration_fraction,
+        ],
+    )
+
+    figure, axis = plt.subplots(figsize=(8.2, 4.8))
+    style_axes([axis])
+    axis.plot(normalized_time, cubic_velocity, color=BLUE, linewidth=3.0,
+              label="Cubic")
+    axis.plot(normalized_time, quintic_velocity, color="#16833B", linewidth=3.0,
+              label="Quintic")
+    axis.plot(normalized_time, trapezoid_velocity, color=ORANGE, linewidth=3.0,
+              linestyle="--", label="Trapezoidal (25%-50%-25%)")
+    axis.axvline(0.25, color=GRAY, linewidth=1.0, alpha=0.6)
+    axis.axvline(0.75, color=GRAY, linewidth=1.0, alpha=0.6)
+    axis.set_xlim(0.0, 1.0)
+    axis.set_ylim(0.0, 2.02)
+    axis.set_xlabel(r"Normalized time  $u=t/T_f$")
+    axis.set_ylabel(r"Normalized velocity  $(T_f/\Delta\theta)\dot{\theta}$")
+    axis.set_title("Velocity profiles for the same distance and duration")
+    axis.legend(loc="upper right")
+    axis.text(
+        0.02,
+        0.94,
+        "Area under every curve = 1",
+        transform=axis.transAxes,
+        color=GRAY,
+        va="top",
+    )
+    figure.tight_layout()
+    figure.savefig(
+        OUTPUT_DIR / "velocity_profile_comparison.png",
+        dpi=180,
+        bbox_inches="tight",
+    )
+    plt.close(figure)
+
+
 if __name__ == "__main__":
     save_linear_vs_cubic()
     save_duration_scaling()
+    save_cubic_progress()
+    save_cubic_derivative_shapes()
+    save_velocity_profile_comparison()

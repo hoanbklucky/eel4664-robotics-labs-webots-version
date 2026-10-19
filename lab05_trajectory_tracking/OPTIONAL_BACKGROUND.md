@@ -132,6 +132,10 @@ $$
 
 The function $3s^2-2s^3$ starts at zero, ends at one, and has zero slope at both ends. It describes **progress along the path**. The endpoints determine where the robot goes, while $T_f$ determines how quickly it gets there.
 
+![Cubic path progress rises smoothly from zero to one as normalized time runs from zero to one.](figures/cubic_progress.png)
+
+*The horizontal axis is normalized time $s=t/T_f$; the vertical axis is the completed fraction of the motion. At $s=0.5$, the trajectory is halfway to its endpoint.*
+
 For a move from $0^\circ$ to $90^\circ$ in $2$ seconds,
 
 $$
@@ -153,6 +157,10 @@ $$
 $$
 
 The factors $6s-6s^2$ and $6-12s$ describe the shapes of the velocity and acceleration curves. Every complete motion passes through the same normalized interval $0\le s\le1$, regardless of $T_f$. Changing $T_f$ stretches or compresses those shapes along the physical-time axis.
+
+![The normalized velocity factor rises to a maximum at halfway, while the acceleration factor decreases from positive to negative and crosses zero at halfway.](figures/cubic_velocity_acceleration_shapes.png)
+
+*The velocity factor is zero at both endpoints and largest at $s=0.5$. The acceleration factor changes sign there, marking the transition from speeding up to slowing down.*
 
 The velocity-shape factor reaches its maximum halfway through the motion. To see this, differentiate it with respect to $s$:
 
@@ -211,7 +219,19 @@ The quintic begins and ends with zero velocity and zero acceleration, so it conn
 
 A trapezoidal velocity profile uses three phases: accelerate, travel at approximately constant speed, then decelerate. It is easy to interpret and can directly reflect velocity and acceleration limits. The corners of an ideal trapezoid imply acceleration changes; practical controllers may round them.
 
-No profile is universally best. The choice depends on endpoint smoothness, motion time, actuator limits, and how the reference will be tracked.
+![Cubic, quintic, and trapezoidal velocity profiles for the same normalized move.](figures/velocity_profile_comparison.png)
+
+*All three curves cover the same distance in the same duration, so each has unit area. The illustrated trapezoid accelerates for 25% of the motion, cruises for 50%, and decelerates for 25%.*
+
+No profile is universally best:
+
+| Profile | Advantages | Disadvantages |
+|---|---|---|
+| Cubic | Simple formula; zero velocity at both endpoints; moderate peak velocity for a fixed move and duration | Endpoint acceleration is nonzero, so joining directly to a hold creates an acceleration and torque jump |
+| Quintic | Zero velocity and acceleration at both endpoints; smooth connection to a stationary hold | Higher peak velocity for the same move and duration; more coefficients and constraints to calculate |
+| Trapezoidal velocity | Directly incorporates velocity and acceleration limits; easy to interpret; can include a constant-speed cruise | Ideal corners create acceleration jumps and infinite jerk; sensitive mechanisms often require rounded corners or an S-curve |
+
+Choose the profile from the required endpoint smoothness, motion time, and actuator limits rather than appearance alone.
 
 ## 7. Synchronizing several joints
 
@@ -227,13 +247,15 @@ The duration must satisfy the limits of every joint. One slow or heavily loaded 
 
 ## 8. Joint-space motion and Cartesian motion are different
 
-A MoveJ-style motion interpolates joint angles. It is simple and usually produces smooth joint commands, but the end effector generally follows a curved path because forward kinematics is nonlinear:
+A **MoveJ-style motion** is a joint-space move: the `J` means **joint**. The controller starts from the current joint angles, interpolates each joint toward its target angle, and synchronizes the joints so they finish together. This usually produces simple, smooth joint commands, but it does not directly control the path taken by the tool.
+
+The tool pose is obtained from the changing joint angles through forward kinematics:
 
 $$
-\mathbf x(t)=f\!\left(\mathbf q(t)\right).
+\mathbf x(t)=f\left(\mathbf q(t)\right).
 $$
 
-Even when every component of $\mathbf q(t)$ changes smoothly, $f(\mathbf q)$ does not usually map that motion to a straight Cartesian line.
+Because forward kinematics is nonlinear, smoothly interpolated joint angles usually produce a curved tool path rather than a straight Cartesian line. MoveJ is useful when smooth, efficient joint motion matters more than the exact path between the endpoints.
 
 A practical MoveL-style motion begins with a desired Cartesian path. For a straight position segment,
 
