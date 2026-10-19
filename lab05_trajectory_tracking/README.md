@@ -76,19 +76,33 @@ Follow [Opening a Word Report Template](../docs/OPEN_WORD_REPORT.md) and create 
 
 Unit-test polynomial boundary conditions outside Webots before commanding the robot. Select instructor-approved start/end configurations and limits.
 
-## Part 2 - Core Implementation
+## Part 2 - MoveJ Implementation
 
-> **Why this part matters:** The three cubic equations show how endpoint conditions become a timed joint trajectory. Cartesian waypoint sampling, IK continuity checks, straightness measurement, logging, and execution infrastructure are supplied.
+> **Why this part matters:** MoveJ is generated directly in joint space. The three cubic equations show how the initial and final joint conditions become a synchronized, timed joint trajectory.
 
 1. Open `src/cubic_trajectory.py`.
 2. Complete only `TODO 1`, `TODO 2`, and `TODO 3`: final position change, the quadratic coefficient, and the cubic coefficient.
 3. Run endpoint checks confirming the requested initial/final position and velocity.
-4. Read the supplied `cartesian_line.py` and identify where the previous IK solution becomes the next seed.
-5. Use the provided helpers to generate the synchronized MoveJ-style motion and Cartesian waypoint motion. Apply the same limits and timing conventions to both.
+4. Use the same duration and normalized clock for all six joints so they start and finish together.
+5. Generate the MoveJ-style joint reference and check every sampled joint position, velocity, and acceleration against the assigned limits.
 
-Do not rewrite the supplied waypoint, line-distance, logging, or execution helpers, and do not call a Webots, SciPy, MoveIt, or other library trajectory/IK solver for the assigned equations.
+Do not call a Webots, SciPy, MoveIt, or other library trajectory solver for the three assigned equations.
 
-## Part 3 - Robot Experiment
+## Part 3 - MoveL Implementation
+
+> **Why this part matters:** MoveL starts with a timed Cartesian line rather than a joint polynomial. Each Cartesian sample must be converted to a continuous and feasible sequence of joint commands.
+
+1. Read the supplied `src/cartesian_line.py` and identify where each accepted IK solution becomes the seed for the next IK solve.
+2. Use the provided helper to sample the straight Cartesian path between the MoveJ endpoint poses.
+3. Solve the samples in order. Do not solve each sample from the same fixed seed.
+4. Before motion, confirm that every IK solve converged and that no joint-limit or branch-jump check failed.
+5. Associate the joint solutions with the Cartesian trajectory times and use the same limits and timing conventions as in Part 2.
+
+The execution loop sends the current joint target once per Webots simulation step. It does not create an independent rest-to-rest motion between every two samples. See [What happens between two IK samples?](OPTIONAL_BACKGROUND.md#what-happens-between-two-ik-samples) for the Webots and physical-robot interpretation.
+
+Do not rewrite the supplied waypoint, line-distance, logging, or execution helpers, and do not call a Webots, SciPy, MoveIt, or other library IK solver for the assigned work.
+
+## Part 4 - Robot Experiment
 
 > **Why this part matters:** Running both motions from the same reset state reveals the difference between a smooth joint-space path and a geometrically straight Cartesian path.
 
@@ -99,7 +113,7 @@ From the same reset state, execute:
 
 Log simulation time, desired/measured joint position, desired joint velocity, and FK end-effector position. Hold the final command safely. If a waypoint fails IK or a limit check, stop before motion rather than skipping it.
 
-## Part 4 - Quantitative Analysis
+## Part 5 - Quantitative Analysis
 
 > **Why this part matters:** Tracking error, straightness, velocity, and smoothness measurements show the tradeoffs that animation alone cannot establish.
 

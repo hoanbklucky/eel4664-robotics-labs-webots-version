@@ -14,6 +14,7 @@ OUTPUT_DIR = Path(__file__).resolve().parent
 BLUE = "#2563EB"
 ORANGE = "#D97706"
 GRAY = "#64748B"
+GREEN = "#16833B"
 
 
 def style_axes(axes):
@@ -262,9 +263,212 @@ def save_velocity_profile_comparison():
     plt.close(figure)
 
 
+def save_joint_space_motion():
+    normalized_time = np.linspace(0.0, 1.0, 501)
+    progress = 3.0 * normalized_time**2 - 2.0 * normalized_time**3
+
+    start_angles = np.deg2rad([15.0, 100.0])
+    final_angles = np.deg2rad([95.0, -20.0])
+    joint_angles = (
+        start_angles[:, None]
+        + (final_angles - start_angles)[:, None] * progress
+    )
+
+    link_1 = 1.0
+    link_2 = 0.75
+    q1 = joint_angles[0]
+    q2 = joint_angles[1]
+    tool_x = link_1 * np.cos(q1) + link_2 * np.cos(q1 + q2)
+    tool_y = link_1 * np.sin(q1) + link_2 * np.sin(q1 + q2)
+
+    figure, axes = plt.subplots(1, 2, figsize=(10.2, 4.5))
+    style_axes(axes)
+
+    axes[0].plot(normalized_time, np.rad2deg(q1), color=BLUE,
+                 linewidth=3.0, label=r"Joint 1, $q_1$")
+    axes[0].plot(normalized_time, np.rad2deg(q2), color=ORANGE,
+                 linewidth=3.0, label=r"Joint 2, $q_2$")
+    axes[0].set_xlabel(r"Normalized time  $u=t/T_f$")
+    axes[0].set_ylabel("Joint angle [deg]")
+    axes[0].set_title("MoveJ interpolates joint angles")
+    axes[0].legend()
+
+    axes[1].plot(tool_x, tool_y, color=BLUE, linewidth=3.0,
+                 label="Tool path from FK")
+    axes[1].plot([tool_x[0], tool_x[-1]], [tool_y[0], tool_y[-1]],
+                 color=GRAY, linewidth=2.0, linestyle="--",
+                 label="Straight line between endpoints")
+    axes[1].scatter(tool_x[0], tool_y[0], color=GREEN, s=70,
+                    zorder=4, label="Start")
+    axes[1].scatter(tool_x[-1], tool_y[-1], color="#DC2626", s=70,
+                    zorder=4, label="End")
+    axes[1].set_xlabel("Tool x position")
+    axes[1].set_ylabel("Tool y position")
+    axes[1].set_title("The resulting tool path is generally curved")
+    axes[1].axis("equal")
+    axes[1].legend(fontsize=9)
+
+    figure.tight_layout()
+    figure.savefig(
+        OUTPUT_DIR / "joint_space_motion.png", dpi=180, bbox_inches="tight"
+    )
+    plt.close(figure)
+
+
+def save_cartesian_waypoints():
+    path_progress = np.linspace(0.0, 1.0, 501)
+    start = np.array([0.0, 0.0])
+    end = np.array([2.4, 1.2])
+    path = start[:, None] + (end - start)[:, None] * path_progress
+    waypoint_progress = np.linspace(0.0, 1.0, 9)
+    waypoints = start[:, None] + (end - start)[:, None] * waypoint_progress
+
+    normalized_time = np.linspace(0.0, 1.0, 1201)
+    continuous_speed = 6.0 * normalized_time - 6.0 * normalized_time**2
+    segment_count = 3
+    local_progress = np.mod(normalized_time * segment_count, 1.0)
+    local_progress[-1] = 1.0
+    stop_at_waypoint_speed = 6.0 * local_progress * (1.0 - local_progress)
+
+    figure, axes = plt.subplots(1, 2, figsize=(10.4, 4.4))
+    style_axes(axes)
+
+    axes[0].plot(path[0], path[1], color=BLUE, linewidth=3.0,
+                 label="Desired Cartesian line")
+    axes[0].scatter(waypoints[0], waypoints[1], color=ORANGE, s=55,
+                    zorder=4, label="Sampled references")
+    axes[0].scatter(start[0], start[1], color=GREEN, s=75, zorder=5)
+    axes[0].scatter(end[0], end[1], color="#DC2626", s=75, zorder=5)
+    axes[0].set_xlabel("Cartesian x position")
+    axes[0].set_ylabel("Cartesian y position")
+    axes[0].set_title("MoveL samples one Cartesian path")
+    axes[0].axis("equal")
+    axes[0].legend()
+
+    axes[1].plot(normalized_time, continuous_speed, color=BLUE,
+                 linewidth=3.0, label="One continuous path schedule")
+    axes[1].plot(normalized_time, stop_at_waypoint_speed, color=ORANGE,
+                 linewidth=2.5, linestyle="--",
+                 label="Independent rest-to-rest segments")
+    for boundary in [1.0 / 3.0, 2.0 / 3.0]:
+        axes[1].axvline(boundary, color=GRAY, linewidth=1.0, alpha=0.7)
+    axes[1].set_xlim(0.0, 1.0)
+    axes[1].set_ylim(bottom=0.0)
+    axes[1].set_xlabel(r"Normalized time  $u=t/T_f$")
+    axes[1].set_ylabel("Relative path speed")
+    axes[1].set_title("Waypoints do not require repeated stops")
+    axes[1].legend(fontsize=9)
+
+    figure.tight_layout()
+    figure.savefig(
+        OUTPUT_DIR / "cartesian_waypoints.png", dpi=180, bbox_inches="tight"
+    )
+    plt.close(figure)
+
+
+def save_ik_samples_and_via_points():
+    time = np.linspace(0.0, 1.0, 1001)
+    joint_reference = (
+        15.0
+        + 55.0 * (3.0 * time**2 - 2.0 * time**3)
+        + 7.0 * np.sin(np.pi * time) ** 2
+    )
+    sample_times = np.linspace(0.0, 1.0, 6)
+    sample_angles = (
+        15.0
+        + 55.0 * (3.0 * sample_times**2 - 2.0 * sample_times**3)
+        + 7.0 * np.sin(np.pi * sample_times) ** 2
+    )
+
+    via_times = np.array([0.0, 1.0, 2.0, 3.0])
+    via_angles = np.array([0.0, 0.9, -0.25, 1.05])
+    via_slopes = np.array([
+        0.0,
+        (via_angles[2] - via_angles[0]) / (via_times[2] - via_times[0]),
+        (via_angles[3] - via_angles[1]) / (via_times[3] - via_times[1]),
+        0.0,
+    ])
+
+    spline_time_parts = []
+    spline_angle_parts = []
+    for index in range(len(via_times) - 1):
+        t0, t1 = via_times[index:index + 2]
+        y0, y1 = via_angles[index:index + 2]
+        m0, m1 = via_slopes[index:index + 2]
+        segment_time = np.linspace(t0, t1, 151, endpoint=index == len(via_times) - 2)
+        duration = t1 - t0
+        u = (segment_time - t0) / duration
+        h00 = 2.0 * u**3 - 3.0 * u**2 + 1.0
+        h10 = u**3 - 2.0 * u**2 + u
+        h01 = -2.0 * u**3 + 3.0 * u**2
+        h11 = u**3 - u**2
+        segment_angle = (
+            h00 * y0 + h10 * duration * m0
+            + h01 * y1 + h11 * duration * m1
+        )
+        spline_time_parts.append(segment_time)
+        spline_angle_parts.append(segment_angle)
+
+    spline_time = np.concatenate(spline_time_parts)
+    spline_angle = np.concatenate(spline_angle_parts)
+
+    figure, axes = plt.subplots(1, 2, figsize=(10.6, 4.5))
+    style_axes(axes)
+
+    axes[0].plot(time, joint_reference, color=BLUE, linewidth=3.0,
+                 label="Continuously evaluated reference")
+    axes[0].plot(time, np.interp(time, sample_times, sample_angles),
+                 color=GREEN, linewidth=2.2, linestyle=":",
+                 label="Linear interpolation")
+    axes[0].step(sample_times, sample_angles, where="post", color=GRAY,
+                 linewidth=2.0, linestyle="--",
+                 label="Held command (coarse updates)")
+    axes[0].scatter(sample_times, sample_angles, color=ORANGE, s=48,
+                    zorder=4, label="Joint angles from IK")
+    axes[0].set_xlabel("Time")
+    axes[0].set_ylabel(r"Joint angle  $q_j$")
+    axes[0].set_title("Between successive IK samples")
+    axes[0].legend(fontsize=8.5)
+
+    axes[1].plot(spline_time, spline_angle, color=BLUE, linewidth=3.0,
+                 label="Piecewise cubic trajectory")
+    axes[1].scatter(via_times, via_angles, color=ORANGE, s=60,
+                    zorder=4, label="User-defined via points")
+    for index in [1, 2]:
+        axes[1].axvline(via_times[index], color=GRAY, linewidth=1.0,
+                        linestyle="--", alpha=0.7)
+        tangent_time = np.array([via_times[index] - 0.22,
+                                 via_times[index] + 0.22])
+        tangent_angle = (
+            via_angles[index]
+            + via_slopes[index] * (tangent_time - via_times[index])
+        )
+        axes[1].plot(tangent_time, tangent_angle, color=GREEN,
+                     linewidth=2.0)
+    axes[1].annotate("same slope from both segments",
+                     xy=(1.0, via_angles[1]), xytext=(1.22, 0.67),
+                     arrowprops={"arrowstyle": "->", "color": GRAY},
+                     color=GRAY, fontsize=9)
+    axes[1].set_xlabel("Time")
+    axes[1].set_ylabel(r"Joint angle  $q_j$")
+    axes[1].set_title("Polynomial segments joined at via points")
+    axes[1].legend(fontsize=8.5, loc="lower right")
+
+    figure.tight_layout()
+    figure.savefig(
+        OUTPUT_DIR / "ik_samples_and_via_points.png",
+        dpi=180,
+        bbox_inches="tight",
+    )
+    plt.close(figure)
+
+
 if __name__ == "__main__":
     save_linear_vs_cubic()
     save_duration_scaling()
     save_cubic_progress()
     save_cubic_derivative_shapes()
     save_velocity_profile_comparison()
+    save_joint_space_motion()
+    save_cartesian_waypoints()
+    save_ik_samples_and_via_points()

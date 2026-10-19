@@ -213,7 +213,7 @@ This is why slowing a motion often reduces actuator demand. It does not, however
 
 ## 6. Cubic, quintic, and trapezoidal profiles
 
-A cubic rest-to-rest trajectory guarantees zero endpoint velocity, but its endpoint acceleration is generally nonzero. Immediately after the trajectory ends, a stationary hold commands zero velocity and zero acceleration at the final position. Switching directly from the cubic's nonzero final acceleration to this zero-acceleration hold therefore causes a sudden change in commanded acceleration and, often, motor torque.
+A cubic rest-to-rest trajectory guarantees zero endpoint velocity, but its acceleration is generally nonzero at both endpoints. Before the motion begins and after it ends, a stationary hold has a constant position reference, so its reference velocity and acceleration are zero. Starting the cubic therefore jumps from zero to nonzero acceleration, and finishing it jumps back to zero acceleration. These abrupt changes can cause corresponding jumps in motor-torque demand.
 
 A quintic time-scaling function has enough coefficients to set position, velocity, and acceleration at both endpoints. A common normalized form is
 
@@ -239,7 +239,7 @@ No profile is universally best:
 
 | Profile | Advantages | Disadvantages |
 |---|---|---|
-| Cubic | Simple formula; zero velocity at both endpoints; moderate peak velocity for a fixed move and duration | Endpoint acceleration is nonzero, so stopping at the endpoint requires a sudden change to zero acceleration and may cause a torque jump |
+| Cubic | Simple formula; zero velocity at both endpoints; moderate peak velocity for a fixed move and duration | Acceleration is nonzero at both endpoints, so starting and ending the motion create acceleration jumps and may cause torque-demand jumps |
 | Quintic | Zero velocity and acceleration at both endpoints; smooth transition to remaining stationary | Higher peak velocity for the same move and duration; more coefficients and constraints to calculate |
 | Trapezoidal velocity | Directly incorporates velocity and acceleration limits; easy to interpret; can include a constant-speed cruise | Ideal corners create acceleration jumps and infinite jerk; sensitive mechanisms often require rounded corners or an S-curve |
 
@@ -257,7 +257,7 @@ All joints start and finish together because they share the same duration and no
 
 The duration must satisfy the limits of every joint. One slow or heavily loaded joint can determine the minimum feasible duration for the whole synchronized move.
 
-## 8. Joint-space motion and Cartesian motion are different
+## 8. Joint-space motion (MoveJ)
 
 A **MoveJ-style motion** is a joint-space move: the `J` means **joint**. The controller starts from the current joint angles, interpolates each joint toward its target angle, and synchronizes the joints so they finish together. This usually produces simple, smooth joint commands, but it does not directly control the path taken by the tool.
 
@@ -269,21 +269,126 @@ $$
 
 Because forward kinematics is nonlinear, smoothly interpolated joint angles usually produce a curved tool path rather than a straight Cartesian line. MoveJ is useful when smooth, efficient joint motion matters more than the exact path between the endpoints.
 
-A practical MoveL-style motion begins with a desired Cartesian path. For a straight position segment,
+![Joint angles interpolated by MoveJ and the resulting curved Cartesian tool path.](figures/joint_space_motion.png)
+
+*The joints follow synchronized, smooth profiles, but forward kinematics maps them to a curved tool path. The dashed line is shown only for comparison; MoveJ does not command the tool to follow it.*
+
+## 9. Cartesian motion (MoveL) and waypoints
+
+A **MoveL-style motion** commands a Cartesian path: the `L` means **linear**. For a straight position segment,
 
 $$
 \mathbf p(t)=\mathbf p_0+\left(\mathbf p_f-\mathbf p_0\right)s(t).
 $$
 
-The program samples this path and solves IK at each waypoint. The previous joint solution should seed the next IK solve so the solver tends to remain on the same solution branch.
+The controller evaluates this equation at successive times to obtain Cartesian reference points, often called sampled waypoints, and converts them to joint commands using inverse kinematics or inverse-velocity control. The previous joint solution should seed the next IK solve so the solver tends to remain on the same solution branch.
 
 A straight Cartesian path can therefore require a complicated joint-space path. Joint limits, singularities, reachability, and discontinuous IK solutions must still be checked.
 
-## 9. Waypoints and continuity
+### What happens between two IK samples?
 
-A waypoint is an intermediate desired configuration or pose. Stopping at every waypoint is easy because each segment can use zero endpoint velocity. Passing smoothly through a waypoint is harder because adjacent segments must agree on velocity and preferably acceleration.
+At sample time $t_k$, IK produces a joint vector $\mathbf q_k$. At the next sample time $t_{k+1}$, it produces $\mathbf q_{k+1}$. IK determines these endpoint values, but it does not by itself specify what happens during the interval.
 
-Smaller waypoint spacing can represent a Cartesian line more accurately, but it increases the number of IK solves and commands. Very coarse spacing can produce visible corner cutting or large interpolation error. Very fine spacing does not automatically improve tracking if the controller or simulation step cannot follow the commands.
+With **sampled position commands**, the commanded target is usually held constant until the next control update:
+
+$$
+\mathbf q_{\mathrm{cmd}}(t)=\mathbf q_k,
+\qquad t_k\leq t<t_{k+1}.
+$$
+
+At $t_{k+1}$, the target changes to $\mathbf q_{k+1}$. The motor's internal position controller then applies torque to reduce the error between the measured angle and the current target. The physical joint cannot jump instantly, so its measured angle changes continuously according to the controller, velocity and torque limits, load, and robot dynamics. Its motion between commands is therefore **not necessarily linear**. When commands arrive every small simulation step, the target staircase is very fine and the measured motion can closely follow the intended smooth curve.
+
+If the IK samples are farther apart, the trajectory generator can explicitly insert references between them. The simplest choice is linear interpolation:
+
+$$
+\mathbf q_{\mathrm{des}}(t)
+=\mathbf q_k
++\alpha(t)\left(\mathbf q_{k+1}-\mathbf q_k\right),
+\qquad
+\alpha(t)=\frac{t-t_k}{t_{k+1}-t_k}.
+$$
+
+This produces constant desired joint velocity over that interval:
+
+$$
+\dot{\mathbf q}_{\mathrm{des}}
+=\frac{\mathbf q_{k+1}-\mathbf q_k}{t_{k+1}-t_k}.
+$$
+
+For example, if one joint changes from $20^\circ$ to $22^\circ$ over $0.10$ s, linear interpolation requests a constant $20^\circ/\mathrm{s}$ during that interval. A cubic or quintic may instead be used when the velocity or acceleration must connect smoothly across samples.
+
+#### In this Webots lab
+
+`run_trajectory` evaluates the trajectory and sends a new position target once per Webots simulation step. For Cartesian motion, the trajectory calculation conceptually performs
+
+```text
+at simulation time t_k:
+    evaluate the desired Cartesian point x_des(t_k)
+    solve IK, using q_(k-1) as the seed
+    obtain q_k
+    send q_k to the Webots motors
+```
+
+Each Webots motor holds $\mathbf q_k$ as its position target until the controller sends $\mathbf q_{k+1}$ on the next step. The motor's internal position controller moves the simulated joint toward that target subject to its velocity and available-torque limits. It does not teleport the joint to the new angle, and the physical motion during the step is not assumed to be linear.
+
+The controller is therefore not constructing a separate rest-to-rest trajectory between every pair of simulation steps. It is sending closely spaced samples from one continuous Cartesian trajectory. For example:
+
+```text
+t = 0.000 s: joint target = 20.00 deg
+t = 0.032 s: joint target = 20.15 deg
+t = 0.064 s: joint target = 20.31 deg
+t = 0.096 s: joint target = 20.48 deg
+```
+
+The target changes discretely, but the simulated joint angle changes continuously as the motor follows the successive targets. A smaller control step normally makes the target staircase finer.
+
+#### On a physical industrial robot
+
+The same idea is implemented as a hierarchy of faster control loops. A typical Cartesian motion command is processed approximately as follows:
+
+```text
+Cartesian path and time law
+        -> high-rate Cartesian reference
+        -> IK or inverse-velocity calculation
+        -> joint position and velocity references
+        -> joint servo
+        -> motor current/torque control
+```
+
+The trajectory generator may run every few milliseconds, while lower-level velocity and motor-current loops run faster. The joint servo repeatedly compares the measured angle with the current reference. A simplified control law is
+
+$$
+\boldsymbol\tau
+=K_p\left(\mathbf q_{\mathrm{cmd}}-\mathbf q_{\mathrm{meas}}\right)
+-K_d\dot{\mathbf q}_{\mathrm{meas}}
++\boldsymbol\tau_{\mathrm{ff}},
+$$
+
+where $\boldsymbol\tau_{\mathrm{ff}}$ can compensate for gravity, inertia, and other modeled effects. Actual industrial controllers use more detailed proprietary algorithms, but the principle is the same: closely spaced references guide a continuous physical response. If a high-level program supplies only widely spaced points, the robot controller normally interpolates or blends them internally using a linear, polynomial, trapezoidal, or jerk-limited profile.
+
+A waypoint can also be a user-specified point that divides a longer path into segments. Each segment needs a geometric interpolation rule, but it does **not** need to be an independent rest-to-rest motion. A practical trajectory generator coordinates the timing of the complete path and sends one continuous stream of references. It may blend or round a corner so velocity and acceleration remain continuous.
+
+If each segment instead receives its own rest-to-rest profile, the commanded speed falls to zero at every waypoint. That behavior is appropriate when a full stop is required, but it produces unnecessary repeated acceleration and deceleration when the robot should pass through continuously.
+
+![A Cartesian line sampled into waypoints and continuous versus stop-at-each-waypoint speed schedules.](figures/cartesian_waypoints.png)
+
+*Left: the orange points are samples of one continuous Cartesian line, not separate motions. Right: independently profiling every segment forces a stop at each boundary, whereas one path-level schedule passes through the sampled references continuously.*
+
+The figure below separates high-rate IK samples from user-defined via points. The construction on the right is the piecewise-polynomial idea often shown in trajectory-planning diagrams: each time interval has its own polynomial, and neighboring polynomials meet at a via point. To pass through smoothly, both segments must give the same joint angle and joint velocity there,
+
+$$
+q_j(t_k^-)=q_j(t_k^+),
+\qquad
+\dot q_j(t_k^-)=\dot q_j(t_k^+).
+$$
+
+Matching acceleration as well gives still smoother motion. Setting the shared waypoint velocity to zero makes the joint stop there; assigning a nonzero shared velocity lets it pass through continuously. If the polynomials are constructed in joint space after IK, the tool path between Cartesian waypoints is not guaranteed to remain exactly straight. Maintaining a strict Cartesian line requires sampling or controlling the Cartesian path itself.
+
+![Joint commands between IK samples and piecewise cubic segments joined smoothly at user-defined via points.](figures/ik_samples_and_via_points.png)
+
+*Left: the dashed staircase is what held position targets look like with deliberately coarse updates. The dotted line shows explicit linear interpolation, and the solid curve shows the continuous reference from which the IK points were sampled. Real control updates are normally much closer together. Right: separate cubic pieces form one smooth joint trajectory because they share the same position and slope at each internal via point.*
+
+Smaller sampling intervals represent the reference path more densely but increase the number of IK solves and commands. Very coarse sampling can produce interpolation error. Very fine sampling does not automatically improve tracking if the controller or simulation step cannot follow the commands.
 
 ## 10. A generated trajectory is a reference, not a measurement
 
