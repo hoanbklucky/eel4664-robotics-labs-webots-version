@@ -162,13 +162,25 @@ The factors $6s-6s^2$ and $6-12s$ describe the shapes of the velocity and accele
 
 *The velocity factor is zero at both endpoints and largest at $s=0.5$. The acceleration factor changes sign there, marking the transition from speeding up to slowing down.*
 
-The velocity-shape factor reaches its maximum halfway through the motion. To see this, differentiate it with respect to $s$:
+Let the velocity-shape factor be
 
 $$
-\frac{d}{ds}(6s-6s^2)=6-12s.
+v_s(s)=6s-6s^2.
 $$
 
-Setting this derivative to zero gives $s=0.5$. Because the second derivative is $-12$, the curve bends downward there, so this point is a maximum. Its value is
+Its slope is
+
+$$
+v_s'(s)=6-12s.
+$$
+
+Setting the slope to zero gives $s=0.5$. To determine whether this point is a maximum or minimum, differentiate once more:
+
+$$
+v_s''(s)=\frac{d}{ds}(6-12s)=-12.
+$$
+
+The second derivative is negative because the slope $6-12s$ continually decreases as $s$ increases. The slope is positive before $s=0.5$ and negative afterward, so the velocity-shape curve first rises and then falls. Therefore, $s=0.5$ is its maximum. The maximum value is
 
 $$
 6(0.5)-6(0.5)^2=1.5.
@@ -201,7 +213,7 @@ This is why slowing a motion often reduces actuator demand. It does not, however
 
 ## 6. Cubic, quintic, and trapezoidal profiles
 
-A cubic rest-to-rest trajectory guarantees zero endpoint velocity, but its endpoint acceleration is generally nonzero. Joining that motion directly to a stationary hold can create an acceleration and torque jump.
+A cubic rest-to-rest trajectory guarantees zero endpoint velocity, but its endpoint acceleration is generally nonzero. Immediately after the trajectory ends, a stationary hold commands zero velocity and zero acceleration at the final position. Switching directly from the cubic's nonzero final acceleration to this zero-acceleration hold therefore causes a sudden change in commanded acceleration and, often, motor torque.
 
 A quintic time-scaling function has enough coefficients to set position, velocity, and acceleration at both endpoints. A common normalized form is
 
@@ -215,23 +227,23 @@ $$
 \theta(t)=\theta_0+(\theta_f-\theta_0)s(u).
 $$
 
-The quintic begins and ends with zero velocity and zero acceleration, so it connects more smoothly to a stationary hold.
+The quintic begins and ends with zero velocity and zero acceleration, so the transition from moving to remaining stationary is smoother.
 
 A trapezoidal velocity profile uses three phases: accelerate, travel at approximately constant speed, then decelerate. It is easy to interpret and can directly reflect velocity and acceleration limits. The corners of an ideal trapezoid imply acceleration changes; practical controllers may round them.
 
-![Cubic, quintic, and trapezoidal velocity profiles for the same normalized move.](figures/velocity_profile_comparison.png)
+![Cubic, quintic, and trapezoidal velocity and acceleration profiles for the same normalized move.](figures/velocity_profile_comparison.png)
 
-*All three curves cover the same distance in the same duration, so each has unit area. The illustrated trapezoid accelerates for 25% of the motion, cruises for 50%, and decelerates for 25%.*
+*Top: all three velocity curves cover the same distance in the same duration, so each has unit area. Bottom: the cubic has nonzero endpoint acceleration, the quintic starts and ends at zero acceleration, and the ideal trapezoid has abrupt acceleration changes at its phase boundaries. The illustrated trapezoid accelerates for 25% of the motion, cruises for 50%, and decelerates for 25%.*
 
 No profile is universally best:
 
 | Profile | Advantages | Disadvantages |
 |---|---|---|
-| Cubic | Simple formula; zero velocity at both endpoints; moderate peak velocity for a fixed move and duration | Endpoint acceleration is nonzero, so joining directly to a hold creates an acceleration and torque jump |
-| Quintic | Zero velocity and acceleration at both endpoints; smooth connection to a stationary hold | Higher peak velocity for the same move and duration; more coefficients and constraints to calculate |
+| Cubic | Simple formula; zero velocity at both endpoints; moderate peak velocity for a fixed move and duration | Endpoint acceleration is nonzero, so stopping at the endpoint requires a sudden change to zero acceleration and may cause a torque jump |
+| Quintic | Zero velocity and acceleration at both endpoints; smooth transition to remaining stationary | Higher peak velocity for the same move and duration; more coefficients and constraints to calculate |
 | Trapezoidal velocity | Directly incorporates velocity and acceleration limits; easy to interpret; can include a constant-speed cruise | Ideal corners create acceleration jumps and infinite jerk; sensitive mechanisms often require rounded corners or an S-curve |
 
-Choose the profile from the required endpoint smoothness, motion time, and actuator limits rather than appearance alone.
+In practice, many industrial point-to-point controllers use trapezoidal velocity profiles or jerk-limited **S-curves**, which round the trapezoid's corners to reduce vibration and mechanical shock. Quintic profiles are also common when zero endpoint velocity and acceleration are important. The exact profile depends on the robot and controller, so choose it from the required smoothness, motion time, and actuator limits rather than appearance alone.
 
 ## 7. Synchronizing several joints
 

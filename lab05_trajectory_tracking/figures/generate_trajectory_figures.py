@@ -169,10 +169,16 @@ def save_cubic_derivative_shapes():
 def save_velocity_profile_comparison():
     normalized_time = np.linspace(0.0, 1.0, 1001)
     cubic_velocity = 6.0 * normalized_time - 6.0 * normalized_time**2
+    cubic_acceleration = 6.0 - 12.0 * normalized_time
     quintic_velocity = (
         30.0 * normalized_time**2
         - 60.0 * normalized_time**3
         + 30.0 * normalized_time**4
+    )
+    quintic_acceleration = (
+        60.0 * normalized_time
+        - 180.0 * normalized_time**2
+        + 120.0 * normalized_time**3
     )
 
     acceleration_fraction = 0.25
@@ -191,31 +197,62 @@ def save_velocity_profile_comparison():
             lambda value: trapezoid_peak * (1.0 - value) / acceleration_fraction,
         ],
     )
+    trapezoid_acceleration_level = trapezoid_peak / acceleration_fraction
+    trapezoid_acceleration = np.piecewise(
+        normalized_time,
+        [
+            normalized_time < acceleration_fraction,
+            (normalized_time >= acceleration_fraction)
+            & (normalized_time <= 1.0 - acceleration_fraction),
+            normalized_time > 1.0 - acceleration_fraction,
+        ],
+        [trapezoid_acceleration_level, 0.0, -trapezoid_acceleration_level],
+    )
 
-    figure, axis = plt.subplots(figsize=(8.2, 4.8))
-    style_axes([axis])
-    axis.plot(normalized_time, cubic_velocity, color=BLUE, linewidth=3.0,
-              label="Cubic")
-    axis.plot(normalized_time, quintic_velocity, color="#16833B", linewidth=3.0,
-              label="Quintic")
-    axis.plot(normalized_time, trapezoid_velocity, color=ORANGE, linewidth=3.0,
-              linestyle="--", label="Trapezoidal (25%-50%-25%)")
-    axis.axvline(0.25, color=GRAY, linewidth=1.0, alpha=0.6)
-    axis.axvline(0.75, color=GRAY, linewidth=1.0, alpha=0.6)
-    axis.set_xlim(0.0, 1.0)
-    axis.set_ylim(0.0, 2.02)
-    axis.set_xlabel(r"Normalized time  $u=t/T_f$")
-    axis.set_ylabel(r"Normalized velocity  $(T_f/\Delta\theta)\dot{\theta}$")
-    axis.set_title("Velocity profiles for the same distance and duration")
-    axis.legend(loc="upper right")
-    axis.text(
+    figure, axes = plt.subplots(2, 1, figsize=(8.4, 7.2), sharex=True)
+    style_axes(axes)
+    velocity_axis, acceleration_axis = axes
+
+    velocity_axis.plot(normalized_time, cubic_velocity, color=BLUE,
+                       linewidth=3.0, label="Cubic")
+    velocity_axis.plot(normalized_time, quintic_velocity, color="#16833B",
+                       linewidth=3.0, label="Quintic")
+    velocity_axis.plot(normalized_time, trapezoid_velocity, color=ORANGE,
+                       linewidth=3.0, linestyle="--",
+                       label="Trapezoidal (25%-50%-25%)")
+    velocity_axis.set_ylim(0.0, 2.02)
+    velocity_axis.set_ylabel(
+        r"Normalized velocity  $(T_f/\Delta\theta)\dot{\theta}$"
+    )
+    velocity_axis.set_title("Profiles for the same distance and duration")
+    velocity_axis.legend(loc="upper right")
+    velocity_axis.text(
         0.02,
         0.94,
         "Area under every curve = 1",
-        transform=axis.transAxes,
+        transform=velocity_axis.transAxes,
         color=GRAY,
         va="top",
     )
+
+    acceleration_axis.plot(normalized_time, cubic_acceleration, color=BLUE,
+                           linewidth=3.0, label="Cubic")
+    acceleration_axis.plot(normalized_time, quintic_acceleration,
+                           color="#16833B", linewidth=3.0, label="Quintic")
+    acceleration_axis.plot(normalized_time, trapezoid_acceleration,
+                           color=ORANGE, linewidth=3.0, linestyle="--",
+                           drawstyle="steps-post", label="Trapezoidal")
+    acceleration_axis.axhline(0.0, color=GRAY, linewidth=1.0)
+    acceleration_axis.set_ylabel(
+        r"Normalized acceleration  $(T_f^2/\Delta\theta)\ddot{\theta}$"
+    )
+    acceleration_axis.set_xlabel(r"Normalized time  $u=t/T_f$")
+
+    for axis in axes:
+        axis.axvline(0.25, color=GRAY, linewidth=1.0, alpha=0.5)
+        axis.axvline(0.75, color=GRAY, linewidth=1.0, alpha=0.5)
+        axis.set_xlim(0.0, 1.0)
+
     figure.tight_layout()
     figure.savefig(
         OUTPUT_DIR / "velocity_profile_comparison.png",
