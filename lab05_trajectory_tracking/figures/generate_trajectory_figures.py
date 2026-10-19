@@ -415,50 +415,53 @@ def save_via_point_segments():
 
     figure, axes = plt.subplots(1, 2, figsize=(10.6, 4.5))
     style_axes(axes)
+    position_axis, speed_axis = axes
 
-    axes[0].plot(normalized_time, continuous_speed, color=BLUE,
-                 linewidth=3.0, label="One continuous path schedule")
-    axes[0].plot(normalized_time, stop_at_waypoint_speed, color=ORANGE,
-                 linewidth=2.5, linestyle="--",
-                 label="Independent rest-to-rest segments")
+    speed_axis.plot(normalized_time, continuous_speed, color=BLUE,
+                    linewidth=3.0, label="One continuous path schedule")
+    speed_axis.plot(normalized_time, stop_at_waypoint_speed, color=ORANGE,
+                    linewidth=2.5, linestyle="--",
+                    label="Independent rest-to-rest segments")
     for boundary in [1.0 / 3.0, 2.0 / 3.0]:
-        axes[0].axvline(boundary, color=GRAY, linewidth=1.0, alpha=0.7)
-    axes[0].set_xlim(0.0, 1.0)
-    axes[0].set_ylim(bottom=0.0)
-    axes[0].set_xlabel(r"Normalized time  $u=t/T_f$")
-    axes[0].set_ylabel("Relative path speed")
-    axes[0].set_title(
+        speed_axis.axvline(boundary, color=GRAY, linewidth=1.0, alpha=0.7)
+    speed_axis.set_xlim(0.0, 1.0)
+    speed_axis.set_ylim(bottom=0.0)
+    speed_axis.set_xlabel(r"Normalized time  $u=t/T_f$")
+    speed_axis.set_ylabel("Relative path speed")
+    speed_axis.set_title(
         "Stop at or pass through\nuser-defined via points",
         fontsize=14,
     )
-    axes[0].legend(fontsize=8.5)
+    speed_axis.legend(fontsize=8.5)
 
-    axes[1].plot(spline_time, spline_angle, color=BLUE, linewidth=3.0,
-                 label="Piecewise cubic trajectory")
-    axes[1].scatter(via_times, via_angles, color=ORANGE, s=60,
-                    zorder=4, label="User-defined via points")
+    position_axis.plot(spline_time, spline_angle, color=BLUE, linewidth=3.0,
+                       label="Piecewise cubic trajectory")
+    position_axis.scatter(via_times, via_angles, color=ORANGE, s=60,
+                          zorder=4, label="User-defined via points")
     for index in [1, 2]:
-        axes[1].axvline(via_times[index], color=GRAY, linewidth=1.0,
-                        linestyle="--", alpha=0.7)
+        position_axis.axvline(via_times[index], color=GRAY, linewidth=1.0,
+                              linestyle="--", alpha=0.7)
         tangent_time = np.array([via_times[index] - 0.22,
                                  via_times[index] + 0.22])
         tangent_angle = (
             via_angles[index]
             + via_slopes[index] * (tangent_time - via_times[index])
         )
-        axes[1].plot(tangent_time, tangent_angle, color=GREEN,
-                     linewidth=2.0)
-    axes[1].annotate("same slope from both segments",
-                     xy=(1.0, via_angles[1]), xytext=(1.22, 0.67),
-                     arrowprops={"arrowstyle": "->", "color": GRAY},
-                     color=GRAY, fontsize=9)
-    axes[1].set_xlabel("Time")
-    axes[1].set_ylabel(r"Joint angle  $q_j$")
-    axes[1].set_title(
+        position_axis.plot(tangent_time, tangent_angle, color=GREEN,
+                           linewidth=2.0)
+    position_axis.annotate(
+        "same slope from both segments",
+        xy=(1.0, via_angles[1]), xytext=(1.22, 0.67),
+        arrowprops={"arrowstyle": "->", "color": GRAY},
+        color=GRAY, fontsize=9,
+    )
+    position_axis.set_xlabel("Time")
+    position_axis.set_ylabel(r"Joint angle  $q_j$")
+    position_axis.set_title(
         "Polynomial segments joined at\nuser-defined via points",
         fontsize=14,
     )
-    axes[1].legend(fontsize=8.5, loc="lower right")
+    position_axis.legend(fontsize=8.5, loc="lower right")
 
     figure.tight_layout()
     figure.savefig(

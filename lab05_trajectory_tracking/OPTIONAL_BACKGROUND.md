@@ -390,7 +390,7 @@ Matching acceleration as well gives still smoother motion. Setting the shared vi
 
 ![Timing choices and piecewise cubic interpolation for user-defined via-point segments.](figures/via_point_segments.png)
 
-*Both panels describe user-defined segmented motion. Left: independent rest-to-rest profiles stop at every boundary, while one coordinated schedule passes through. Right: separate cubic pieces form one smooth joint trajectory because they share the same position and slope at each internal via point.*
+*Both panels describe user-defined segmented motion. Left: separate cubic pieces form one smooth joint trajectory because they share the same position and slope at each internal via point. Right: independent rest-to-rest profiles stop at every boundary, while one coordinated schedule passes through.*
 
 ## 10. A generated trajectory is a reference, not a measurement
 
